@@ -1,10 +1,13 @@
 {
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7",
-  "package": "com.example.template.mixin",
+  "package": "cc.woverflow.vanillahud.mixin",
   "refmap": "mixins.${id}.refmap.json",
   "mixins": [
     "MinecraftMixin"
   ],
-  "verbose": true
+  "verbose": true,
+  "client": [
+    "GuiIngameMixin"
+  ]
 }

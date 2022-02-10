@@ -1,4 +1,4 @@
-package com.example.template.mixin;
+package cc.woverflow.vanillahud.mixin;
 
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;

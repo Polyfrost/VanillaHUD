@@ -1,8 +1,8 @@
-package com.example.template
+package cc.woverflow.vanillahud
 
 import cc.woverflow.wcore.utils.Updater
 import cc.woverflow.wcore.utils.command
-import com.example.template.config.TemplateConfig
+import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import gg.essential.api.EssentialAPI
 import net.minecraft.client.Minecraft
 import net.minecraftforge.fml.common.Mod
@@ -11,12 +11,12 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.File
 
 @Mod(
-    modid = ForgeTemplate.ID,
-    name = ForgeTemplate.NAME,
-    version = ForgeTemplate.VER,
+    modid = VanillaHUD.ID,
+    name = VanillaHUD.NAME,
+    version = VanillaHUD.VER,
     modLanguageAdapter = "gg.essential.api.utils.KotlinAdapter"
 )
-object ForgeTemplate {
+object VanillaHUD {
 
     const val NAME = "@NAME@"
     const val VER = "@VER@"
@@ -32,10 +32,10 @@ object ForgeTemplate {
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
-        TemplateConfig.preload()
+        VanillaHUDConfig.preload()
         command(ID) {
             main {
-                EssentialAPI.getGuiUtil().openScreen(TemplateConfig.gui())
+                EssentialAPI.getGuiUtil().openScreen(VanillaHUDConfig.gui())
             }
         }
     }
