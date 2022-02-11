@@ -1,6 +1,8 @@
 package cc.woverflow.vanillahud.config
 
+import cc.woverflow.vanillahud.Scoreboard
 import cc.woverflow.vanillahud.VanillaHUD
+import gg.essential.api.EssentialAPI
 import gg.essential.vigilance.Vigilant
 import gg.essential.vigilance.data.Property
 import gg.essential.vigilance.data.PropertyType
@@ -90,7 +92,7 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         category = "Scoreboard"
     )
     fun openScoreboardGui() {
-        //todo
+        EssentialAPI.getGuiUtil().openScreen(Scoreboard.ScoreboardGui())
     }
 
 
