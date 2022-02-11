@@ -4,10 +4,9 @@
   "package": "cc.woverflow.vanillahud.mixin",
   "refmap": "mixins.${id}.refmap.json",
   "mixins": [
-    "MinecraftMixin"
-  ],
-  "verbose": true,
-  "client": [
+    "GuiIngameAccessor",
+    "GuiIngameForgeMixin",
     "GuiIngameMixin"
-  ]
+  ],
+  "verbose": true
 }

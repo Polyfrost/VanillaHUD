@@ -116,7 +116,7 @@ object Scoreboard {
             window.onMouseDrag { mouseX, mouseY, mouseButton ->
                 if (mouseButton == 0 && mc.thePlayer != null && mc.thePlayer.worldScoreboard.getObjectiveInDisplaySlot(1) != null) {
                     VanillaHUDConfig.scoreboardX = mouseX.toInt() - (UResolution.scaledWidth - 1)
-                    VanillaHUDConfig.scoreboardY = mouseY.toInt() - UResolution.scaledHeight / 2
+                    VanillaHUDConfig.scoreboardY = mouseY.toInt() - (UResolution.scaledHeight / 2)
                 }
             }.onKeyType { _, keyCode ->
                 if (mc.thePlayer != null && mc.thePlayer.worldScoreboard.getObjectiveInDisplaySlot(1) != null) {
@@ -138,6 +138,12 @@ object Scoreboard {
             if (button != null) {
                 if (button.id == 1) restorePreviousScreen()
             }
+        }
+
+        override fun onScreenClose() {
+            super.onScreenClose()
+            VanillaHUDConfig.markDirty()
+            VanillaHUDConfig.writeData()
         }
     }
 
