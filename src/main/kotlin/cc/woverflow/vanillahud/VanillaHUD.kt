@@ -3,7 +3,9 @@ package cc.woverflow.vanillahud
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import cc.woverflow.wcore.utils.Updater
 import cc.woverflow.wcore.utils.command
-import gg.essential.api.EssentialAPI
+import cc.woverflow.wcore.utils.openGUI
+import gg.essential.elementa.components.UIRoundedRectangle
+import gg.essential.universal.UMatrixStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
@@ -12,6 +14,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import java.awt.Color
 import java.io.File
 
 @Mod(
@@ -39,11 +42,43 @@ object VanillaHUD {
         VanillaHUDConfig.preload()
         command(ID) {
             main {
-                EssentialAPI.getGuiUtil().openScreen(VanillaHUDConfig.gui())
+                VanillaHUDConfig.openGUI()
             }
         }
     }
 }
+
+fun drawHollowRect(left: Int, top: Int, right: Int, bottom: Int, thickness: Int, colour: Int) {
+    drawHorizontalLine(left, right, top, thickness, colour)
+    drawHorizontalLine(left, right, bottom, thickness, colour)
+    drawVerticalLine(left, bottom, top, thickness, colour)
+    drawVerticalLine(right, bottom, top, thickness, colour)
+}
+
+fun drawHorizontalLine(start: Int, end: Int, y: Int, thickness: Int, colour: Int) {
+    var start = start
+    var end = end
+    if (end < start) {
+        val i = start
+        start = end
+        end = i
+    }
+    Gui.drawRect(start, y, end + thickness, y + thickness, colour)
+}
+
+fun drawVerticalLine(x: Int, start: Int, end: Int, thickness: Int, colour: Int) {
+    var start = start
+    var end = end
+    if (end < start) {
+        val i = start
+        start = end
+        end = i
+    }
+    Gui.drawRect(x, start + thickness, x + thickness, end, colour)
+}
+
+fun drawRoundedRectangleExt(x: Int, y: Int, width: Int, height: Int, radius: Float, color: Color, minAlpha: Int) = UIRoundedRectangle.drawRoundedRectangle(UMatrixStack.Compat.get(),
+    x.toFloat(), y.toFloat(), (x + width).toFloat(), (y + height).toFloat(), radius, if (color.alpha > minAlpha) Color(color.red, color.green, color.blue, minAlpha) else color)
 
 fun drawRectExt(x: Int, y: Int, width: Int, height: Int, color: Int) = Gui.drawRect(x, y, x + width, y + height, color)
 

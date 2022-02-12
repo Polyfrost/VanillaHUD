@@ -37,6 +37,24 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
     var actionBarBackground = false
 
     @Property(
+        type = PropertyType.SWITCH,
+        name = "Round Background",
+        description = "Make the background of the action bar round.",
+        category = "Action Bar"
+    )
+    var actionBarRoundBackground = false
+
+    @Property(
+        type = PropertyType.NUMBER,
+        name = "Rounded Background Radius Amount",
+        description = "Change the radius of the rounded background.",
+        category = "Action Bar",
+        min = 0,
+        max = 10
+    )
+    var actionBarRadius = 6
+
+    @Property(
         type = PropertyType.NUMBER,
         name = "Background Padding Amount",
         description = "Change the amount of padding added to the background.",
@@ -53,6 +71,14 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         category = "Action Bar"
     )
     var actionBarBackgroundColor: Color = Color(0, 0, 0, 128)
+
+    @Property(
+        type = PropertyType.PERCENT_SLIDER,
+        name = "Action Bar Scale",
+        description = "Set the scale for the action bar.",
+        category = "Action Bar"
+    )
+    var actionBarScale = 1.0F
 
     @Property(
         type = PropertyType.BUTTON,
@@ -129,6 +155,32 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         description = "Change the text color for the scoreboard."
     )
     var scoreboardTitleBackgroundColor: Color = Color(1610612736, true)
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Toggle Scoreboard Border",
+        category = "Scoreboard",
+        description = "Toggle the background border from rendering."
+    )
+    var scoreboardBackgroundBorder = false
+
+    @Property(
+        type = PropertyType.COLOR,
+        name = "Scoreboard Border Color",
+        category = "Scoreboard",
+        description = "Change the text color for the scoreboard border."
+    )
+    var scoreboardBorderColor: Color = Color.BLACK
+
+    @Property(
+        type = PropertyType.NUMBER,
+        name = "Scoreboard Border Width Amount",
+        description = "Change the amount of width in the scoreboard border.",
+        category = "Scoreboard",
+        min = 0,
+        max = 10
+    )
+    var scoreboardBorderWidth = 2
 
     @Property(
         type = PropertyType.PERCENT_SLIDER,

@@ -57,6 +57,16 @@ object Scoreboard {
                 0.0
             )
             UGraphics.GL.scale(VanillaHUDConfig.scoreboardScale, VanillaHUDConfig.scoreboardScale, 1.0F)
+            if (VanillaHUDConfig.scoreboardBackgroundBorder) {
+                drawHollowRect(
+                    left - 2 - VanillaHUDConfig.scoreboardBorderWidth,
+                    bottom - (collection.size + 1) * UMinecraft.getFontRenderer().FONT_HEIGHT - VanillaHUDConfig.scoreboardBorderWidth,
+                    scorePointRight,
+                    bottom,
+                    VanillaHUDConfig.scoreboardBorderWidth,
+                    VanillaHUDConfig.scoreboardBorderColor.rgb
+                )
+            }
             collection.forEachIndexed { index, score ->
                 val scoreplayerteam = scoreboard.getPlayersTeam(score.playerName)
                 val text = ScorePlayerTeam.formatPlayerName(scoreplayerteam, score.playerName)

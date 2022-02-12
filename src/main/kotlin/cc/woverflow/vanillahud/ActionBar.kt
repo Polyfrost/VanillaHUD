@@ -4,6 +4,7 @@ import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import cc.woverflow.vanillahud.mixin.GuiIngameAccessor
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
+import gg.essential.elementa.components.UIRoundedRectangle
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMinecraft
 import gg.essential.universal.UResolution
@@ -12,6 +13,10 @@ import org.lwjgl.input.Keyboard
 import java.awt.Color
 
 object ActionBar {
+
+    init {
+        UIRoundedRectangle.initShaders()
+    }
 
     fun renderActionBar(width: Int, height: Int, partialTicks: Float) {
         if (VanillaHUDConfig.actionBar) {
@@ -24,6 +29,7 @@ object ActionBar {
                 if (opacity > 0) {
                     UGraphics.GL.pushMatrix()
                     UGraphics.GL.translate((width / 2 + VanillaHUDConfig.actionBarX).toFloat(), (height - 68 + VanillaHUDConfig.actionBarY).toFloat(), 0.0f)
+                    UGraphics.GL.scale(VanillaHUDConfig.actionBarScale, VanillaHUDConfig.actionBarScale, 1.0F)
                     UGraphics.enableBlend()
                     UGraphics.tryBlendFuncSeparate(0x302, 0x303, 1, 0)
                     val color = if (ingameGUI.recordIsPlaying) Color.HSBtoRGB(
@@ -33,7 +39,11 @@ object ActionBar {
                     ) and 0xFFFFFF else 0xFFFFFF
                     val recordWidth = UMinecraft.getMinecraft().fontRendererObj.getStringWidth(ingameGUI.recordPlaying)
                     if (VanillaHUDConfig.actionBarBackground) {
-                        drawRectButForActionBarExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarBackgroundColor.rgb, opacity)
+                        if (VanillaHUDConfig.actionBarRoundBackground) {
+                            drawRoundedRectangleExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarRadius.toFloat(), VanillaHUDConfig.actionBarBackgroundColor, opacity)
+                        } else {
+                            drawRectButForActionBarExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarBackgroundColor.rgb, opacity)
+                        }
                     }
                     UMinecraft.getMinecraft().fontRendererObj.drawString(
                         ingameGUI.recordPlaying,
