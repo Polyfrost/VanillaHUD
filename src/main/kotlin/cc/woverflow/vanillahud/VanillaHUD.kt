@@ -89,14 +89,14 @@ open class PositionGui :
     }
 }
 
-fun drawHollowRect(left: Int, top: Int, right: Int, bottom: Int, thickness: Int, colour: Int) {
-    drawHorizontalLine(left, right, top, thickness, colour)
-    drawHorizontalLine(left, right, bottom, thickness, colour)
-    drawVerticalLine(left, bottom, top, thickness, colour)
-    drawVerticalLine(right, bottom, top, thickness, colour)
+fun drawHollowRect(left: Int, top: Int, right: Int, bottom: Int, thickness: Int, color: Int) {
+    drawHorizontalLine(left, right, top, thickness, color)
+    drawHorizontalLine(left, right, bottom, thickness, color)
+    drawVerticalLine(left, bottom, top, thickness, color)
+    drawVerticalLine(right, bottom, top, thickness, color)
 }
 
-fun drawHorizontalLine(start: Int, end: Int, y: Int, thickness: Int, colour: Int) {
+fun drawHorizontalLine(start: Int, end: Int, y: Int, thickness: Int, color: Int) {
     var start = start
     var end = end
     if (end < start) {
@@ -104,10 +104,10 @@ fun drawHorizontalLine(start: Int, end: Int, y: Int, thickness: Int, colour: Int
         start = end
         end = i
     }
-    Gui.drawRect(start, y, end + thickness, y + thickness, colour)
+    Gui.drawRect(start, y, end + thickness, y + thickness, color)
 }
 
-fun drawVerticalLine(x: Int, start: Int, end: Int, thickness: Int, colour: Int) {
+fun drawVerticalLine(x: Int, start: Int, end: Int, thickness: Int, color: Int) {
     var start = start
     var end = end
     if (end < start) {
@@ -115,7 +115,7 @@ fun drawVerticalLine(x: Int, start: Int, end: Int, thickness: Int, colour: Int) 
         start = end
         end = i
     }
-    Gui.drawRect(x, start + thickness, x + thickness, end, colour)
+    Gui.drawRect(x, start + thickness, x + thickness, end, color)
 }
 
 fun drawRoundedRectangleExt(x: Int, y: Int, width: Int, height: Int, radius: Float, color: Color, minAlpha: Int) =

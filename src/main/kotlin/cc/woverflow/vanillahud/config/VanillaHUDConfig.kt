@@ -287,8 +287,22 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         EssentialAPI.getGuiUtil().openScreen(Scoreboard.ScoreboardGui())
     }
 
-
     init {
         initialize()
+        listOf(
+            "actionBarRoundBackground",
+            "actionBarRadius",
+            "actionBarPadding",
+            "actionBarBackgroundColor"
+        ).forEach { addDependency(it, "actionBarBackground") }
+        addDependency("bossBarShadow", "bossBarText")
+        listOf(
+            "scoreboardBorderColor",
+            "scoreboardBorderWidth"
+        ).forEach { addDependency(it, "scoreboardBackgroundBorder") }
+        listOf(
+            "scoreboardBackgroundColor",
+            "scoreboardTitleBackgroundColor"
+        ).forEach { addDependency(it, "scoreboardBackground") }
     }
 }
