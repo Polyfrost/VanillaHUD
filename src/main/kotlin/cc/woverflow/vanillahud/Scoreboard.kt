@@ -2,14 +2,11 @@ package cc.woverflow.vanillahud
 
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import com.google.common.collect.Iterables
-import gg.essential.elementa.ElementaVersion
-import gg.essential.elementa.WindowScreen
 import gg.essential.universal.ChatColor
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMinecraft
 import gg.essential.universal.UResolution
 import net.minecraft.client.gui.Gui
-import net.minecraft.client.gui.GuiButton
 import net.minecraft.scoreboard.ScoreObjective
 import net.minecraft.scoreboard.ScorePlayerTeam
 import org.lwjgl.input.Keyboard
@@ -23,12 +20,8 @@ object Scoreboard {
 
             val scoreboard = objective.scoreboard
             val sortedScores = scoreboard.getSortedScores(objective)
-            val list = sortedScores.filter { p_apply_1_ ->
-                if (p_apply_1_ != null) {
-                    p_apply_1_.playerName != null && !p_apply_1_.playerName.startsWith("#")
-                } else {
-                    false
-                }
+            val list = sortedScores.filter {
+                (it != null) && (it.playerName != null) && !it.playerName.startsWith("#")
             }.toMutableList()
             val collection = if (list.size > 15) {
                 Iterables.skip(list, sortedScores.size - 15).toMutableList()
@@ -119,41 +112,24 @@ object Scoreboard {
         }
     }
 
-    class ScoreboardGui :
-        WindowScreen(version = ElementaVersion.V1, restoreCurrentGuiOnClose = true, drawDefaultBackground = false) {
+    class ScoreboardGui : PositionGui() {
 
-        override fun initScreen(width: Int, height: Int) {
-            window.onMouseDrag { mouseX, mouseY, mouseButton ->
-                if (mouseButton == 0 && mc.thePlayer != null && mc.thePlayer.worldScoreboard.getObjectiveInDisplaySlot(1) != null) {
-                    VanillaHUDConfig.scoreboardX = mouseX.toInt() - (UResolution.scaledWidth - 1)
-                    VanillaHUDConfig.scoreboardY = mouseY.toInt() - (UResolution.scaledHeight / 2)
-                }
-            }.onKeyType { _, keyCode ->
-                if (mc.thePlayer != null && mc.thePlayer.worldScoreboard.getObjectiveInDisplaySlot(1) != null) {
-                    when (keyCode) {
-                        Keyboard.KEY_UP -> VanillaHUDConfig.scoreboardY -= 5
-                        Keyboard.KEY_DOWN -> VanillaHUDConfig.scoreboardY += 5
-                        Keyboard.KEY_LEFT -> VanillaHUDConfig.scoreboardX -= 5
-                        Keyboard.KEY_RIGHT -> VanillaHUDConfig.scoreboardX += 5
-                    }
-                }
-            }
-            super.initScreen(width, height)
-            val buttonWidth = fontRendererObj.getStringWidth("Exit GUI") + 20
-            buttonList.add(GuiButton(1, width / 2 - buttonWidth / 2, height - 20, buttonWidth, 20, "Exit GUI"))
-        }
-
-        override fun actionPerformed(button: GuiButton?) {
-            super.actionPerformed(button)
-            if (button != null) {
-                if (button.id == 1) restorePreviousScreen()
+        override fun updatePos(mouseX: Int, mouseY: Int, mouseButton: Int) {
+            if (mouseButton == 0 && mc.thePlayer != null && mc.thePlayer.worldScoreboard.getObjectiveInDisplaySlot(1) != null && VanillaHUDConfig.scoreboard) {
+                VanillaHUDConfig.scoreboardX = mouseX - (UResolution.scaledWidth - 1)
+                VanillaHUDConfig.scoreboardY = mouseY - (UResolution.scaledHeight / 2)
             }
         }
 
-        override fun onScreenClose() {
-            super.onScreenClose()
-            VanillaHUDConfig.markDirty()
-            VanillaHUDConfig.writeData()
+        override fun updatePosKeyPress(keyCode: Int) {
+            if (mc.thePlayer != null && mc.thePlayer.worldScoreboard.getObjectiveInDisplaySlot(1) != null && VanillaHUDConfig.scoreboard) {
+                when (keyCode) {
+                    Keyboard.KEY_UP -> VanillaHUDConfig.scoreboardY -= 5
+                    Keyboard.KEY_DOWN -> VanillaHUDConfig.scoreboardY += 5
+                    Keyboard.KEY_LEFT -> VanillaHUDConfig.scoreboardX -= 5
+                    Keyboard.KEY_RIGHT -> VanillaHUDConfig.scoreboardX += 5
+                }
+            }
         }
     }
 

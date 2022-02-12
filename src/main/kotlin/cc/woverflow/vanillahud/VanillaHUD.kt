@@ -4,10 +4,13 @@ import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import cc.woverflow.wcore.utils.Updater
 import cc.woverflow.wcore.utils.command
 import cc.woverflow.wcore.utils.openGUI
+import gg.essential.elementa.ElementaVersion
+import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIRoundedRectangle
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
+import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
@@ -48,6 +51,44 @@ object VanillaHUD {
     }
 }
 
+open class PositionGui :
+    WindowScreen(version = ElementaVersion.V1, restoreCurrentGuiOnClose = true, drawDefaultBackground = false) {
+
+    override fun initScreen(width: Int, height: Int) {
+        window.onMouseClick {
+            updatePos(it.absoluteX.toInt(), it.absoluteY.toInt(), it.mouseButton)
+        }.onMouseDrag { mouseX, mouseY, mouseButton ->
+            updatePos(mouseX.toInt(), mouseY.toInt(), mouseButton)
+        }.onKeyType { _, keyCode ->
+            updatePosKeyPress(keyCode)
+        }
+        super.initScreen(width, height)
+        val buttonWidth = fontRendererObj.getStringWidth("Exit GUI") + 20
+        buttonList.add(GuiButton(1, width / 2 - buttonWidth / 2, height - 20, buttonWidth, 20, "Exit GUI"))
+    }
+
+    override fun actionPerformed(button: GuiButton?) {
+        super.actionPerformed(button)
+        if (button != null) {
+            if (button.id == 1) restorePreviousScreen()
+        }
+    }
+
+    override fun onScreenClose() {
+        super.onScreenClose()
+        VanillaHUDConfig.markDirty()
+        VanillaHUDConfig.writeData()
+    }
+
+    protected open fun updatePos(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        TODO("Not implemented yet!")
+    }
+
+    protected open fun updatePosKeyPress(keyCode: Int) {
+        TODO("Not implemented yet!")
+    }
+}
+
 fun drawHollowRect(left: Int, top: Int, right: Int, bottom: Int, thickness: Int, colour: Int) {
     drawHorizontalLine(left, right, top, thickness, colour)
     drawHorizontalLine(left, right, bottom, thickness, colour)
@@ -77,12 +118,22 @@ fun drawVerticalLine(x: Int, start: Int, end: Int, thickness: Int, colour: Int) 
     Gui.drawRect(x, start + thickness, x + thickness, end, colour)
 }
 
-fun drawRoundedRectangleExt(x: Int, y: Int, width: Int, height: Int, radius: Float, color: Color, minAlpha: Int) = UIRoundedRectangle.drawRoundedRectangle(UMatrixStack.Compat.get(),
-    x.toFloat(), y.toFloat(), (x + width).toFloat(), (y + height).toFloat(), radius, if (color.alpha > minAlpha) Color(color.red, color.green, color.blue, minAlpha) else color)
+fun drawRoundedRectangleExt(x: Int, y: Int, width: Int, height: Int, radius: Float, color: Color, minAlpha: Int) =
+    UIRoundedRectangle.drawRoundedRectangle(
+        UMatrixStack.Compat.get(),
+        x.toFloat(),
+        y.toFloat(),
+        (x + width).toFloat(),
+        (y + height).toFloat(),
+        radius,
+        if (color.alpha > minAlpha) Color(color.red, color.green, color.blue, minAlpha) else color
+    )
 
 fun drawRectExt(x: Int, y: Int, width: Int, height: Int, color: Int) = Gui.drawRect(x, y, x + width, y + height, color)
 
-fun drawRectButForActionBarExt(x: Int, y: Int, width: Int, height: Int, color: Int, minAlpha: Int) = drawRectButForActionBar(x, y, x + width, y + height, color, minAlpha)
+fun drawRectButForActionBarExt(x: Int, y: Int, width: Int, height: Int, color: Int, minAlpha: Int) =
+    drawRectButForActionBar(x, y, x + width, y + height, color, minAlpha)
+
 fun drawRectButForActionBar(left: Int, top: Int, right: Int, bottom: Int, color: Int, minAlpha: Int) {
     var left = left
     var top = top

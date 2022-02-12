@@ -1,6 +1,7 @@
 package cc.woverflow.vanillahud.config
 
 import cc.woverflow.vanillahud.ActionBar
+import cc.woverflow.vanillahud.BossBar
 import cc.woverflow.vanillahud.Scoreboard
 import cc.woverflow.vanillahud.VanillaHUD
 import gg.essential.api.EssentialAPI
@@ -107,6 +108,74 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         hidden = true
     )
     var actionBarY: Int = 0
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Toggle Bossbar",
+        description = "Toggle the bossbar.",
+        category = "Bossbar"
+    )
+    var bossBar = true
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Toggle Text",
+        description = "Toggle the text for the bossbar.",
+        category = "Bossbar"
+    )
+    var bossBarText = true
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Toggle Shadow",
+        description = "Toggle the text shadow for the bossbar.",
+        category = "Bossbar"
+    )
+    var bossBarShadow = true
+
+    @Property(
+        type = PropertyType.SWITCH,
+        name = "Toggle Bar",
+        description = "Toggle the bar for the bossbar.",
+        category = "Bossbar"
+    )
+    var bossBarBar = true
+
+    @Property(
+        type = PropertyType.PERCENT_SLIDER,
+        name = "Bossbar Scale",
+        description = "Set the scale for the bossbar.",
+        category = "Bossbar"
+    )
+    var bossbarScale = 1.0F
+
+    @Property(
+        type = PropertyType.BUTTON,
+        name = "Bossbar Editor",
+        description = "Change the position of the bossbar.",
+        category = "Bossbar"
+    )
+    fun openBossHealthGui() {
+       EssentialAPI.getGuiUtil().openScreen(BossBar.BossBarGui())
+    }
+
+    @Property(
+        type = PropertyType.NUMBER,
+        name = "Bossbar X Offset",
+        description = "X",
+        category = "Bossbar",
+        hidden = true
+    )
+    var bossBarX: Int = 0
+
+    @Property(
+        type = PropertyType.NUMBER,
+        name = "Bossbar Y Offset",
+        description = "Y",
+        category = "Bossbar",
+        hidden = true
+    )
+    var bossBarY: Int = 0
 
     @Property(
         type = PropertyType.SWITCH,
