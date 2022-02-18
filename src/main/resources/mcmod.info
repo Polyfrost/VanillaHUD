@@ -2,9 +2,9 @@
   {
     "modid": "${id}",
     "name": "${name}",
-    "description": "An example template",
+    "description": "Customize vanilla HUDs!",
     "version": "${version}",
-    "mcversion": "${mcversion}",
+    "mcversion": "1.8.9",
     "url": "",
     "updateUrl": "",
     "authorList": [
