@@ -4,6 +4,7 @@ import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import cc.woverflow.wcore.utils.Updater
 import cc.woverflow.wcore.utils.command
 import cc.woverflow.wcore.utils.openGUI
+import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIRoundedRectangle
@@ -14,8 +15,10 @@ import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
+import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.awt.Color
 import java.io.File
@@ -49,22 +52,33 @@ object VanillaHUD {
             }
         }
     }
+
+    @Mod.EventHandler
+    fun onPostInit(event: FMLPostInitializationEvent) {
+        if (Loader.isModLoaded("bossbar_customizer")) {
+            EssentialAPI.getNotifications().push("VanillaHUD", "Bossbar Customizer has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
+        }
+    }
 }
 
 open class PositionGui :
     WindowScreen(version = ElementaVersion.V1, restoreCurrentGuiOnClose = true, drawDefaultBackground = false) {
 
     override fun initScreen(width: Int, height: Int) {
+        val buttonWidth = fontRendererObj.getStringWidth("Exit GUI") + 20
+        buttonList.add(GuiButton(1, width / 2 - buttonWidth / 2, height - 20, buttonWidth, 20, "Exit GUI"))
         window.onMouseClick {
-            updatePos(it.absoluteX.toInt(), it.absoluteY.toInt(), it.mouseButton)
+            if (!buttonList.first().isMouseOver) {
+                updatePos(it.absoluteX.toInt(), it.absoluteY.toInt(), it.mouseButton)
+            }
         }.onMouseDrag { mouseX, mouseY, mouseButton ->
-            updatePos(mouseX.toInt(), mouseY.toInt(), mouseButton)
+            if (!buttonList.first().isMouseOver) {
+                updatePos(mouseX.toInt(), mouseY.toInt(), mouseButton)
+            }
         }.onKeyType { _, keyCode ->
             updatePosKeyPress(keyCode)
         }
         super.initScreen(width, height)
-        val buttonWidth = fontRendererObj.getStringWidth("Exit GUI") + 20
-        buttonList.add(GuiButton(1, width / 2 - buttonWidth / 2, height - 20, buttonWidth, 20, "Exit GUI"))
     }
 
     override fun actionPerformed(button: GuiButton?) {
