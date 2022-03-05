@@ -1,10 +1,10 @@
 package cc.woverflow.vanillahud
 
+import cc.woverflow.onecore.utils.Updater
+import cc.woverflow.onecore.utils.command
+import cc.woverflow.onecore.utils.openScreen
+import cc.woverflow.onecore.utils.sendBrandedNotification
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
-import cc.woverflow.wcore.utils.Updater
-import cc.woverflow.wcore.utils.command
-import cc.woverflow.wcore.utils.openGUI
-import gg.essential.api.EssentialAPI
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.UIRoundedRectangle
@@ -48,7 +48,7 @@ object VanillaHUD {
         VanillaHUDConfig.preload()
         command(ID) {
             main {
-                VanillaHUDConfig.openGUI()
+                VanillaHUDConfig.openScreen()
             }
         }
     }
@@ -56,7 +56,10 @@ object VanillaHUD {
     @Mod.EventHandler
     fun onPostInit(event: FMLPostInitializationEvent) {
         if (Loader.isModLoaded("bossbar_customizer")) {
-            EssentialAPI.getNotifications().push("VanillaHUD", "Bossbar Customizer has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
+            sendBrandedNotification("VanillaHUD", "Bossbar Customizer has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
+        }
+        if (Loader.isModLoaded("sidebarmod")) {
+            sendBrandedNotification("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
         }
     }
 }

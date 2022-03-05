@@ -1,10 +1,10 @@
 package cc.woverflow.vanillahud.config
 
+import cc.woverflow.onecore.utils.openScreen
 import cc.woverflow.vanillahud.ActionBar
 import cc.woverflow.vanillahud.BossBar
 import cc.woverflow.vanillahud.Scoreboard
 import cc.woverflow.vanillahud.VanillaHUD
-import gg.essential.api.EssentialAPI
 import gg.essential.vigilance.Vigilant
 import gg.essential.vigilance.data.Property
 import gg.essential.vigilance.data.PropertyType
@@ -87,9 +87,7 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         description = "Change the position of the action bar.",
         category = "Action Bar"
     )
-    fun openActionBarGui() {
-        EssentialAPI.getGuiUtil().openScreen(ActionBar.ActionBarGui())
-    }
+    fun openActionBarGui() = ActionBar.ActionBarGui().openScreen()
 
     @Property(
         type = PropertyType.NUMBER,
@@ -155,9 +153,7 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         description = "Change the position of the bossbar.",
         category = "Bossbar"
     )
-    fun openBossHealthGui() {
-       EssentialAPI.getGuiUtil().openScreen(BossBar.BossBarGui())
-    }
+    fun openBossHealthGui() = BossBar.BossBarGui().openScreen()
 
     @Property(
         type = PropertyType.NUMBER,
@@ -283,9 +279,7 @@ object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.tom
         description = "Change the position of the scoreboard.",
         category = "Scoreboard"
     )
-    fun openScoreboardGui() {
-        EssentialAPI.getGuiUtil().openScreen(Scoreboard.ScoreboardGui())
-    }
+    fun openScoreboardGui() = Scoreboard.ScoreboardGui().openScreen()
 
     init {
         initialize()

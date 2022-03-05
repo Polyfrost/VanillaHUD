@@ -4,7 +4,7 @@ import dev.architectury.pack200.java.Pack200Adapter
 plugins {
     id "dev.architectury.architectury-pack200" version "0.1.3"
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
-    id "gg.essential.loom" version "0.10.0.0"
+    id "gg.essential.loom" version "0.10.0.1"
     id "net.kyori.blossom" version "1.3.0"
     id "java"
 }
@@ -26,8 +26,7 @@ compileJava.options.encoding = 'UTF-8'
 loom {
     launchConfigs {
         client {
-            property("fml.coreMods.load", "cc.woverflow.wcore.tweaker.WCoreTweaker")
-            arg("--tweakClass", "gg.essential.loader.stage0.EssentialSetupTweaker")
+            arg("--tweakClass", "cc.woverflow.onecore.tweaker.OneCoreTweaker")
             arg("--mixin", "mixins.${mod_id}.json")
         }
     }
@@ -57,14 +56,9 @@ dependencies {
     minecraft("com.mojang:minecraft:1.8.9")
     mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
     forge("net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9")
-    include ('gg.essential:loader-launchwrapper:1.1.3') {
-        transitive = false
-    }
     compileOnly 'gg.essential:essential-1.8.9-forge:1852'
-    include ('cc.woverflow:w-core-tweaker:1.0.2') {
-        transitive = false
-    }
-    implementation 'cc.woverflow:w-core:1.1.3'
+    include ('cc.woverflow:onecore-tweaker:1.3.0')
+    compileOnly 'cc.woverflow:onecore:1.3.3'
     compileOnly ('org.spongepowered:mixin:0.8.5-SNAPSHOT')
 }
 
@@ -100,7 +94,7 @@ sourceSets {
 jar {
     dependsOn configurations.include
     from(configurations.include.collect { it.isDirectory() ? it : zipTree(it) }) {
-        exclude 'club.sk1er.vigilance.example.ExampleMod', 'dummyThing'
+        exclude 'gg.essential.vigilance.example.ExampleMod', 'dummyThing'
         def i = 0
         filesMatching("META-INF/NOTICE*") { name = "$name.${i++}" }
         filesMatching("META-INF/LICENSE*") { name = "$name.${i++}" }
@@ -111,10 +105,8 @@ jar {
     manifest.attributes(
             'ModSide': 'CLIENT',
             'ForceLoadAsMod': true,
-            'TweakClass': 'gg.essential.loader.stage0.EssentialSetupTweaker',
-            "FMLCorePlugin": "cc.woverflow.wcore.tweaker.WCoreTweaker",
+            'TweakClass': 'cc.woverflow.onecore.tweaker.OneCoreTweaker',
             'MixinConfigs': "mixins.${mod_id}.json",
-            "TweakOrder": "0",
-            "FMLCorePluginContainsFMLMod": true
+            "TweakOrder": "0"
     )
 }

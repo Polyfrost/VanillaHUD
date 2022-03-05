@@ -1,5 +1,7 @@
 package cc.woverflow.vanillahud
 
+import cc.woverflow.onecore.utils.withScale
+import cc.woverflow.onecore.utils.withTranslate
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import cc.woverflow.vanillahud.mixin.GuiIngameAccessor
 import gg.essential.elementa.components.UIRoundedRectangle
@@ -24,32 +26,32 @@ object ActionBar {
                 var opacity = (hue * 256.0f / 20.0f).toInt()
                 if (opacity > 255) opacity = 255
                 if (opacity > 0) {
-                    UGraphics.GL.pushMatrix()
-                    UGraphics.GL.translate((width / 2 + VanillaHUDConfig.actionBarX).toFloat(), (height - 68 + VanillaHUDConfig.actionBarY).toFloat(), 0.0f)
-                    UGraphics.GL.scale(VanillaHUDConfig.actionBarScale, VanillaHUDConfig.actionBarScale, 1.0F)
-                    UGraphics.enableBlend()
-                    UGraphics.tryBlendFuncSeparate(0x302, 0x303, 1, 0)
-                    val color = if (ingameGUI.recordIsPlaying) Color.HSBtoRGB(
-                        hue / 50.0f,
-                        0.7f,
-                        0.6f
-                    ) and 0xFFFFFF else 0xFFFFFF
-                    val recordWidth = UMinecraft.getFontRenderer().getStringWidth(ingameGUI.recordPlaying)
-                    if (VanillaHUDConfig.actionBarBackground) {
-                        if (VanillaHUDConfig.actionBarRoundBackground) {
-                            drawRoundedRectangleExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarRadius.toFloat(), VanillaHUDConfig.actionBarBackgroundColor, opacity)
-                        } else {
-                            drawRectButForActionBarExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarBackgroundColor.rgb, opacity)
+                    withTranslate((width / 2 + VanillaHUDConfig.actionBarX).toFloat(), (height - 68 + VanillaHUDConfig.actionBarY).toFloat(), 0.0f) {
+                        withScale(VanillaHUDConfig.actionBarScale, VanillaHUDConfig.actionBarScale, 1.0F) {
+                            UGraphics.enableBlend()
+                            UGraphics.tryBlendFuncSeparate(0x302, 0x303, 1, 0)
+                            val color = if (ingameGUI.recordIsPlaying) Color.HSBtoRGB(
+                                hue / 50.0f,
+                                0.7f,
+                                0.6f
+                            ) and 0xFFFFFF else 0xFFFFFF
+                            val recordWidth = UMinecraft.getFontRenderer().getStringWidth(ingameGUI.recordPlaying)
+                            if (VanillaHUDConfig.actionBarBackground) {
+                                if (VanillaHUDConfig.actionBarRoundBackground) {
+                                    drawRoundedRectangleExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarRadius.toFloat(), VanillaHUDConfig.actionBarBackgroundColor, opacity)
+                                } else {
+                                    drawRectButForActionBarExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarBackgroundColor.rgb, opacity)
+                                }
+                            }
+                            UMinecraft.getFontRenderer().drawString(
+                                ingameGUI.recordPlaying,
+                                (-recordWidth / 2).toFloat(),
+                                -4F,
+                                color or (opacity shl 24), VanillaHUDConfig.actionBarShadow
+                            )
+                            UGraphics.disableBlend()
                         }
                     }
-                    UMinecraft.getFontRenderer().drawString(
-                        ingameGUI.recordPlaying,
-                        (-recordWidth / 2).toFloat(),
-                        -4F,
-                        color or (opacity shl 24), VanillaHUDConfig.actionBarShadow
-                    )
-                    UGraphics.disableBlend()
-                    UGraphics.GL.popMatrix()
                 }
                 UMinecraft.getMinecraft().mcProfiler.endSection()
             }
