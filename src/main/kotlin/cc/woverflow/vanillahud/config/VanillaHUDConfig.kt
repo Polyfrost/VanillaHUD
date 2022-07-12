@@ -1,285 +1,207 @@
 package cc.woverflow.vanillahud.config
 
-import cc.woverflow.onecore.utils.openScreen
+import cc.polyfrost.oneconfig.config.Config
+import cc.polyfrost.oneconfig.config.annotations.Button
+import cc.polyfrost.oneconfig.config.annotations.Checkbox
+import cc.polyfrost.oneconfig.config.annotations.Slider
+import cc.polyfrost.oneconfig.config.annotations.Switch
+import cc.polyfrost.oneconfig.config.core.OneColor
+import cc.polyfrost.oneconfig.config.data.Mod
+import cc.polyfrost.oneconfig.config.data.ModType
+import cc.polyfrost.oneconfig.config.migration.VigilanceMigrator
+import cc.polyfrost.oneconfig.utils.dsl.openScreen
 import cc.woverflow.vanillahud.ActionBar
 import cc.woverflow.vanillahud.BossBar
 import cc.woverflow.vanillahud.Scoreboard
 import cc.woverflow.vanillahud.VanillaHUD
-import gg.essential.vigilance.Vigilant
-import gg.essential.vigilance.data.Property
-import gg.essential.vigilance.data.PropertyType
 import java.awt.Color
 import java.io.File
 
-object VanillaHUDConfig : Vigilant(File(VanillaHUD.modDir, "${VanillaHUD.ID}.toml"), VanillaHUD.NAME) {
+object VanillaHUDConfig : Config (
+    Mod(VanillaHUD.NAME, ModType.HUD, VigilanceMigrator(File(VanillaHUD.modDir, "${VanillaHUD.ID}.toml").path)), VanillaHUD.ID + ".json") {
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Action Bar",
-        description = "Toggle the action bar.",
+    @Switch(
+        name = "Show Action Bar",
         category = "Action Bar"
     )
     var actionBar = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Action Bar Shadow",
-        description = "Toggle the action bar shadow.",
+    @Checkbox(
+        name = "Enable Action Bar Shadow",
         category = "Action Bar"
     )
     var actionBarShadow = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Action Bar Background",
-        description = "Add a background to the action bar.",
+    @Checkbox(
+        name = "Add Action Bar Background",
         category = "Action Bar"
     )
     var actionBarBackground = false
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Checkbox(
         name = "Round Background",
-        description = "Make the background of the action bar round.",
         category = "Action Bar"
     )
     var actionBarRoundBackground = false
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Rounded Background Radius Amount",
-        description = "Change the radius of the rounded background.",
+    @Slider(
+        name = "Rounded Background Radius",
         category = "Action Bar",
-        min = 0,
-        max = 10
+        min = 0F,
+        max = 12F
     )
     var actionBarRadius = 6
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Background Padding Amount",
-        description = "Change the amount of padding added to the background.",
+    @Slider(
+        name = "Background Padding (px)",
         category = "Action Bar",
-        min = 0,
-        max = 10
+        min = 0F,
+        max = 10F
     )
     var actionBarPadding = 2
 
-    @Property(
-        type = PropertyType.COLOR,
+    @cc.polyfrost.oneconfig.config.annotations.Color(
         name = "Background Color",
-        description = "Change the text color for the HUD.",
         category = "Action Bar"
     )
-    var actionBarBackgroundColor: Color = Color(0, 0, 0, 128)
+    var actionBarBackgroundColor: OneColor = OneColor(0, 0, 0, 128)
 
-    @Property(
-        type = PropertyType.PERCENT_SLIDER,
+    @Slider(
         name = "Action Bar Scale",
-        description = "Set the scale for the action bar.",
-        category = "Action Bar"
+        category = "Action Bar", min = 0F, max = 2F
     )
     var actionBarScale = 1.0F
 
-    @Property(
-        type = PropertyType.BUTTON,
-        name = "Action Bar Editor",
-        description = "Change the position of the action bar.",
-        category = "Action Bar"
+    @Button(
+        name = "Open Action Bar Editor",
+        category = "Action Bar", text = "Open"
     )
-    fun openActionBarGui() = ActionBar.ActionBarGui().openScreen()
+    var openActionBarGui = Runnable {
+        ActionBar.ActionBarGui().openScreen()
+    }
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Action Bar X Offset",
-        description = "X",
-        category = "Action Bar",
-        hidden = true
-    )
+
     var actionBarX: Int = 0
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Action Bar Y Offset",
-        description = "Y",
-        category = "Action Bar",
-        hidden = true
-    )
     var actionBarY: Int = 0
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Toggle Bossbar",
-        description = "Toggle the bossbar.",
         category = "Bossbar"
     )
     var bossBar = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Text",
-        description = "Toggle the text for the bossbar.",
+    @Checkbox(
+        name = "Enable Text",
         category = "Bossbar"
     )
     var bossBarText = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Shadow",
-        description = "Toggle the text shadow for the bossbar.",
+    @Checkbox(
+        name = "Text Shadow",
         category = "Bossbar"
     )
     var bossBarShadow = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Bar",
-        description = "Toggle the bar for the bossbar.",
+    @Checkbox(
+        name = "Enable Health Bar",
         category = "Bossbar"
     )
     var bossBarBar = true
 
-    @Property(
-        type = PropertyType.PERCENT_SLIDER,
+    @Slider(
         name = "Bossbar Scale",
-        description = "Set the scale for the bossbar.",
-        category = "Bossbar"
+        category = "Bossbar", min = 0F, max = 2F
     )
     var bossbarScale = 1.0F
 
-    @Property(
-        type = PropertyType.BUTTON,
-        name = "Bossbar Editor",
-        description = "Change the position of the bossbar.",
-        category = "Bossbar"
+    @Button(
+        name = "Open Bossbar Editor",
+        category = "Bossbar", text = "Open"
     )
-    fun openBossHealthGui() = BossBar.BossBarGui().openScreen()
+    var openBossbarEditor = Runnable {
+        BossBar.BossBarGui().openScreen()
+    }
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Bossbar X Offset",
-        description = "X",
-        category = "Bossbar",
-        hidden = true
-    )
+
     var bossBarX: Int = 0
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Bossbar Y Offset",
-        description = "Y",
-        category = "Bossbar",
-        hidden = true
-    )
     var bossBarY: Int = 0
 
-    @Property(
-        type = PropertyType.SWITCH,
+    @Switch(
         name = "Toggle Scoreboard",
         category = "Scoreboard",
-        description = "Toggle the scoreboard from rendering."
     )
     var scoreboard = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Scoreboard Text Shadow",
-        category = "Scoreboard",
-        description = "Toggle the scoreboard text's shadow from rendering."
+    @Checkbox(
+        name = "Enable Text Shadow",
+        category = "Scoreboard"
     )
     var scoreboardTextShadow = true
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Score Points",
+    @Checkbox(
+        name = "Enable Score Points (red numbers)",
         category = "Scoreboard",
-        description = "Toggle the scoreboard score points (aka red numbers) from rendering."
     )
     var scoreboardScorePoints = false
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Background",
+    @Switch(
+        name = "Enable Background",
         category = "Scoreboard",
-        description = "Toggle the background from rendering."
     )
     var scoreboardBackground = true
 
-    @Property(
-        type = PropertyType.COLOR,
+    @cc.polyfrost.oneconfig.config.annotations.Color(
         name = "Scoreboard Background Color",
         category = "Scoreboard",
-        description = "Change the text color for the scoreboard."
     )
-    var scoreboardBackgroundColor: Color = Color(1342177280, true)
+    var scoreboardBackgroundColor: OneColor = OneColor(1342177280)
 
-    @Property(
-        type = PropertyType.COLOR,
+    @cc.polyfrost.oneconfig.config.annotations.Color(
         name = "Scoreboard Title Background Color",
         category = "Scoreboard",
-        description = "Change the text color for the scoreboard."
     )
-    var scoreboardTitleBackgroundColor: Color = Color(1610612736, true)
+    var scoreboardTitleBackgroundColor: OneColor = OneColor(1610612736)
 
-    @Property(
-        type = PropertyType.SWITCH,
-        name = "Toggle Scoreboard Border",
+    @Checkbox(
+        name = "Enable Scoreboard Border",
         category = "Scoreboard",
-        description = "Toggle the background border from rendering."
     )
     var scoreboardBackgroundBorder = false
 
-    @Property(
-        type = PropertyType.COLOR,
+    @cc.polyfrost.oneconfig.config.annotations.Color(
         name = "Scoreboard Border Color",
         category = "Scoreboard",
-        description = "Change the text color for the scoreboard border."
     )
-    var scoreboardBorderColor: Color = Color.BLACK
+    var scoreboardBorderColor: OneColor = OneColor(Color.BLACK)
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Scoreboard Border Width Amount",
-        description = "Change the amount of width in the scoreboard border.",
+    @Slider(
+        name = "Scoreboard Border Width",
         category = "Scoreboard",
-        min = 0,
-        max = 10
+        min = 0F,
+        max = 10F
     )
     var scoreboardBorderWidth = 2
 
-    @Property(
-        type = PropertyType.PERCENT_SLIDER,
+    @Slider(
         name = "Scoreboard Scale",
-        description = "Set the scale for the scoreboard.",
-        category = "Scoreboard"
+        category = "Scoreboard", min = 0F, max = 2F
     )
     var scoreboardScale = 1.0F
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Scoreboard X Offset",
-        description = "X",
-        category = "Scoreboard",
-        hidden = true
-    )
+
     var scoreboardX: Int = 0
 
-    @Property(
-        type = PropertyType.NUMBER,
-        name = "Scoreboard Y Offset",
-        description = "Y",
-        category = "Scoreboard",
-        hidden = true
-    )
     var scoreboardY: Int = 0
 
-    @Property(
-        type = PropertyType.BUTTON,
-        name = "Scoreboard Editor",
-        description = "Change the position of the scoreboard.",
-        category = "Scoreboard"
+    @Button(
+        name = "Open Scoreboard Editor",
+        category = "Scoreboard", text = "Open"
     )
-    fun openScoreboardGui() = Scoreboard.ScoreboardGui().openScreen()
+    var openScoreboardGui = Runnable {
+        Scoreboard.ScoreboardGui().openScreen()
+    }
 
     init {
         initialize()

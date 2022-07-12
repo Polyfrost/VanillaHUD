@@ -1,11 +1,11 @@
 package cc.woverflow.vanillahud
 
+import cc.polyfrost.oneconfig.libs.universal.ChatColor
+import cc.polyfrost.oneconfig.libs.universal.UGraphics
+import cc.polyfrost.oneconfig.libs.universal.UMinecraft
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import com.google.common.collect.Iterables
-import gg.essential.universal.ChatColor
-import gg.essential.universal.UGraphics
-import gg.essential.universal.UMinecraft
-import gg.essential.universal.UResolution
 import net.minecraft.client.gui.Gui
 import net.minecraft.scoreboard.ScoreObjective
 import net.minecraft.scoreboard.ScorePlayerTeam

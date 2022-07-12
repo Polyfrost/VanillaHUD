@@ -1,11 +1,11 @@
 package cc.woverflow.vanillahud
 
+import cc.polyfrost.oneconfig.libs.universal.UGraphics
+import cc.polyfrost.oneconfig.libs.universal.UMinecraft
+import cc.polyfrost.oneconfig.libs.universal.UResolution
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import cc.woverflow.vanillahud.mixin.GuiIngameAccessor
 import gg.essential.elementa.components.UIRoundedRectangle
-import gg.essential.universal.UGraphics
-import gg.essential.universal.UMinecraft
-import gg.essential.universal.UResolution
 import org.lwjgl.input.Keyboard
 import java.awt.Color
 
@@ -25,7 +25,11 @@ object ActionBar {
                 if (opacity > 255) opacity = 255
                 if (opacity > 0) {
                     UGraphics.GL.pushMatrix()
-                    UGraphics.GL.translate((width / 2 + VanillaHUDConfig.actionBarX).toFloat(), (height - 68 + VanillaHUDConfig.actionBarY).toFloat(), 0.0f)
+                    UGraphics.GL.translate(
+                        (width / 2 + VanillaHUDConfig.actionBarX).toFloat(),
+                        (height - 68 + VanillaHUDConfig.actionBarY).toFloat(),
+                        0.0f
+                    )
                     UGraphics.GL.scale(VanillaHUDConfig.actionBarScale, VanillaHUDConfig.actionBarScale, 1.0F)
                     UGraphics.enableBlend()
                     UGraphics.tryBlendFuncSeparate(0x302, 0x303, 1, 0)
@@ -37,9 +41,24 @@ object ActionBar {
                     val recordWidth = UMinecraft.getFontRenderer().getStringWidth(ingameGUI.recordPlaying)
                     if (VanillaHUDConfig.actionBarBackground) {
                         if (VanillaHUDConfig.actionBarRoundBackground) {
-                            drawRoundedRectangleExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarRadius.toFloat(), VanillaHUDConfig.actionBarBackgroundColor, opacity)
+                            drawRoundedRectangleExt(
+                                (-recordWidth / 2) - VanillaHUDConfig.actionBarPadding,
+                                -4 - VanillaHUDConfig.actionBarPadding,
+                                recordWidth + VanillaHUDConfig.actionBarPadding * 2,
+                                UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2,
+                                VanillaHUDConfig.actionBarRadius.toFloat(),
+                                VanillaHUDConfig.actionBarBackgroundColor.toJavaColor(),
+                                opacity
+                            )
                         } else {
-                            drawRectButForActionBarExt((-recordWidth / 2) - VanillaHUDConfig.actionBarPadding, -4 - VanillaHUDConfig.actionBarPadding, recordWidth + VanillaHUDConfig.actionBarPadding * 2, UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2, VanillaHUDConfig.actionBarBackgroundColor.rgb, opacity)
+                            drawRectButForActionBarExt(
+                                (-recordWidth / 2) - VanillaHUDConfig.actionBarPadding,
+                                -4 - VanillaHUDConfig.actionBarPadding,
+                                recordWidth + VanillaHUDConfig.actionBarPadding * 2,
+                                UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2,
+                                VanillaHUDConfig.actionBarBackgroundColor.rgb,
+                                opacity
+                            )
                         }
                     }
                     UMinecraft.getFontRenderer().drawString(
@@ -61,7 +80,7 @@ object ActionBar {
         override fun updatePos(mouseX: Int, mouseY: Int, mouseButton: Int) {
             if (mouseButton == 0 && (UMinecraft.getMinecraft().ingameGUI as GuiIngameAccessor).recordPlayingUpFor > 0 && VanillaHUDConfig.actionBar) {
                 VanillaHUDConfig.actionBarX = mouseX - (UResolution.scaledWidth / 2)
-                VanillaHUDConfig.actionBarY = mouseY - (height - 68)
+                VanillaHUDConfig.actionBarY = mouseY - (UResolution.scaledHeight - 68)
             }
         }
 

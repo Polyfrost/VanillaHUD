@@ -1,9 +1,6 @@
 package cc.woverflow.vanillahud
 
-import cc.woverflow.onecore.utils.Updater
-import cc.woverflow.onecore.utils.command
-import cc.woverflow.onecore.utils.openScreen
-import cc.woverflow.onecore.utils.sendBrandedNotification
+
 import cc.woverflow.vanillahud.config.VanillaHUDConfig
 import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.WindowScreen
@@ -40,26 +37,20 @@ object VanillaHUD {
     @Mod.EventHandler
     fun onFMLPreInitialization(event: FMLPreInitializationEvent) {
         if (!modDir.exists()) modDir.mkdirs()
-        Updater.addToUpdater(event.sourceFile, NAME, ID, VER, "W-OVERFLOW/$ID")
     }
 
     @Mod.EventHandler
     fun onInitialization(event: FMLInitializationEvent) {
-        VanillaHUDConfig.preload()
-        command(ID) {
-            main {
-                VanillaHUDConfig.openScreen()
-            }
-        }
+        VanillaHUDConfig.initialize()
     }
 
     @Mod.EventHandler
     fun onPostInit(event: FMLPostInitializationEvent) {
         if (Loader.isModLoaded("bossbar_customizer")) {
-            sendBrandedNotification("VanillaHUD", "Bossbar Customizer has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
+            //sendBrandedNotification("VanillaHUD", "Bossbar Customizer has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
         }
         if (Loader.isModLoaded("sidebarmod")) {
-            sendBrandedNotification("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
+            //sendBrandedNotification("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).")
         }
     }
 }
@@ -93,8 +84,7 @@ open class PositionGui :
 
     override fun onScreenClose() {
         super.onScreenClose()
-        VanillaHUDConfig.markDirty()
-        VanillaHUDConfig.writeData()
+        VanillaHUDConfig.save()
     }
 
     protected open fun updatePos(mouseX: Int, mouseY: Int, mouseButton: Int) {
