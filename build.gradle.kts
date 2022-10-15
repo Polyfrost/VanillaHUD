@@ -33,7 +33,7 @@ blossom {
 version = mod_version
 group = "cc.polyfrost"
 base {
-    archivesName.set("$mod_id-$platform")
+    archivesName.set("$mod_name ($platform)")
 }
 loom {
     noServerRunConfigs()
@@ -41,6 +41,9 @@ loom {
         launchConfigs.named("client") {
             arg("--tweakClass", "cc.polyfrost.oneconfigwrapper.OneConfigWrapper")
             property("mixin.debug.export", "true")
+        }
+        runConfigs.named("client") {
+            vmArgs.remove("-XstartOnFirstThread")
         }
     }
     if (project.platform.isForge) {
@@ -63,12 +66,14 @@ sourceSets {
 
 repositories {
     maven("https://repo.polyfrost.cc/releases")
+    maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
 }
 
 dependencies {
-    compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.1.0-alpha50")
-    shade("cc.polyfrost:oneconfig-wrapper-1.8.9-forge:1.0.0-alpha6")
-    compileOnly("gg.essential:essential-1.8.9-forge:1933")
+    compileOnly("cc.polyfrost:oneconfig-$platform:0.1.0-alpha+")
+    compileOnly("org.spongepowered:mixin:0.7.11-SNAPSHOT")
+    shade("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-alpha+")
+    modRuntimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.0")
 }
 
 tasks.processResources {

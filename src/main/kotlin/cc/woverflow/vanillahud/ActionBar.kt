@@ -1,98 +1,117 @@
 package cc.woverflow.vanillahud
 
+import cc.polyfrost.oneconfig.config.Config
+import cc.polyfrost.oneconfig.config.annotations.Dropdown
+import cc.polyfrost.oneconfig.config.annotations.Exclude
+import cc.polyfrost.oneconfig.config.annotations.HUD
+import cc.polyfrost.oneconfig.config.data.Mod
+import cc.polyfrost.oneconfig.config.data.ModType
+import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.libs.universal.UGraphics
+import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
-import cc.polyfrost.oneconfig.libs.universal.UResolution
-import cc.woverflow.vanillahud.config.VanillaHUDConfig
+import cc.polyfrost.oneconfig.renderer.RenderManager
+import cc.polyfrost.oneconfig.utils.dsl.*
 import cc.woverflow.vanillahud.mixin.GuiIngameAccessor
-import gg.essential.elementa.components.UIRoundedRectangle
-import org.lwjgl.input.Keyboard
+import cc.woverflow.vanillahud.mixin.MinecraftAccessor
 import java.awt.Color
 
-object ActionBar {
+object ActionBar : Config(Mod("Action Bar", ModType.HUD), "actionbar.json") {
 
-    init {
-        UIRoundedRectangle.initShaders()
-    }
+    @HUD(
+        name = "HUD"
+    )
+    var hud = ActionBarHud()
 
-    fun renderActionBar(width: Int, height: Int, partialTicks: Float) {
-        if (VanillaHUDConfig.actionBar) {
+    class ActionBarHud : BasicHud(true, 1920f / 2 - 5f,
+        1080f - 72 - 4.5f
+    ) {
+
+        @Dropdown(name = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
+        var textType = 0
+
+        @Exclude
+        var hue = 0f
+
+        @Exclude
+        var opacity = 0
+
+        @Exclude
+        var recordWidth = 0f
+
+        override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
             val ingameGUI = UMinecraft.getMinecraft().ingameGUI as GuiIngameAccessor
-            if (ingameGUI.recordPlayingUpFor > 0) {
-                UMinecraft.getMinecraft().mcProfiler.startSection("overlayMessage")
-                val hue = ingameGUI.recordPlayingUpFor.toFloat() - partialTicks
-                var opacity = (hue * 256.0f / 20.0f).toInt()
-                if (opacity > 255) opacity = 255
-                if (opacity > 0) {
-                    UGraphics.GL.pushMatrix()
-                    UGraphics.GL.translate(
-                        (width / 2 + VanillaHUDConfig.actionBarX).toFloat(),
-                        (height - 68 + VanillaHUDConfig.actionBarY).toFloat(),
-                        0.0f
-                    )
-                    UGraphics.GL.scale(VanillaHUDConfig.actionBarScale, VanillaHUDConfig.actionBarScale, 1.0F)
-                    UGraphics.enableBlend()
-                    UGraphics.tryBlendFuncSeparate(0x302, 0x303, 1, 0)
-                    val color = if (ingameGUI.recordIsPlaying) Color.HSBtoRGB(
-                        hue / 50.0f,
-                        0.7f,
-                        0.6f
-                    ) and 0xFFFFFF else 0xFFFFFF
-                    val recordWidth = UMinecraft.getFontRenderer().getStringWidth(ingameGUI.recordPlaying)
-                    if (VanillaHUDConfig.actionBarBackground) {
-                        if (VanillaHUDConfig.actionBarRoundBackground) {
-                            drawRoundedRectangleExt(
-                                (-recordWidth / 2) - VanillaHUDConfig.actionBarPadding,
-                                -4 - VanillaHUDConfig.actionBarPadding,
-                                recordWidth + VanillaHUDConfig.actionBarPadding * 2,
-                                UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2,
-                                VanillaHUDConfig.actionBarRadius.toFloat(),
-                                VanillaHUDConfig.actionBarBackgroundColor.toJavaColor(),
-                                opacity
-                            )
-                        } else {
-                            drawRectButForActionBarExt(
-                                (-recordWidth / 2) - VanillaHUDConfig.actionBarPadding,
-                                -4 - VanillaHUDConfig.actionBarPadding,
-                                recordWidth + VanillaHUDConfig.actionBarPadding * 2,
-                                UMinecraft.getFontRenderer().FONT_HEIGHT + VanillaHUDConfig.actionBarPadding * 2,
-                                VanillaHUDConfig.actionBarBackgroundColor.rgb,
-                                opacity
-                            )
-                        }
-                    }
-                    UMinecraft.getFontRenderer().drawString(
-                        ingameGUI.recordPlaying,
-                        (-recordWidth / 2).toFloat(),
-                        -4F,
-                        color or (opacity shl 24), VanillaHUDConfig.actionBarShadow
-                    )
-                    UGraphics.disableBlend()
-                    UGraphics.GL.popMatrix()
-                }
-                UMinecraft.getMinecraft().mcProfiler.endSection()
-            }
-        }
-    }
-
-    class ActionBarGui : PositionGui() {
-
-        override fun updatePos(mouseX: Int, mouseY: Int, mouseButton: Int) {
-            if (mouseButton == 0 && (UMinecraft.getMinecraft().ingameGUI as GuiIngameAccessor).recordPlayingUpFor > 0 && VanillaHUDConfig.actionBar) {
-                VanillaHUDConfig.actionBarX = mouseX - (UResolution.scaledWidth / 2)
-                VanillaHUDConfig.actionBarY = mouseY - (UResolution.scaledHeight - 68)
-            }
+            UGraphics.GL.pushMatrix()
+            UGraphics.enableBlend()
+            UGraphics.tryBlendFuncSeparate(0x302, 0x303, 1, 0)
+            val color = if (ingameGUI.recordIsPlaying) Color.HSBtoRGB(
+                hue / 50.0f,
+                0.7f,
+                0.6f
+            ) and 0xFFFFFF else 0xFFFFFF
+            RenderManager.drawScaledString(ingameGUI.recordPlaying,
+                x,
+                y,
+                color or (opacity shl 24), RenderManager.TextType.toType(textType), scale)
+            UGraphics.disableBlend()
+            UGraphics.GL.popMatrix()
         }
 
-        override fun updatePosKeyPress(keyCode: Int) {
-            if ((UMinecraft.getMinecraft().ingameGUI as GuiIngameAccessor).recordPlayingUpFor > 0 && VanillaHUDConfig.actionBar) {
-                when (keyCode) {
-                    Keyboard.KEY_UP -> VanillaHUDConfig.actionBarY -= 5
-                    Keyboard.KEY_DOWN -> VanillaHUDConfig.actionBarY += 5
-                    Keyboard.KEY_LEFT -> VanillaHUDConfig.actionBarX -= 5
-                    Keyboard.KEY_RIGHT -> VanillaHUDConfig.actionBarX += 5
+        override fun drawBackground(x: Float, y: Float, width: Float, height: Float, scale: Float) {
+            nanoVG(true) {
+                val bgColor = bgColor.rgb.setAlpha(bgColor.alpha.coerceAtMost(opacity))
+                val borderColor = borderColor.rgb.setAlpha(borderColor.alpha.coerceAtMost(opacity))
+                if (rounded) {
+                    drawRoundedRect(
+                        x,
+                        y,
+                        width,
+                        height,
+                        cornerRadius * scale,
+                        bgColor,
+                    )
+                    if (border) drawHollowRoundedRect(
+                        x - borderSize * scale,
+                        y - borderSize * scale,
+                        width + borderSize * scale,
+                        height + borderSize * scale,
+                        cornerRadius * scale,
+                        borderColor,
+                        borderSize * scale
+                    )
+                } else {
+                    drawRect(x, y, width, height, bgColor)
+                    if (border) drawHollowRoundedRect(
+                        x - borderSize * scale,
+                        y - borderSize * scale,
+                        width + borderSize * scale,
+                        height + borderSize * scale,
+                        0f,
+                        borderColor,
+                        borderSize * scale
+                    )
                 }
             }
         }
+
+        override fun shouldShow(): Boolean {
+            if (!super.shouldShow()) return false
+            val ingameGUI = UMinecraft.getMinecraft().ingameGUI as GuiIngameAccessor
+            if (ingameGUI.recordPlayingUpFor <= 0) return false
+            hue = ingameGUI.recordPlayingUpFor.toFloat() - (mc as MinecraftAccessor).timer.renderPartialTicks
+            opacity = (hue * 256.0f / 20.0f).toInt()
+            if (opacity > 255) opacity = 255
+            return opacity > 0
+        }
+
+        override fun getWidth(scale: Float, example: Boolean): Float {
+            if (UMinecraft.getMinecraft().ingameGUI == null) return 10f * scale
+            val ingameGUI = UMinecraft.getMinecraft().ingameGUI as GuiIngameAccessor
+            recordWidth = UMinecraft.getFontRenderer().getStringWidth(ingameGUI.recordPlaying).toFloat()
+            return recordWidth * scale
+        }
+
+        override fun getHeight(scale: Float, example: Boolean) = 9F * scale
+
     }
 }

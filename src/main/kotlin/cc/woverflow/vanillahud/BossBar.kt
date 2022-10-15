@@ -1,66 +1,81 @@
 package cc.woverflow.vanillahud
 
+import cc.polyfrost.oneconfig.config.Config
+import cc.polyfrost.oneconfig.config.annotations.Dropdown
+import cc.polyfrost.oneconfig.config.annotations.HUD
+import cc.polyfrost.oneconfig.config.annotations.Switch
+import cc.polyfrost.oneconfig.config.data.Mod
+import cc.polyfrost.oneconfig.config.data.ModType
+import cc.polyfrost.oneconfig.hud.BasicHud
 import cc.polyfrost.oneconfig.libs.universal.UGraphics
+import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft
-import cc.polyfrost.oneconfig.libs.universal.UResolution
-import cc.woverflow.vanillahud.config.VanillaHUDConfig
-import net.minecraft.client.gui.Gui
+import cc.polyfrost.oneconfig.renderer.RenderManager
 import net.minecraft.entity.boss.BossStatus
-import net.minecraftforge.client.GuiIngameForge
-import org.lwjgl.input.Keyboard
+import kotlin.math.max
 
-object BossBar {
-    fun renderBossBar() {
-        if (BossStatus.bossName != null && BossStatus.statusBarTime > 0 && VanillaHUDConfig.bossBar) {
+object BossBar : Config(Mod("Boss Bar", ModType.HUD), "bossbar.json") {
+    @HUD(
+        name = "HUD"
+    )
+    var hud = BossBarHud()
+
+    class BossBarHud : BasicHud(true, 1920f / 2 - 5f, 2f) {
+        @Dropdown(name = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
+        var textType = 0
+
+        @Switch(
+            name = "Enable Text",
+            category = "Bossbar"
+        )
+        var bossBarText = true
+
+        @Switch(
+            name = "Enable Health Bar",
+            category = "Bossbar"
+        )
+        var bossBarBar = true
+        override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
             --BossStatus.statusBarTime
-            val y = 12 + VanillaHUDConfig.bossBarY
-
-            UGraphics.GL.pushMatrix()
-            UGraphics.GL.scale(VanillaHUDConfig.bossbarScale, VanillaHUDConfig.bossbarScale, 1.0F)
-            if (VanillaHUDConfig.bossBarBar) {
-                val width = 182
-                val x = UResolution.scaledWidth / 2 - width / 2 + VanillaHUDConfig.bossBarX
-                val health = (BossStatus.healthScale * (width + 1))
+            if (bossBarBar) {
+                val width = (182f * scale).toInt()
+                val health = (BossStatus.healthScale * (width + 1)).toInt()
                 UMinecraft.getMinecraft().ingameGUI.drawTexturedModalRect(x, y, 0, 74, width, 5)
                 UMinecraft.getMinecraft().ingameGUI.drawTexturedModalRect(x, y, 0, 74, width, 5)
                 if (health > 0) {
-                    UMinecraft.getMinecraft().ingameGUI.drawTexturedModalRect(x, y, 0, 79, health.toInt(), 5)
+                    UMinecraft.getMinecraft().ingameGUI.drawTexturedModalRect(x, y, 0, 79, health, 5)
                 }
             }
 
-            if (VanillaHUDConfig.bossBarText) {
-                UMinecraft.getFontRenderer().drawString(
-                    BossStatus.bossName,
-                    ((UResolution.scaledWidth / 2 - UMinecraft.getFontRenderer()
-                        .getStringWidth(BossStatus.bossName) / 2).toFloat()) + VanillaHUDConfig.bossBarX,
-                    (y - 10).toFloat(),
-                    16777215,
-                    VanillaHUDConfig.bossBarShadow
-                )
-            }
-            UGraphics.GL.popMatrix()
-            UGraphics.color4f(1.0f, 1.0f, 1.0f, 1.0f)
-            UMinecraft.getMinecraft().textureManager.bindTexture(Gui.icons)
-        }
-    }
-
-    class BossBarGui : PositionGui() {
-        override fun updatePos(mouseX: Int, mouseY: Int, mouseButton: Int) {
-            if (mouseButton == 0 && GuiIngameForge.renderBossHealth && BossStatus.bossName != null && BossStatus.statusBarTime > 0 && VanillaHUDConfig.bossBar) {
-                VanillaHUDConfig.bossBarX = mouseX - (UResolution.scaledWidth / 2)
-                VanillaHUDConfig.bossBarY = mouseY - 12
+            if (bossBarText) {
+                RenderManager.drawScaledString(BossStatus.bossName,
+                    x,
+                    y,
+                    16777215, RenderManager.TextType.toType(textType), scale)
             }
         }
 
-        override fun updatePosKeyPress(keyCode: Int) {
-            if (GuiIngameForge.renderBossHealth && BossStatus.bossName != null && BossStatus.statusBarTime > 0 && VanillaHUDConfig.bossBar) {
-                when (keyCode) {
-                    Keyboard.KEY_UP -> VanillaHUDConfig.bossBarY -= 5
-                    Keyboard.KEY_DOWN -> VanillaHUDConfig.bossBarY += 5
-                    Keyboard.KEY_LEFT -> VanillaHUDConfig.bossBarX -= 5
-                    Keyboard.KEY_RIGHT -> VanillaHUDConfig.bossBarX += 5
-                }
-            }
+        override fun getWidth(scale: Float, example: Boolean): Float {
+            if (UMinecraft.getMinecraft().ingameGUI == null) return 10f * scale
+            return max(UMinecraft.getFontRenderer().getStringWidth(BossStatus.bossName).toFloat() * scale, 182f * scale)
         }
+
+        override fun getHeight(scale: Float, example: Boolean): Float {
+            var height = 0
+            if (bossBarBar) {
+                height += 15
+            }
+            if (bossBarText) {
+                height += 10
+            }
+            return height.toFloat()
+        }
+
+        override fun shouldShow(): Boolean {
+            if (!super.shouldShow()) return false
+            if (BossStatus.bossName == null || BossStatus.statusBarTime > 0) return false
+            return true
+        }
+
     }
 }

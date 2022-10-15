@@ -8,5 +8,8 @@
     "GuiIngameForgeMixin",
     "GuiIngameMixin"
   ],
-  "verbose": true
+  "verbose": true,
+  "client": [
+    "MinecraftAccessor"
+  ]
 }
