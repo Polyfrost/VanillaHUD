@@ -61,8 +61,6 @@ public class BossBar extends Config {
          */
         @Exclude public final int BAR_WIDTH = 182;
 
-        @Exclude public float width = 0f;
-
         public BossBarHUD() {
             super("", true, 1920f / 2, 2f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 120), false, 2, new OneColor(0, 0, 0));
             this.textType = 1;
@@ -83,7 +81,7 @@ public class BossBar extends Config {
             UGraphics.GL.pushMatrix();
             UGraphics.GL.scale(scale, scale, 1);
             UGraphics.GL.translate(x / scale, y / scale, 1);
-            this.render(this.getText(example), this.isBossActive() ? BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
+            this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
             UGraphics.GL.popMatrix();
             if (this.renderText) {
                 super.draw(matrices, x + this.getWidth(1.0f, example) / 2 - (float) (this.fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
@@ -99,7 +97,7 @@ public class BossBar extends Config {
             return BossStatus.bossName != null && BossStatus.statusBarTime > 0;
         }
 
-        public void render(String bossName, float healthScale, float x, float y) {
+        public void drawHealth(String bossName, float healthScale, float x, float y) {
             if (this.isBossActive()) {
                 --BossStatus.statusBarTime;
             }
@@ -119,25 +117,33 @@ public class BossBar extends Config {
                 }
             }
 
-            this.width = this.renderHealth ?
-                    this.renderText ?
-                            Math.max(this.fontRenderer.getStringWidth(bossName), this.BAR_WIDTH) :
-                            this.BAR_WIDTH :
-                    (float) (this.fontRenderer.getStringWidth(bossName));
             UGraphics.disableBlend();
         }
 
         @Override
         protected float getWidth(float scale, boolean example) {
-            return this.width * scale;
+            float textWidth = this.renderText ? UMinecraft.getFontRenderer().getStringWidth(this.getCompleteText(getText(example))) : 0.0f;
+            float healthWidth = this.renderHealth ? this.BAR_WIDTH : 0.0f;
+            return Math.max(textWidth, healthWidth) * scale;
         }
 
         @Override
         protected float getHeight(float scale, boolean example) {
-            float barHeight = this.renderHealth ? 5.0F : 0.0F;
-            float textHeight = this.renderText ? 9.0F : 0.0F;
-            float extraHeight = this.renderText && this.renderHealth ? 1.0F : 0.0F;
-            return (barHeight + textHeight + extraHeight) * scale;
+            float height = 0.0f;
+
+            if (this.renderHealth) {
+                height += 5.0F;
+            }
+
+            if (this.renderText) {
+                height += 9.0F;
+            }
+
+            if (this.renderText && this.renderHealth) {
+                height += 1.0F;
+            }
+
+            return height * scale;
         }
     }
 }
