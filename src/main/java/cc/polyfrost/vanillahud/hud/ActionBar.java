@@ -37,7 +37,7 @@ public class ActionBar extends Config {
         private int opacity;
 
         @Exclude
-        private final String EXAMPLE_TEXT = "None playing";
+        private final String EXAMPLE_TEXT = "Action Bar";
 
         @Switch(
                 name = "Use Rainbow Timer"
@@ -96,11 +96,13 @@ public class ActionBar extends Config {
         @Override
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
-            if (ingameGUI == null) {
+
+            if (ingameGUI == null || !this.shouldShow() && example) {
+                this.opacity = 255;
                 return this.EXAMPLE_TEXT;
             }
 
-            return !ingameGUI.getRecordIsPlaying() && example ? this.EXAMPLE_TEXT : ingameGUI.getRecordPlaying();
+            return ingameGUI.getRecordPlaying();
         }
     }
 }
