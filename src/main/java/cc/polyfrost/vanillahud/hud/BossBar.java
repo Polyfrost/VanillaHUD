@@ -106,7 +106,9 @@ public class BossBar extends Config {
             UGraphics.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             this.mc.getTextureManager().bindTexture(Gui.icons);
 
-            x = !this.renderText || fontRenderer.getStringWidth(bossName) < this.BAR_WIDTH ? x : x + (fontRenderer.getStringWidth(bossName) - this.BAR_WIDTH) * this.barPosition / 100.0F;
+            if (this.renderText && this.fontRenderer.getStringWidth(bossName) > this.BAR_WIDTH) {
+                x += (this.fontRenderer.getStringWidth(bossName) - this.BAR_WIDTH) * this.barPosition / 100.0F;
+            }
 
             float remainingHealth = healthScale * this.BAR_WIDTH;
             if (this.renderHealth) {
