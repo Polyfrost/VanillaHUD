@@ -1,6 +1,5 @@
 package cc.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.vanillahud.VanillaHUD;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.Exclude;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
@@ -17,9 +16,7 @@ import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.boss.BossStatus;
-import org.lwjgl.opengl.GL11;
 
 public class BossBar extends Config {
 
@@ -46,11 +43,11 @@ public class BossBar extends Config {
         public boolean renderHealth = true;
 
         @Slider(
-                name = "Text Position",
+                name = "Bar Position",
                 min = 0,
                 max = 100
         )
-        public float textPosition = 50;
+        public float barPosition = 50;
 
         /** Gets OneConfig's Universal Minecraft instance. */
         @Exclude
@@ -111,7 +108,7 @@ public class BossBar extends Config {
             UGraphics.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             this.mc.getTextureManager().bindTexture(Gui.icons);
 
-            x = !this.renderText || fontRenderer.getStringWidth(bossName) < this.BAR_WIDTH ? x : x + (fontRenderer.getStringWidth(bossName) - this.BAR_WIDTH) * this.textPosition / 100.0F;
+            x = !this.renderText || fontRenderer.getStringWidth(bossName) < this.BAR_WIDTH ? x : x + (fontRenderer.getStringWidth(bossName) - this.BAR_WIDTH) * this.barPosition / 100.0F;
 
             float remainingHealth = healthScale * this.BAR_WIDTH;
             if (this.renderHealth) {

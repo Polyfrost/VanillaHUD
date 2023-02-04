@@ -74,7 +74,7 @@ public class Scoreboard extends Config {
         @Exclude public float height = 0f;
 
         public ScoreboardHUD() {
-            super(true, 1920, 1080f / 2f, 1, true, false, 0, 1, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
+            super(true, 1919, 1080f / 2f, 1, true, false, 0, 1, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
             EventManager.INSTANCE.register(this);
         }
 
