@@ -119,7 +119,11 @@ public class BossBar extends Config {
                 }
             }
 
-            this.width = this.renderHealth ? this.renderText ? Math.max(this.fontRenderer.getStringWidth(bossName), this.BAR_WIDTH) : this.BAR_WIDTH : (float) (this.fontRenderer.getStringWidth(bossName));
+            this.width = this.renderHealth ?
+                    this.renderText ?
+                            Math.max(this.fontRenderer.getStringWidth(bossName), this.BAR_WIDTH) :
+                            this.BAR_WIDTH :
+                    (float) (this.fontRenderer.getStringWidth(bossName));
             UGraphics.disableBlend();
         }
 

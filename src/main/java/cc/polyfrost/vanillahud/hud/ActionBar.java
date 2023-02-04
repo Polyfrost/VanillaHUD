@@ -6,38 +6,16 @@ import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.events.EventManager;
-import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.UGraphics;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
-import cc.polyfrost.oneconfig.renderer.RenderManager;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
-import cc.polyfrost.oneconfig.utils.dsl.ColorUtilsDSLKt;
-import cc.polyfrost.oneconfig.utils.dsl.RenderManagerDSLKt;
-import cc.polyfrost.oneconfig.utils.dsl.VG;
-import cc.polyfrost.vanillahud.VanillaHUD;
+import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import cc.polyfrost.vanillahud.mixin.GuiIngameAccessor;
 import cc.polyfrost.vanillahud.mixin.MinecraftAccessor;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
-import kotlin.jvm.internal.Intrinsics;
-import kotlin.ranges.RangesKt;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiIngame;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.scoreboard.IScoreObjectiveCriteria;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.util.EnumChatFormatting;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.Color;
-import java.lang.Number;
-import java.util.Collection;
 
 public class ActionBar extends Config {
 
@@ -74,7 +52,7 @@ public class ActionBar extends Config {
         @Override
         protected void drawLine(String line, float x, float y, float scale) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
-            int color = this.rainbowTimer ? ingameGUI.getRecordIsPlaying() ? Color.HSBtoRGB(this.hue / 50.0F, 0.7F, 0.6F) & 16777215 : 16777215 : ColorUtilsDSLKt.setAlpha(this.color.getRGB(), RangesKt.coerceAtMost(this.color.getAlpha(), this.opacity));
+            int color = this.rainbowTimer ? ingameGUI.getRecordIsPlaying() ? Color.HSBtoRGB(this.hue / 50.0F, 0.7F, 0.6F) & 16777215 : 16777215 : ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity));
             UGraphics.enableBlend();
             TextRenderer.drawScaledString(line, x, y, color | this.opacity << 24, TextRenderer.TextType.toType(this.textType), scale);
             UGraphics.disableBlend();
@@ -99,8 +77,8 @@ public class ActionBar extends Config {
         protected void drawBackground(float x, float y, float width, float height, float scale) {
             NanoVGHelper nanoVGHelper = NanoVGHelper.INSTANCE;
             nanoVGHelper.setupAndDraw(true, (vg) -> {
-                int bgColor = ColorUtilsDSLKt.setAlpha(this.bgColor.getRGB(), RangesKt.coerceAtMost(this.bgColor.getAlpha(), this.opacity));
-                int borderColor = ColorUtilsDSLKt.setAlpha(this.borderColor.getRGB(), RangesKt.coerceAtMost(this.borderColor.getAlpha(), this.opacity));
+                int bgColor = ColorUtils.setAlpha(this.bgColor.getRGB(), Math.min(this.bgColor.getAlpha(), this.opacity));
+                int borderColor = ColorUtils.setAlpha(this.borderColor.getRGB(), Math.min(this.borderColor.getAlpha(), this.opacity));
                 if (this.rounded) {
                     nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor, cornerRadius * scale);
                     if (this.border) {
