@@ -30,7 +30,7 @@ public class Scoreboard extends Config {
     public ScoreboardHUD hud = new ScoreboardHUD();
 
     public Scoreboard() {
-        super(new Mod("Scoreboard", ModType.HUD), "scoreboard.json");
+        super(new Mod("Scoreboard", ModType.HUD, "/vanillahud_dark.svg"), "scoreboard.json");
         initialize();
     }
 

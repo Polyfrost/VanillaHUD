@@ -25,7 +25,7 @@ public class ActionBar extends Config {
     public ActionBarHUD hud = new ActionBarHUD();
 
     public ActionBar() {
-        super(new Mod("Action Bar", ModType.HUD), "actionbar.json");
+        super(new Mod("Action Bar", ModType.HUD, "/vanillahud_dark.svg"), "actionbar.json");
         initialize();
     }
 

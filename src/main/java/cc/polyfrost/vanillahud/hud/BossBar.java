@@ -26,7 +26,7 @@ public class BossBar extends Config {
     public BossBarHUD hud = new BossBarHUD();
 
     public BossBar() {
-        super(new Mod("Boss Bar", ModType.HUD), "bossbar.json");
+        super(new Mod("Boss Bar", ModType.HUD, "/vanillahud_dark.svg"), "bossbar.json");
         initialize();
     }
 
