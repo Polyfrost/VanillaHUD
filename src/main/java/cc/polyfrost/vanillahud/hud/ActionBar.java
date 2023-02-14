@@ -37,7 +37,7 @@ public class ActionBar extends Config {
         private int opacity;
 
         @Exclude
-        private final String EXAMPLE_TEXT = "Action Bar";
+        private static final String EXAMPLE_TEXT = "Action Bar";
 
         @Switch(
                 name = "Use Rainbow Timer"
@@ -52,7 +52,7 @@ public class ActionBar extends Config {
         @Override
         protected void drawLine(String line, float x, float y, float scale) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
-            int color = this.rainbowTimer ? ingameGUI.getRecordIsPlaying() ? Color.HSBtoRGB(this.hue / 50.0F, 0.7F, 0.6F) & 16777215 : 16777215 : ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity));
+            int color = this.rainbowTimer && ingameGUI.getRecordIsPlaying() ? Color.HSBtoRGB(this.hue / 50.0F, 0.7F, 0.6F) & 16777215 : ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity));
             UGraphics.enableBlend();
             TextRenderer.drawScaledString(line, x, y, color | this.opacity << 24, TextRenderer.TextType.toType(this.textType), scale);
             UGraphics.disableBlend();
@@ -99,7 +99,7 @@ public class ActionBar extends Config {
 
             if (ingameGUI == null || !this.shouldShow() && example) {
                 this.opacity = 255;
-                return this.EXAMPLE_TEXT;
+                return EXAMPLE_TEXT;
             }
 
             return ingameGUI.getRecordPlaying();

@@ -51,15 +51,15 @@ public class BossBar extends Config {
 
         /** Gets OneConfig's Universal Minecraft instance. */
         @Exclude
-        public final Minecraft mc = UMinecraft.getMinecraft();
+        public static final Minecraft mc = UMinecraft.getMinecraft();
 
         /** Gets OneConfig's Universal Minecraft fontRenderer. */
-        @Exclude public final FontRenderer fontRenderer = UMinecraft.getFontRenderer();
+        @Exclude public static final FontRenderer fontRenderer = UMinecraft.getFontRenderer();
 
         /**
          * The Boss Bar width
          */
-        @Exclude public final int BAR_WIDTH = 182;
+        @Exclude public static final int BAR_WIDTH = 182;
 
         public BossBarHUD() {
             super("", true, 1920f / 2, 2f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 120), false, 2, new OneColor(0, 0, 0));
@@ -84,7 +84,7 @@ public class BossBar extends Config {
             this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
             UGraphics.GL.popMatrix();
             if (this.renderText) {
-                super.draw(matrices, x + this.getWidth(1.0f, example) / 2 - (float) (this.fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
+                super.draw(matrices, x + this.getWidth(1.0f, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
             }
         }
 
@@ -104,18 +104,18 @@ public class BossBar extends Config {
 
             UGraphics.enableBlend();
             UGraphics.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            this.mc.getTextureManager().bindTexture(Gui.icons);
+            mc.getTextureManager().bindTexture(Gui.icons);
 
-            if (this.renderText && this.fontRenderer.getStringWidth(bossName) > this.BAR_WIDTH) {
-                x += (this.fontRenderer.getStringWidth(bossName) - this.BAR_WIDTH) * this.barPosition / 100.0F;
+            if (this.renderText && fontRenderer.getStringWidth(bossName) > BAR_WIDTH) {
+                x += (fontRenderer.getStringWidth(bossName) - BAR_WIDTH) * this.barPosition / 100.0F;
             }
 
-            float remainingHealth = healthScale * this.BAR_WIDTH;
+            float remainingHealth = healthScale * BAR_WIDTH;
             if (this.renderHealth) {
-                this.mc.ingameGUI.drawTexturedModalRect(x, y, 0, 74, this.BAR_WIDTH, 5);
-                this.mc.ingameGUI.drawTexturedModalRect(x, y, 0, 74, this.BAR_WIDTH, 5);
+                mc.ingameGUI.drawTexturedModalRect(x, y, 0, 74, BAR_WIDTH, 5);
+                mc.ingameGUI.drawTexturedModalRect(x, y, 0, 74, BAR_WIDTH, 5);
                 if (remainingHealth > 0) {
-                    this.mc.ingameGUI.drawTexturedModalRect(x, y, 0, 79, (int) remainingHealth, 5);
+                    mc.ingameGUI.drawTexturedModalRect(x, y, 0, 79, (int) remainingHealth, 5);
                 }
             }
 

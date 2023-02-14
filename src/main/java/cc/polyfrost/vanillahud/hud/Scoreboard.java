@@ -65,10 +65,10 @@ public class Scoreboard extends Config {
 
         /** Gets OneConfig's Universal Minecraft instance. */
         @Exclude
-        public final Minecraft mc = UMinecraft.getMinecraft();
+        public static final Minecraft mc = UMinecraft.getMinecraft();
 
         /** Gets OneConfig's Universal Minecraft fontRenderer. */
-        @Exclude public final FontRenderer fontRenderer = UMinecraft.getFontRenderer();
+        @Exclude public static final FontRenderer fontRenderer = UMinecraft.getFontRenderer();
 
         @Exclude public float width = 0f;
         @Exclude public float height = 0f;
@@ -84,7 +84,7 @@ public class Scoreboard extends Config {
             UGraphics.GL.scale(scale, scale, 1);
             UGraphics.GL.translate(x / scale, y / scale, 1);
 
-            ScoreObjective objective = this.mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
+            ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
 
             if (objective == null) {
                 if (example) {
@@ -104,7 +104,7 @@ public class Scoreboard extends Config {
 
         @Override
         protected boolean shouldShow() {
-            return this.mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1) != null && super.shouldShow();
+            return mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1) != null && super.shouldShow();
         }
 
         private void renderObjective(ScoreObjective scoreObjective) {
@@ -114,15 +114,15 @@ public class Scoreboard extends Config {
             boolean showScorePoints = this.scoreboardPoints;
             if (sortedScores.size() <= 15) {
                 String displayName = scoreObjective.getDisplayName();
-                int displayNameStringWidth = this.fontRenderer.getStringWidth(displayName);
+                int displayNameStringWidth = fontRenderer.getStringWidth(displayName);
                 for (Score score : sortedScores) {
                     ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
                     String totalString = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName()) + (showScorePoints ? ": " + EnumChatFormatting.RED + score.getScorePoints() : "");
-                    displayNameStringWidth = Math.max(displayNameStringWidth, this.fontRenderer.getStringWidth(totalString));
+                    displayNameStringWidth = Math.max(displayNameStringWidth, fontRenderer.getStringWidth(totalString));
                 }
 
                 if (this.scoreboardTitle) {
-                    TextRenderer.drawScaledString(displayName, this.width / 2.0f - this.fontRenderer.getStringWidth(displayName) / 2.0f, 1 - this.paddingY, -1, TextRenderer.TextType.toType(textType), 1);
+                    TextRenderer.drawScaledString(displayName, this.width / 2.0f - fontRenderer.getStringWidth(displayName) / 2.0f, 1 - this.paddingY, -1, TextRenderer.TextType.toType(textType), 1);
                 }
 
                 UGraphics.GL.translate(0.0f, this.height, 0.0f);
@@ -130,19 +130,19 @@ public class Scoreboard extends Config {
                 for (Score score : sortedScores) {
                     ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
                     String playerName = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName());
-                    float yPos = -++counter * this.fontRenderer.FONT_HEIGHT;
+                    float yPos = -++counter * fontRenderer.FONT_HEIGHT;
                     TextRenderer.drawScaledString(playerName, 1, yPos, -1, TextRenderer.TextType.toType(textType), 1);
 
                     if (showScorePoints) {
                         String scorePoints = "" + score.getScorePoints();
-                        TextRenderer.drawScaledString(scorePoints, this.width - this.fontRenderer.getStringWidth(scorePoints) - 1, yPos, this.scorePointsColor.getRGB(), TextRenderer.TextType.toType(textType), 1);
+                        TextRenderer.drawScaledString(scorePoints, this.width - fontRenderer.getStringWidth(scorePoints) - 1, yPos, this.scorePointsColor.getRGB(), TextRenderer.TextType.toType(textType), 1);
                     }
                 }
 
                 UGraphics.disableBlend();
 
                 this.width = displayNameStringWidth + 2;
-                this.height = sortedScores.size() * this.fontRenderer.FONT_HEIGHT + (this.scoreboardTitle ? 10 : 1);
+                this.height = sortedScores.size() * fontRenderer.FONT_HEIGHT + (this.scoreboardTitle ? 10 : 1);
             }
         }
 
@@ -151,8 +151,8 @@ public class Scoreboard extends Config {
             nanoVGHelper.setupAndDraw(true, (vg) -> {
                 if (this.rounded) {
                     if (this.scoreboardTitle) {
-                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, this.fontRenderer.FONT_HEIGHT, this.titleColor.getRGB(), cornerRadius * scale, cornerRadius * scale, 0, 0);
-                        nanoVGHelper.drawRoundedRectVaried(vg, x, y + this.fontRenderer.FONT_HEIGHT, width, height - this.fontRenderer.FONT_HEIGHT, bgColor.getRGB(), 0, 0, cornerRadius * scale, cornerRadius * scale);
+                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, fontRenderer.FONT_HEIGHT, this.titleColor.getRGB(), cornerRadius * scale, cornerRadius * scale, 0, 0);
+                        nanoVGHelper.drawRoundedRectVaried(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT, bgColor.getRGB(), 0, 0, cornerRadius * scale, cornerRadius * scale);
                     } else {
                         nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor.getRGB(), cornerRadius * scale);
                     }
@@ -161,8 +161,8 @@ public class Scoreboard extends Config {
                     }
                 } else {
                     if (this.scoreboardTitle) {
-                        nanoVGHelper.drawRect(vg, x, y, width, this.fontRenderer.FONT_HEIGHT, this.titleColor.getRGB());
-                        nanoVGHelper.drawRect(vg, x, y + this.fontRenderer.FONT_HEIGHT, width, height - this.fontRenderer.FONT_HEIGHT, bgColor.getRGB());
+                        nanoVGHelper.drawRect(vg, x, y, width, fontRenderer.FONT_HEIGHT, this.titleColor.getRGB());
+                        nanoVGHelper.drawRect(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT, bgColor.getRGB());
                     } else {
                         nanoVGHelper.drawRect(vg, x, y, width, height, bgColor.getRGB());
                     }
