@@ -12,6 +12,8 @@ import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import cc.polyfrost.oneconfig.renderer.scissor.Scissor;
+import cc.polyfrost.oneconfig.renderer.scissor.ScissorHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.scoreboard.IScoreObjectiveCriteria;
@@ -19,6 +21,7 @@ import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.EnumChatFormatting;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collection;
 
@@ -148,16 +151,17 @@ public class Scoreboard extends Config {
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
             NanoVGHelper nanoVGHelper = NanoVGHelper.INSTANCE;
-            nanoVGHelper.setupAndDraw(true, (vg) -> {
+            nanoVGHelper.setupAndDraw(true, vg -> {
                 if (this.rounded) {
+                    float radius = Math.min(this.cornerRadius, 5);
                     if (this.scoreboardTitle) {
-                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, fontRenderer.FONT_HEIGHT, this.titleColor.getRGB(), cornerRadius * scale, cornerRadius * scale, 0, 0);
-                        nanoVGHelper.drawRoundedRectVaried(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT, bgColor.getRGB(), 0, 0, cornerRadius * scale, cornerRadius * scale);
+                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, fontRenderer.FONT_HEIGHT, this.titleColor.getRGB(), radius * scale, radius * scale, 0, 0);
+                        nanoVGHelper.drawRoundedRectVaried(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT, bgColor.getRGB(), 0, 0, radius * scale, radius * scale);
                     } else {
-                        nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor.getRGB(), cornerRadius * scale);
+                        nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor.getRGB(), radius * scale);
                     }
                     if (this.border) {
-                        nanoVGHelper.drawHollowRoundRect(vg, x - borderSize * scale, y - borderSize * scale, width + borderSize * scale, height + borderSize * scale, borderColor.getRGB(), cornerRadius * scale, borderSize * scale);
+                        nanoVGHelper.drawHollowRoundRect(vg, x - borderSize * scale, y - borderSize * scale, width + borderSize * scale, height + borderSize * scale, borderColor.getRGB(), radius * scale, borderSize * scale);
                     }
                 } else {
                     if (this.scoreboardTitle) {
