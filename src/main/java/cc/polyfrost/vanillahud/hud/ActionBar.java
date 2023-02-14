@@ -98,7 +98,7 @@ public class ActionBar extends Config {
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            if (ingameGUI == null || !this.shouldShow() && example) {
+            if (ingameGUI == null || ingameGUI.getRecordPlaying().isEmpty() || !this.shouldShow() && example) {
                 this.opacity = 255;
                 return EXAMPLE_TEXT;
             }
