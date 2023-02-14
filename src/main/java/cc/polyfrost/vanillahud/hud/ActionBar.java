@@ -40,7 +40,8 @@ public class ActionBar extends Config {
         private static final String EXAMPLE_TEXT = "Action Bar";
 
         @Switch(
-                name = "Use Rainbow Timer"
+                name = "Use Jukebox Rainbow Timer Color",
+                description = "Use the rainbow timer color when a jukebox begins playing."
         )
         private boolean rainbowTimer = true;
 
