@@ -1,4 +1,4 @@
-package cc.woverflow.vanillahud.mixin;
+package cc.polyfrost.vanillahud.mixin;
 
 import net.minecraft.client.gui.GuiIngame;
 import org.spongepowered.asm.mixin.Mixin;
