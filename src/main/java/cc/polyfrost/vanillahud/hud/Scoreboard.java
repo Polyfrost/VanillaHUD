@@ -153,15 +153,21 @@ public class Scoreboard extends Config {
             NanoVGHelper nanoVGHelper = NanoVGHelper.INSTANCE;
             nanoVGHelper.setupAndDraw(true, vg -> {
                 if (this.rounded) {
-                    float radius = Math.min(this.cornerRadius, 5);
                     if (this.scoreboardTitle) {
-                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, fontRenderer.FONT_HEIGHT, this.titleColor.getRGB(), radius * scale, radius * scale, 0, 0);
-                        nanoVGHelper.drawRoundedRectVaried(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT, bgColor.getRGB(), 0, 0, radius * scale, radius * scale);
+                        ScissorHelper helper = ScissorHelper.INSTANCE;
+
+                        helper.scissor(vg, x, y, width, fontRenderer.FONT_HEIGHT);
+                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, height, this.titleColor.getRGB(), this.cornerRadius * scale, this.cornerRadius * scale, 0, 0);
+                        helper.clearScissors(vg);
+
+                        helper.scissor(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT);
+                        nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, height, this.bgColor.getRGB(), 0, 0, this.cornerRadius * scale, this.cornerRadius * scale);
+                        helper.clearScissors(vg);
                     } else {
-                        nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor.getRGB(), radius * scale);
+                        nanoVGHelper.drawRoundedRect(vg, x, y, width, height, bgColor.getRGB(), this.cornerRadius * scale);
                     }
                     if (this.border) {
-                        nanoVGHelper.drawHollowRoundRect(vg, x - borderSize * scale, y - borderSize * scale, width + borderSize * scale, height + borderSize * scale, borderColor.getRGB(), radius * scale, borderSize * scale);
+                        nanoVGHelper.drawHollowRoundRect(vg, x - borderSize * scale, y - borderSize * scale, width + borderSize * scale, height + borderSize * scale, borderColor.getRGB(), this.cornerRadius * scale, borderSize * scale);
                     }
                 } else {
                     if (this.scoreboardTitle) {
