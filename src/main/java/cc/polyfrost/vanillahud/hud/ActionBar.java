@@ -20,7 +20,7 @@ import java.awt.Color;
 public class ActionBar extends Config {
 
     @HUD(
-            name = "Action bar"
+            name = "Action Bar"
     )
     public ActionBarHUD hud = new ActionBarHUD();
 
