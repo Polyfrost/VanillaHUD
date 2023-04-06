@@ -89,7 +89,7 @@ public class Scoreboard extends Config {
 
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
 
-            if (objective == null) {
+            if (!this.shouldShow()) {
                 if (example) {
                     net.minecraft.scoreboard.Scoreboard scoreboard = new net.minecraft.scoreboard.Scoreboard();
                     objective = new ScoreObjective(scoreboard, "OneConfig", IScoreObjectiveCriteria.DUMMY);
@@ -107,7 +107,13 @@ public class Scoreboard extends Config {
 
         @Override
         protected boolean shouldShow() {
-            return mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1) != null && super.shouldShow();
+            ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
+            boolean showRealScoreboard = objective != null;
+            if (showRealScoreboard) {
+                Collection<Score> sortedScores = objective.getScoreboard().getSortedScores(objective);
+                showRealScoreboard = sortedScores.size() <= 15 && sortedScores.size() > 0;
+            }
+            return showRealScoreboard && super.shouldShow();
         }
 
         private void renderObjective(ScoreObjective scoreObjective) {
@@ -115,38 +121,37 @@ public class Scoreboard extends Config {
             net.minecraft.scoreboard.Scoreboard scoreboard = scoreObjective.getScoreboard();
             Collection<Score> sortedScores = scoreboard.getSortedScores(scoreObjective);
             boolean showScorePoints = this.scoreboardPoints;
-            if (sortedScores.size() <= 15) {
-                String displayName = scoreObjective.getDisplayName();
-                int displayNameStringWidth = fontRenderer.getStringWidth(displayName);
-                for (Score score : sortedScores) {
-                    ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
-                    String totalString = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName()) + (showScorePoints ? ": " + EnumChatFormatting.RED + score.getScorePoints() : "");
-                    displayNameStringWidth = Math.max(displayNameStringWidth, fontRenderer.getStringWidth(totalString));
-                }
+            String displayName = scoreObjective.getDisplayName();
+            int displayNameStringWidth = fontRenderer.getStringWidth(displayName);
 
-                if (this.scoreboardTitle) {
-                    TextRenderer.drawScaledString(displayName, this.width / 2.0f - fontRenderer.getStringWidth(displayName) / 2.0f, 1 - this.paddingY, -1, TextRenderer.TextType.toType(textType), 1);
-                }
-
-                UGraphics.GL.translate(0.0f, this.height, 0.0f);
-                int counter = 0;
-                for (Score score : sortedScores) {
-                    ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
-                    String playerName = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName());
-                    float yPos = -++counter * fontRenderer.FONT_HEIGHT;
-                    TextRenderer.drawScaledString(playerName, 1, yPos, -1, TextRenderer.TextType.toType(textType), 1);
-
-                    if (showScorePoints) {
-                        String scorePoints = "" + score.getScorePoints();
-                        TextRenderer.drawScaledString(scorePoints, this.width - fontRenderer.getStringWidth(scorePoints) - 1, yPos, this.scorePointsColor.getRGB(), TextRenderer.TextType.toType(textType), 1);
-                    }
-                }
-
-                UGraphics.disableBlend();
-
-                this.width = displayNameStringWidth + 2;
-                this.height = sortedScores.size() * fontRenderer.FONT_HEIGHT + (this.scoreboardTitle ? 10 : 1);
+            for (Score score : sortedScores) {
+                ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
+                String totalString = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName()) + (showScorePoints ? ": " + EnumChatFormatting.RED + score.getScorePoints() : "");
+                displayNameStringWidth = Math.max(displayNameStringWidth, fontRenderer.getStringWidth(totalString));
             }
+
+            if (this.scoreboardTitle) {
+                TextRenderer.drawScaledString(displayName, this.width / 2.0f - fontRenderer.getStringWidth(displayName) / 2.0f, 1 - this.paddingY, -1, TextRenderer.TextType.toType(textType), 1);
+            }
+
+            UGraphics.GL.translate(0.0f, this.height, 0.0f);
+            int counter = 0;
+            for (Score score : sortedScores) {
+                ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
+                String playerName = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName());
+                float yPos = -++counter * fontRenderer.FONT_HEIGHT;
+                TextRenderer.drawScaledString(playerName, 1, yPos, -1, TextRenderer.TextType.toType(textType), 1);
+
+                if (showScorePoints) {
+                    String scorePoints = "" + score.getScorePoints();
+                    TextRenderer.drawScaledString(scorePoints, this.width - fontRenderer.getStringWidth(scorePoints) - 1, yPos, this.scorePointsColor.getRGB(), TextRenderer.TextType.toType(textType), 1);
+                }
+            }
+
+            UGraphics.disableBlend();
+
+            this.width = displayNameStringWidth + 2;
+            this.height = sortedScores.size() * fontRenderer.FONT_HEIGHT + (this.scoreboardTitle ? 10 : 1);
         }
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
