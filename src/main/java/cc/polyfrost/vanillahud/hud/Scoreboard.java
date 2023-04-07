@@ -55,6 +55,11 @@ public class Scoreboard extends Config {
         )
         public boolean scoreboardTitle = true;
 
+        @Switch(
+                name = "Persistent Scoreboard Title"
+        )
+        public boolean persistentTitle = false;
+
         @Color(
                 name = "Title Background Color"
         )
@@ -111,7 +116,7 @@ public class Scoreboard extends Config {
             boolean showRealScoreboard = objective != null;
             if (showRealScoreboard) {
                 Collection<Score> sortedScores = objective.getScoreboard().getSortedScores(objective);
-                showRealScoreboard = sortedScores.size() <= 15 && sortedScores.size() > 0;
+                showRealScoreboard = sortedScores.size() <= 15 && (sortedScores.size() > 0 || this.persistentTitle);
             }
             return showRealScoreboard && super.shouldShow();
         }
