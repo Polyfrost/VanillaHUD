@@ -116,7 +116,7 @@ public class Scoreboard extends Config {
             boolean showRealScoreboard = objective != null;
             if (showRealScoreboard) {
                 Collection<Score> sortedScores = objective.getScoreboard().getSortedScores(objective);
-                showRealScoreboard = sortedScores.size() <= 15 && (sortedScores.size() > 0 || this.persistentTitle);
+                showRealScoreboard = sortedScores.size() <= 15 && (sortedScores.size() > 0 || (this.persistentTitle && this.scoreboardTitle));
             }
             return showRealScoreboard && super.shouldShow();
         }
