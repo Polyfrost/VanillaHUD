@@ -3,11 +3,9 @@ package cc.polyfrost.vanillahud.hud;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.Exclude;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
-import cc.polyfrost.oneconfig.config.annotations.Switch;
 import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
-import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.UGraphics;
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
@@ -16,9 +14,6 @@ import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import cc.polyfrost.vanillahud.mixin.GuiIngameAccessor;
 import cc.polyfrost.vanillahud.mixin.MinecraftAccessor;
-import net.minecraft.util.MathHelper;
-
-import java.awt.*;
 
 public class Title extends Config {
 
@@ -28,7 +23,7 @@ public class Title extends Config {
     public TitleHUD titleHUD = new TitleHUD();
 
     @HUD(
-            name = "Sub Title", category = "Sub Title"
+            name = "Subtitle", category = "Subtitle"
     )
     public SubTitleHUD subtitleHUD = new SubTitleHUD();
 
@@ -50,7 +45,8 @@ public class Title extends Config {
         }
 
         public TitleHUD(float x, float y, float scale) {
-            super("", true, x, y, scale, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
+            super("", true, x, y, scale, false, false, 2, 2, 2, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
+            this.textType = 1;
         }
 
         @Override

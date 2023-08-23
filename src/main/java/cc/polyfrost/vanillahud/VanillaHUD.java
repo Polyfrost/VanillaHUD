@@ -13,12 +13,17 @@ public class VanillaHUD {
     public static final String NAME = "@NAME@";
     public static final String VERSION = "@VER@";
 
+    public static BossBar bossBar;
+    public static Scoreboard scoreboard;
+    public static ActionBar actionBar;
+    public static Title title;
+
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
-        new BossBar();
-        new Scoreboard();
-        new ActionBar();
-        new Title();
+        bossBar = new BossBar();
+        scoreboard = new Scoreboard();
+        actionBar = new ActionBar();
+        title = new Title();
     }
 
     @net.minecraftforge.fml.common.Mod.EventHandler
