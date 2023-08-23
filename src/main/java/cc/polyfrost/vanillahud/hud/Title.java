@@ -70,8 +70,6 @@ public class Title extends Config {
 
             float age = (float) ingameGUI.getTitlesTimer() - ((MinecraftAccessor) UMinecraft.getMinecraft()).getTimer().renderPartialTicks;
 
-            opacity = 255;
-
             if (ingameGUI.getTitlesTimer() > ingameGUI.getTitleFadeOut() + ingameGUI.getTitleDisplayTime()) {
                 float f = ingameGUI.getTitleFadeIn() + ingameGUI.getTitleFadeOut() + ingameGUI.getTitleDisplayTime() - age;
                 opacity = (int) (f * 255 / ingameGUI.getTitleFadeIn());
@@ -109,7 +107,7 @@ public class Title extends Config {
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            if (ingameGUI == null || ingameGUI.getDisplayedTitle().isEmpty() || !this.shouldShow() && example) {
+            if ((ingameGUI == null || ingameGUI.getDisplayedTitle().isEmpty() || !this.shouldShow()) && example) {
                 this.opacity = 255;
                 return EXAMPLE_TEXT;
             }
@@ -131,7 +129,7 @@ public class Title extends Config {
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            if (ingameGUI == null || ingameGUI.getDisplayedTitle().isEmpty() || !this.shouldShow() && example) {
+            if ((ingameGUI == null || ingameGUI.getDisplayedSubTitle().isEmpty() || !this.shouldShow()) && example) {
                 this.opacity = 255;
                 return EXAMPLE_TEXT;
             }
