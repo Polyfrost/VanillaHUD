@@ -70,6 +70,8 @@ public class Title extends Config {
 
             float age = (float) ingameGUI.getTitlesTimer() - ((MinecraftAccessor) UMinecraft.getMinecraft()).getTimer().renderPartialTicks;
 
+            opacity = 255;
+
             if (ingameGUI.getTitlesTimer() > ingameGUI.getTitleFadeOut() + ingameGUI.getTitleDisplayTime()) {
                 float f = ingameGUI.getTitleFadeIn() + ingameGUI.getTitleFadeOut() + ingameGUI.getTitleDisplayTime() - age;
                 opacity = (int) (f * 255 / ingameGUI.getTitleFadeIn());
