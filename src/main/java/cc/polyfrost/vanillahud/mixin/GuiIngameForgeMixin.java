@@ -13,4 +13,9 @@ public class GuiIngameForgeMixin {
     private void cancelActionBar(int width, int height, float partialTicks, CallbackInfo ci) {
         ci.cancel();
     }
+
+    @Inject(method = "renderTitle", at = @At("HEAD"), cancellable = true)
+    private void cancelTitle(int width, int height, float partialTicks, CallbackInfo ci) {
+        ci.cancel();
+    }
 }

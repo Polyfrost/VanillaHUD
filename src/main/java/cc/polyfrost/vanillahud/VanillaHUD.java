@@ -4,6 +4,7 @@ import cc.polyfrost.oneconfig.utils.Notifications;
 import cc.polyfrost.vanillahud.hud.ActionBar;
 import cc.polyfrost.vanillahud.hud.BossBar;
 import cc.polyfrost.vanillahud.hud.Scoreboard;
+import cc.polyfrost.vanillahud.hud.Title;
 import net.minecraftforge.fml.common.Loader;
 
 @net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
@@ -17,6 +18,7 @@ public class VanillaHUD {
         new BossBar();
         new Scoreboard();
         new ActionBar();
+        new Title();
     }
 
     @net.minecraftforge.fml.common.Mod.EventHandler
