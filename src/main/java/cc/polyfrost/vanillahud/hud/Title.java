@@ -41,7 +41,7 @@ public class Title extends Config {
         private static final String EXAMPLE_TEXT = "Title";
 
         public TitleHUD() {
-            this(1920f / 2, 1080f / 2 - 40f, 4);
+            this(1920f / 2, 1080f / 2 - 24f, 4);
         }
 
         public TitleHUD(float x, float y, float scale) {
@@ -117,10 +117,10 @@ public class Title extends Config {
     public static class SubTitleHUD extends TitleHUD {
 
         @Exclude
-        private static final String EXAMPLE_TEXT = "Sub Title";
+        private static final String EXAMPLE_TEXT = "Subtitle";
 
         public SubTitleHUD() {
-            super(1920f / 2, 1080f / 2 + 10f, 2);
+            super(1920f / 2, 1080f / 2 + 18f, 2);
         }
 
         @Override
