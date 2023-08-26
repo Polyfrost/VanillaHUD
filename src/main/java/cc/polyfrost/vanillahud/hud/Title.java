@@ -105,7 +105,7 @@ public class Title extends Config {
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            if ((ingameGUI == null || ingameGUI.getDisplayedTitle().isEmpty() || !this.shouldShow()) && example) {
+            if (example) {
                 this.opacity = 255;
                 return EXAMPLE_TEXT;
             }
