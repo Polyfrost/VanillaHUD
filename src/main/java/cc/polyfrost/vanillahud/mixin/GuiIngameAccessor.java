@@ -16,4 +16,7 @@ public interface GuiIngameAccessor {
     @Accessor("recordPlayingUpFor")
     int getRecordPlayingUpFor();
 
+    @Accessor("updateCounter")
+    int getUpdateCounter();
+
 }

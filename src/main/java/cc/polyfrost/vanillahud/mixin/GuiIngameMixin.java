@@ -2,6 +2,7 @@ package cc.polyfrost.vanillahud.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UGraphics;
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
+import cc.polyfrost.vanillahud.VanillaHUD;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
@@ -24,5 +25,12 @@ public class GuiIngameMixin {
     @Inject(method = "renderScoreboard", at = @At("HEAD"), cancellable = true)
     private void cancelScoreboard(ScoreObjective s, ScaledResolution sr, CallbackInfo ci) {
         ci.cancel();
+    }
+
+    @Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
+    private void cancelHotbar(ScaledResolution sr, float partialTicks, CallbackInfo ci) {
+        if (VanillaHUD.hotbar.enabled) {
+            ci.cancel();
+        }
     }
 }

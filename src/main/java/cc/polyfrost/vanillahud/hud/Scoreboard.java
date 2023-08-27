@@ -84,13 +84,14 @@ public class Scoreboard extends Config {
         public ScoreboardHUD() {
             super(true, 1919, 1080f / 2f, 1, true, false, 0, 1, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
             EventManager.INSTANCE.register(this);
+            showInDebug = true;
         }
 
         @Override
         public void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
             UGraphics.GL.pushMatrix();
             UGraphics.GL.scale(scale, scale, 1);
-            UGraphics.GL.translate(x / scale, y / scale, 1);
+            UGraphics.GL.translate(x / scale, y / scale, 0);
 
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
 
@@ -116,7 +117,7 @@ public class Scoreboard extends Config {
             boolean showRealScoreboard = objective != null;
             if (showRealScoreboard) {
                 Collection<Score> sortedScores = objective.getScoreboard().getSortedScores(objective);
-                showRealScoreboard = sortedScores.size() <= 15 && (sortedScores.size() > 0 || (this.persistentTitle && this.scoreboardTitle));
+                showRealScoreboard = sortedScores.size() <= 15 && (!sortedScores.isEmpty() || (this.persistentTitle && this.scoreboardTitle));
             }
             return showRealScoreboard && super.shouldShow();
         }

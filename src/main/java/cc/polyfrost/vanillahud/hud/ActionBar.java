@@ -48,6 +48,7 @@ public class ActionBar extends Config {
         public ActionBarHUD() {
             super("", true, 1920f / 2, 1080f - 62f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
             EventManager.INSTANCE.register(this);
+            showInDebug = true;
         }
 
         @Override

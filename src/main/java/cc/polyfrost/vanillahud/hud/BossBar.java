@@ -64,6 +64,7 @@ public class BossBar extends Config {
         public BossBarHUD() {
             super("", true, 1920f / 2, 2f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 120), false, 2, new OneColor(0, 0, 0));
             this.textType = 1;
+            showInDebug = true;
             EventManager.INSTANCE.register(this);
         }
 
@@ -80,7 +81,7 @@ public class BossBar extends Config {
         public void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
             UGraphics.GL.pushMatrix();
             UGraphics.GL.scale(scale, scale, 1);
-            UGraphics.GL.translate(x / scale, y / scale, 1);
+            UGraphics.GL.translate(x / scale, y / scale, 0);
             this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
             UGraphics.GL.popMatrix();
             if (this.renderText) {
