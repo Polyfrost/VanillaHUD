@@ -16,4 +16,21 @@ public interface GuiIngameAccessor {
     @Accessor("recordPlayingUpFor")
     int getRecordPlayingUpFor();
 
+    @Accessor("titlesTimer")
+    int getTitlesTimer();
+
+    @Accessor("titleFadeIn")
+    int getTitleFadeIn();
+
+    @Accessor("titleFadeOut")
+    int getTitleFadeOut();
+
+    @Accessor("titleDisplayTime")
+    int getTitleDisplayTime();
+
+    @Accessor("displayedTitle")
+    String getDisplayedTitle();
+
+    @Accessor("displayedSubTitle")
+    String getDisplayedSubTitle();
 }
