@@ -62,7 +62,7 @@ public class ActionBar extends Config {
         @Override
         protected boolean shouldShow() {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
-            if (ingameGUI.getRecordPlayingUpFor() <= 0) {
+            if (ingameGUI.getRecordPlayingUpFor() <= 0 || ingameGUI.getRecordPlaying() == null || ingameGUI.getRecordPlaying().isEmpty()) {
                 return false;
             }
 
@@ -98,7 +98,7 @@ public class ActionBar extends Config {
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            if (ingameGUI == null || ingameGUI.getRecordPlaying().isEmpty() || !this.shouldShow() && example) {
+            if (ingameGUI == null || ingameGUI.getRecordPlaying() == null || ingameGUI.getRecordPlaying().isEmpty() || !this.shouldShow() && example) {
                 this.opacity = 255;
                 return EXAMPLE_TEXT;
             }
