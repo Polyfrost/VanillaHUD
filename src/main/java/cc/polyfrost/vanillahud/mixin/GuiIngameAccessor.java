@@ -1,6 +1,7 @@
 package cc.polyfrost.vanillahud.mixin;
 
 import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -33,4 +34,10 @@ public interface GuiIngameAccessor {
 
     @Accessor("displayedSubTitle")
     String getDisplayedSubTitle();
+
+    @Accessor()
+    int getRemainingHighlightTicks();
+
+    @Accessor()
+    ItemStack getHighlightingItemStack();
 }

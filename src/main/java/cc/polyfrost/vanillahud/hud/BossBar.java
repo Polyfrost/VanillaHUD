@@ -1,21 +1,14 @@
 package cc.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.Exclude;
-import cc.polyfrost.oneconfig.config.annotations.HUD;
-import cc.polyfrost.oneconfig.config.annotations.Slider;
-import cc.polyfrost.oneconfig.config.annotations.Switch;
+import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
-import cc.polyfrost.oneconfig.libs.universal.UGraphics;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
+import cc.polyfrost.oneconfig.libs.universal.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.*;
 import net.minecraft.entity.boss.BossStatus;
 
 public class BossBar extends Config {

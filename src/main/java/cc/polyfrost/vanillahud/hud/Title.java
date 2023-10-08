@@ -1,19 +1,14 @@
 package cc.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.Exclude;
-import cc.polyfrost.oneconfig.config.annotations.HUD;
+import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
-import cc.polyfrost.oneconfig.libs.universal.UGraphics;
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
-import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import cc.polyfrost.oneconfig.libs.universal.*;
+import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
-import cc.polyfrost.vanillahud.mixin.GuiIngameAccessor;
-import cc.polyfrost.vanillahud.mixin.MinecraftAccessor;
+import cc.polyfrost.vanillahud.mixin.*;
 
 public class Title extends Config {
 

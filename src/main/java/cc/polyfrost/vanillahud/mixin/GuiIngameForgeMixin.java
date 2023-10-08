@@ -18,4 +18,9 @@ public class GuiIngameForgeMixin {
     private void cancelTitle(int width, int height, float partialTicks, CallbackInfo ci) {
         ci.cancel();
     }
+
+    @Inject(method = "renderToolHightlight", at = @At("HEAD"), cancellable = true)
+    private void cancelHeldItem(CallbackInfo ci) {
+        ci.cancel();
+    }
 }
