@@ -1,4 +1,4 @@
-package cc.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin;
 
 import net.minecraftforge.client.GuiIngameForge;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,6 +21,6 @@ public class GuiIngameForgeMixin {
 
     @Inject(method = "renderToolHightlight", at = @At("HEAD"), cancellable = true)
     private void cancelHeldItem(CallbackInfo ci) {
-        ci.cancel();
+        //ci.cancel();
     }
 }

@@ -1,4 +1,4 @@
-package cc.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin;
 
 import cc.polyfrost.oneconfig.libs.universal.UGraphics;
 import cc.polyfrost.oneconfig.libs.universal.UMinecraft;

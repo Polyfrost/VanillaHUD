@@ -1,7 +1,7 @@
 {
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7",
-  "package": "cc.polyfrost.vanillahud.mixin",
+  "package": "org.polyfrost.vanillahud.mixin",
   "refmap": "mixins.${id}.refmap.json",
   "verbose": true,
   "client": [

@@ -1,4 +1,4 @@
-package cc.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Timer;

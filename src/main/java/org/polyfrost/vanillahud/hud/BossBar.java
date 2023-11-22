@@ -1,4 +1,4 @@
-package cc.polyfrost.vanillahud.hud;
+package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;

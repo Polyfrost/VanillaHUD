@@ -1,4 +1,4 @@
-package cc.polyfrost.vanillahud.hud;
+package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
@@ -12,8 +12,8 @@ import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
-import cc.polyfrost.vanillahud.mixin.GuiIngameAccessor;
-import cc.polyfrost.vanillahud.mixin.MinecraftAccessor;
+import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
+import org.polyfrost.vanillahud.mixin.MinecraftAccessor;
 
 import java.awt.Color;
 

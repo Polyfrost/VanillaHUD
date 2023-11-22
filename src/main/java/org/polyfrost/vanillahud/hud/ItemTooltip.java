@@ -1,4 +1,4 @@
-package cc.polyfrost.vanillahud.hud;
+package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
@@ -9,7 +9,7 @@ import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
-import cc.polyfrost.vanillahud.mixin.GuiIngameAccessor;
+import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
 import net.minecraft.util.EnumChatFormatting;
 
 public class ItemTooltip extends Config {
