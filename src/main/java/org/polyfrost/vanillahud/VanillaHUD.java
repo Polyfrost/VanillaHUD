@@ -18,6 +18,7 @@ public class VanillaHUD {
     //public static ItemTooltip itemTooltip;
     public static Scoreboard scoreboard;
     public static Title title;
+    public static boolean apec = false;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
@@ -37,5 +38,6 @@ public class VanillaHUD {
         if (Loader.isModLoaded("sidebarmod")) {
             Notifications.INSTANCE.send("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).");
         }
+        apec = Loader.isModLoaded("apec");
     }
 }

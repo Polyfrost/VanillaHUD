@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.hud;
 
+import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
@@ -12,6 +13,8 @@ import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import net.minecraft.client.Minecraft;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
 import org.polyfrost.vanillahud.mixin.MinecraftAccessor;
 
@@ -61,6 +64,9 @@ public class ActionBar extends Config {
 
         @Override
         protected boolean shouldShow() {
+            if (VanillaHUD.apec && Minecraft.getMinecraft().ingameGUI instanceof ApecGuiIngameForge) { // I love Apec Mod Minecraft
+                return false;
+            }
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
             if (ingameGUI.getRecordPlayingUpFor() <= 0 || ingameGUI.getRecordPlaying() == null || ingameGUI.getRecordPlaying().isEmpty()) {
                 return false;

@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.hud;
 
+import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
@@ -22,6 +23,7 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
+import org.polyfrost.vanillahud.VanillaHUD;
 
 import java.util.Collection;
 
@@ -112,6 +114,9 @@ public class Scoreboard extends Config {
 
         @Override
         protected boolean shouldShow() {
+            if (VanillaHUD.apec && Minecraft.getMinecraft().ingameGUI instanceof ApecGuiIngameForge) { // I love Apec Mod Minecraft
+                return false;
+            }
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
             boolean showRealScoreboard = objective != null;
             if (showRealScoreboard) {
