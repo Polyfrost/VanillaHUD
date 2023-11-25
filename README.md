@@ -1,7 +1,7 @@
 # VanillaHUD
 
+![Compact Powered by OneConfig](https://polyfrost.org/img/compact_vector.svg)
 <img alt="downloads" src="https://img.shields.io/github/downloads/W-OVERFLOW/VanillaHUD/total?color=F5C400&style=for-the-badge" /> <img alt="downloads latest" src="https://img.shields.io/github/downloads-pre/W-OVERFLOW/VanillaHUD/latest/total?color=F5C400&style=for-the-badge" />
-![OneConfig Supported](https://i.imgur.com/pFqMYWp.png)
 ![Dev Workflow Status](https://img.shields.io/github/v/release/Polyfrost/VanillaHUD.svg?style=for-the-badge&color=1452cc&label=release)
 
 Adds in a load of customization to a few native UI elements such as the bossbar, scoreboard, etc.
