@@ -77,7 +77,7 @@ public class BossBar extends Config {
             this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
             UGraphics.GL.popMatrix();
             if (this.renderText) {
-                super.draw(matrices, x + this.getWidth(1.0f, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
+                super.draw(matrices, x + this.getWidth(scale, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
             }
         }
 
