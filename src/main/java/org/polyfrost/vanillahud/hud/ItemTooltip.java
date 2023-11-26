@@ -34,7 +34,8 @@ public class ItemTooltip extends Config {
         private static final String EXAMPLE_TEXT = "Item Tooltip";
 
         public HeldItemTooltipHUD() {
-            super("", true, 1920f / 2, 1080f - 32f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
+            super("", true, 1920f / 2, 1080f - 37f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
+            this.textType = 1;
             EventManager.INSTANCE.register(this);
         }
 
