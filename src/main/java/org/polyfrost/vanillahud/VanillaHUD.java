@@ -2,10 +2,7 @@ package org.polyfrost.vanillahud;
 
 import cc.polyfrost.oneconfig.utils.Notifications;
 import net.minecraftforge.fml.common.Loader;
-import org.polyfrost.vanillahud.hud.ActionBar;
-import org.polyfrost.vanillahud.hud.BossBar;
-import org.polyfrost.vanillahud.hud.Scoreboard;
-import org.polyfrost.vanillahud.hud.Title;
+import org.polyfrost.vanillahud.hud.*;
 
 @net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
 public class VanillaHUD {
@@ -15,7 +12,7 @@ public class VanillaHUD {
 
     public static ActionBar actionBar;
     public static BossBar bossBar;
-    //public static ItemTooltip itemTooltip;
+    public static ItemTooltip itemTooltip;
     public static Scoreboard scoreboard;
     public static Title title;
     public static boolean apec = false;
@@ -24,7 +21,7 @@ public class VanillaHUD {
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
         actionBar = new ActionBar();
         bossBar = new BossBar();
-        //itemTooltip = new ItemTooltip();
+        itemTooltip = new ItemTooltip();
         scoreboard = new Scoreboard();
         title = new Title();
     }
