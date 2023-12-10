@@ -27,6 +27,12 @@ public class ItemTooltip extends Config {
 
     public static class HeldItemTooltipHUD extends SingleTextHud {
 
+        @Switch(name = "Fade Out")
+        private static boolean fadeOut = false;
+
+        @Switch(name = "Instant Fade")
+        private static boolean instantFade = false;
+
         @Exclude
         private int opacity;
 
@@ -41,9 +47,17 @@ public class ItemTooltip extends Config {
 
         @Override
         protected void drawLine(String line, float x, float y, float scale) {
-            int color = ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity));
+            OneColor color = new OneColor(ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity)) | this.opacity << 24);
             UGraphics.enableBlend();
-            TextRenderer.drawScaledString(line, x, y, color | this.opacity << 24, TextRenderer.TextType.toType(this.textType), scale);
+            super.drawLine(line, x, y, color, scale);
+            UGraphics.disableBlend();
+        }
+
+        @Override
+        protected void drawLine(String line, float x, float y, OneColor c, float scale) {
+            OneColor color = new OneColor(ColorUtils.setAlpha(c.getRGB(), Math.min(c.getAlpha(), this.opacity)) | this.opacity << 24);
+            UGraphics.enableBlend();
+            super.drawLine(line, x, y, color, scale);
             UGraphics.disableBlend();
         }
 
@@ -51,11 +65,12 @@ public class ItemTooltip extends Config {
         protected boolean shouldShow() {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            opacity = (int) ((float) ingameGUI.getRemainingHighlightTicks() * 256.0F / 10.0F);
-            if (opacity > 255) {
-                opacity = 255;
+            int o = fadeOut? (int) ((float) ingameGUI.getRemainingHighlightTicks() * 256.0F / 10.0F) : 255;
+            if (o > 255) {
+                o = 255;
             }
-            return opacity > 0 && super.shouldShow();
+            opacity = instantFade? 255 : o;
+            return o > 0 && super.shouldShow();
         }
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
@@ -82,7 +97,7 @@ public class ItemTooltip extends Config {
 
             if (example) return EXAMPLE_TEXT;
 
-            if (ingameGUI.getRemainingHighlightTicks() > 0 && ingameGUI.getHighlightingItemStack() != null) {
+            if ((ingameGUI.getRemainingHighlightTicks() > 0 || !fadeOut) && ingameGUI.getHighlightingItemStack() != null) {
                 String string = ingameGUI.getHighlightingItemStack().getDisplayName();
                 if (ingameGUI.getHighlightingItemStack().hasDisplayName()) {
                     string = EnumChatFormatting.ITALIC + string;

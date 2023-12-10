@@ -30,6 +30,9 @@ public class Title extends Config {
 
     public static class TitleHUD extends SingleTextHud {
 
+        @Switch(name = "Instant Fade")
+        private static boolean instantFade = false;
+
         @Exclude
         protected int opacity;
 
@@ -47,9 +50,17 @@ public class Title extends Config {
 
         @Override
         protected void drawLine(String line, float x, float y, float scale) {
-            int color = ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity));
+            OneColor color = new OneColor(ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity)) | this.opacity << 24);
             UGraphics.enableBlend();
-            TextRenderer.drawScaledString(line, x, y, color | this.opacity << 24, TextRenderer.TextType.toType(this.textType), scale);
+            super.drawLine(line, x, y, color, scale);
+            UGraphics.disableBlend();
+        }
+
+        @Override
+        protected void drawLine(String line, float x, float y, OneColor c, float scale) {
+            OneColor color = new OneColor(ColorUtils.setAlpha(c.getRGB(), Math.min(c.getAlpha(), this.opacity)) | this.opacity << 24);
+            UGraphics.enableBlend();
+            super.drawLine(line, x, y, color, scale);
             UGraphics.disableBlend();
         }
 
@@ -62,20 +73,20 @@ public class Title extends Config {
 
             float age = (float) ingameGUI.getTitlesTimer() - ((MinecraftAccessor) UMinecraft.getMinecraft()).getTimer().renderPartialTicks;
 
-            opacity = 255;
+            int o = 255;
 
             if (ingameGUI.getTitlesTimer() > ingameGUI.getTitleFadeOut() + ingameGUI.getTitleDisplayTime()) {
                 float f = ingameGUI.getTitleFadeIn() + ingameGUI.getTitleFadeOut() + ingameGUI.getTitleDisplayTime() - age;
-                opacity = (int) (f * 255 / ingameGUI.getTitleFadeIn());
+                o = (int) (f * 255 / ingameGUI.getTitleFadeIn());
             } else if (ingameGUI.getTitlesTimer() <= ingameGUI.getTitleFadeOut()) {
-                opacity = (int) (age * 255 / ingameGUI.getTitleFadeOut());
+                o = (int) (age * 255 / ingameGUI.getTitleFadeOut());
             }
 
-            if (opacity > 255) {
-                opacity = 255;
+            if (o > 255) {
+                o = 255;
             }
-
-            return opacity > 8 && super.shouldShow();
+            opacity = instantFade? 255 : o;
+            return o > 8 && super.shouldShow();
         }
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
