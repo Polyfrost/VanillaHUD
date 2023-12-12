@@ -28,7 +28,7 @@ public class ItemTooltip extends Config {
     public static class HeldItemTooltipHUD extends SingleTextHud {
 
         @Switch(name = "Fade Out")
-        private static boolean fadeOut = false;
+        private static boolean fadeOut = true;
 
         @Switch(name = "Instant Fade")
         private static boolean instantFade = false;
