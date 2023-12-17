@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.mixin;
 
 import net.minecraftforge.client.GuiIngameForge;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,6 +22,8 @@ public class GuiIngameForgeMixin {
 
     @Inject(method = "renderToolHightlight", at = @At("HEAD"), cancellable = true)
     private void cancelHeldItem(CallbackInfo ci) {
-        ci.cancel();
+        if (!VanillaHUD.isApec()) {
+            ci.cancel();
+        }
     }
 }

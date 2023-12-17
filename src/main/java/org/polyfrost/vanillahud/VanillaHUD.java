@@ -1,6 +1,8 @@
 package org.polyfrost.vanillahud;
 
+import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import cc.polyfrost.oneconfig.utils.Notifications;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Loader;
 import org.polyfrost.vanillahud.hud.*;
 
@@ -15,7 +17,7 @@ public class VanillaHUD {
     public static ItemTooltip itemTooltip;
     public static Scoreboard scoreboard;
     public static Title title;
-    public static boolean apec = false;
+    private static boolean apec = false;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
@@ -36,5 +38,9 @@ public class VanillaHUD {
             Notifications.INSTANCE.send("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).");
         }
         apec = Loader.isModLoaded("apec");
+    }
+
+    public static boolean isApec() {
+        return apec && Minecraft.getMinecraft().ingameGUI instanceof ApecGuiIngameForge;
     }
 }

@@ -64,7 +64,7 @@ public class ActionBar extends Config {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD.apec && Minecraft.getMinecraft().ingameGUI instanceof ApecGuiIngameForge) { // I love Apec Mod Minecraft
+            if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
                 return false;
             }
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;

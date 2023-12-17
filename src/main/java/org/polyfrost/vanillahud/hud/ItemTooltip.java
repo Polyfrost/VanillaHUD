@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.hud;
 
+import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
@@ -9,6 +10,8 @@ import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import net.minecraft.client.Minecraft;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
 import net.minecraft.util.EnumChatFormatting;
 
@@ -63,6 +66,9 @@ public class ItemTooltip extends Config {
 
         @Override
         protected boolean shouldShow() {
+            if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
+                return false;
+            }
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
             int o = fadeOut? (int) ((float) ingameGUI.getRemainingHighlightTicks() * 256.0F / 10.0F) : 255;

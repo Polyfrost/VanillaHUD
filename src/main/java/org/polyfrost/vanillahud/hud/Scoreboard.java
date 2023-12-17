@@ -114,7 +114,7 @@ public class Scoreboard extends Config {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD.apec && Minecraft.getMinecraft().ingameGUI instanceof ApecGuiIngameForge) { // I love Apec Mod Minecraft
+            if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
                 return false;
             }
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
