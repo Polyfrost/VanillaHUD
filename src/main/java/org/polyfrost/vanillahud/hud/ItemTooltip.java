@@ -15,13 +15,13 @@ import net.minecraft.util.EnumChatFormatting;
 public class ItemTooltip extends Config {
 
     @HUD(
-            name = "Item Tooltip"
+            name = "Held Item Tooltip"
     )
     public HeldItemTooltipHUD hud = new HeldItemTooltipHUD();
 
 
     public ItemTooltip(){
-        super(new Mod("Item Tooltip", ModType.HUD, "/vanillahud_dark.svg"), "itemtooltip.json");
+        super(new Mod("Held Item Tooltip", ModType.HUD, "/vanillahud_dark.svg"), "itemtooltip.json");
         initialize();
     }
 
