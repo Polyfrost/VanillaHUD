@@ -10,6 +10,7 @@ import cc.polyfrost.oneconfig.libs.universal.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.entity.boss.BossStatus;
+import org.polyfrost.vanillahud.hooks.BossStatusHook;
 
 public class BossBar extends Config {
 
@@ -34,6 +35,19 @@ public class BossBar extends Config {
                 name = "Render Health"
         )
         public boolean renderHealth = true;
+
+        @Switch(
+                name = "Smooth Health",
+                description = "Lerps the health bar to make it smoother. Similar to the boss bar progress in modern versions of Minecraft."
+        )
+        public boolean smoothHealth = true;
+
+        @Slider(
+                name = "Lerp Speed",
+                min = 0,
+                max = 1000
+        )
+        public float lerpSpeed = 100;
 
         @Slider(
                 name = "Bar Position",
@@ -74,7 +88,7 @@ public class BossBar extends Config {
             UGraphics.GL.pushMatrix();
             UGraphics.GL.scale(scale, scale, 1);
             UGraphics.GL.translate(x / scale, y / scale, 1);
-            this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
+            this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? smoothHealth ? BossStatusHook.getPercent() : BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
             UGraphics.GL.popMatrix();
             if (this.renderText) {
                 super.draw(matrices, x + this.getWidth(scale, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
