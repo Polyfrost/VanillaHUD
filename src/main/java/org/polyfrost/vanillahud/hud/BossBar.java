@@ -44,7 +44,7 @@ public class BossBar extends Config {
 
         @Slider(
                 name = "Lerp Speed",
-                min = 0,
+                min = 1,
                 max = 1000
         )
         public float lerpSpeed = 100;
