@@ -89,10 +89,10 @@ public class BossBar extends Config {
             UGraphics.GL.scale(scale, scale, 1);
             UGraphics.GL.translate(x / scale, y / scale, 1);
             this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? smoothHealth ? BossStatusHook.getPercent() : BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
-            UGraphics.GL.popMatrix();
             if (this.renderText) {
-                super.draw(matrices, x + this.getWidth(scale, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), y, scale, example);
+                super.draw(matrices, this.getWidth(1, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), 0, 1, example);
             }
+            UGraphics.GL.popMatrix();
         }
 
         @Override
