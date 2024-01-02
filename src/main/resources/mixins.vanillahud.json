@@ -9,6 +9,7 @@
     "GuiIngameAccessor",
     "GuiIngameForgeMixin",
     "GuiIngameMixin",
+    "GuiSpectatorAccessor",
     "MinecraftAccessor"
   ]
 }

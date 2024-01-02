@@ -11,9 +11,12 @@ import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.spectator.ISpectatorMenuObject;
+import net.minecraft.client.gui.spectator.SpectatorMenu;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
 import net.minecraft.util.EnumChatFormatting;
+import org.polyfrost.vanillahud.mixin.GuiSpectatorAccessor;
 
 public class ItemTooltip extends Config {
 
@@ -23,7 +26,7 @@ public class ItemTooltip extends Config {
     public HeldItemTooltipHUD hud = new HeldItemTooltipHUD();
 
 
-    public ItemTooltip(){
+    public ItemTooltip() {
         super(new Mod("Held Item Tooltip", ModType.HUD, "/vanillahud_dark.svg"), "itemtooltip.json");
         initialize();
     }
@@ -40,7 +43,13 @@ public class ItemTooltip extends Config {
         private int opacity;
 
         @Exclude
+        private static String specText;
+
+        @Exclude
         private static final String EXAMPLE_TEXT = "Item Tooltip";
+
+        @Exclude
+        private static final Minecraft mc = UMinecraft.getMinecraft();
 
         public HeldItemTooltipHUD() {
             super("", true, 1920f / 2, 1080f - 37f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
@@ -69,14 +78,28 @@ public class ItemTooltip extends Config {
             if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
                 return false;
             }
-            GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
+            GuiIngameAccessor ingameGUI = (GuiIngameAccessor) mc.ingameGUI;
 
-            int o = fadeOut? (int) ((float) ingameGUI.getRemainingHighlightTicks() * 256.0F / 10.0F) : 255;
+            int o = fadeOut ? (int) ((float) ingameGUI.getRemainingHighlightTicks() * 256.0F / 10.0F) : 255;
             if (o > 255) {
                 o = 255;
             }
-            opacity = instantFade? 255 : o;
-            return o > 0 && super.shouldShow();
+            opacity = instantFade ? 255 : o;
+            String spectatorText = null;
+            if (mc.thePlayer != null && mc.thePlayer.isSpectator()) {
+                GuiSpectatorAccessor spectatorAccessor = (GuiSpectatorAccessor) mc.ingameGUI.getSpectatorGui();
+                int i = (int)(spectatorAccessor.alpha() * 255.0F);
+                if (i > 3 && spectatorAccessor.getField_175271_i() != null) {
+                    ISpectatorMenuObject iSpectatorMenuObject = spectatorAccessor.getField_175271_i().func_178645_b();
+                    spectatorText = iSpectatorMenuObject != SpectatorMenu.field_178657_a ? iSpectatorMenuObject.getSpectatorName().getFormattedText() : spectatorAccessor.getField_175271_i().func_178650_c().func_178670_b().getFormattedText();
+                    if (spectatorText != null) {
+                        specText = spectatorText;
+                        opacity = instantFade ? 255 : i;
+                    }
+                }
+            }
+
+            return (o > 0 || spectatorText != null) && super.shouldShow();
         }
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
@@ -99,11 +122,15 @@ public class ItemTooltip extends Config {
 
         @Override
         protected String getText(boolean example) {
-            GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
-
+            GuiIngameAccessor ingameGUI = (GuiIngameAccessor) mc.ingameGUI;
             if (example) return EXAMPLE_TEXT;
-
-            if ((ingameGUI.getRemainingHighlightTicks() > 0 || !fadeOut) && ingameGUI.getHighlightingItemStack() != null) {
+            if (mc.thePlayer != null && mc.thePlayer.isSpectator()) {
+                GuiSpectatorAccessor spectatorAccessor = (GuiSpectatorAccessor) mc.ingameGUI.getSpectatorGui();
+                int i = (int)(spectatorAccessor.alpha() * 255.0F);
+                if (i > 3 && spectatorAccessor.getField_175271_i() != null) {
+                    return specText;
+                }
+            } else if ((ingameGUI.getRemainingHighlightTicks() > 0 || !fadeOut) && ingameGUI.getHighlightingItemStack() != null) {
                 String string = ingameGUI.getHighlightingItemStack().getDisplayName();
                 if (ingameGUI.getHighlightingItemStack().hasDisplayName()) {
                     string = EnumChatFormatting.ITALIC + string;
