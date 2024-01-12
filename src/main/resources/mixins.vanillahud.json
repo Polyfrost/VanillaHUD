@@ -6,10 +6,12 @@
   "verbose": true,
   "client": [
     "BossStatusMixin",
+    "GuiAccessor",
     "GuiIngameAccessor",
     "GuiIngameForgeMixin",
     "GuiIngameMixin",
     "GuiSpectatorAccessor",
+    "GuiSpectatorMixin",
     "MinecraftAccessor"
   ]
 }

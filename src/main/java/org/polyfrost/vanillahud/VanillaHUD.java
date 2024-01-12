@@ -14,6 +14,7 @@ public class VanillaHUD {
 
     public static ActionBar actionBar;
     public static BossBar bossBar;
+    public static Hotbar hotBar;
     public static ItemTooltip itemTooltip;
     public static Scoreboard scoreboard;
     public static Title title;
@@ -23,6 +24,7 @@ public class VanillaHUD {
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
         actionBar = new ActionBar();
         bossBar = new BossBar();
+        hotBar = new Hotbar();
         itemTooltip = new ItemTooltip();
         scoreboard = new Scoreboard();
         title = new Title();
