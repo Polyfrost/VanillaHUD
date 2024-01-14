@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.mixin;
 
 import net.minecraft.client.gui.GuiSpectator;
+import net.minecraft.client.gui.spectator.ISpectatorMenuObject;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -14,4 +15,7 @@ public interface GuiSpectatorAccessor {
 
     @Invoker("func_175265_c")
     float alpha();
+
+    @Invoker("func_175266_a")
+    void drawItem(int i, int j, float f, float g, ISpectatorMenuObject iSpectatorMenuObject);
 }

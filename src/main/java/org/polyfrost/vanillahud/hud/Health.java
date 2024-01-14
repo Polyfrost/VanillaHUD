@@ -6,6 +6,12 @@ import cc.polyfrost.oneconfig.config.annotations.DualOption;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.util.MathHelper;
+
+import static org.polyfrost.vanillahud.hud.BossBar.BossBarHUD.mc;
 
 public class Health extends Config {
 
@@ -34,5 +40,16 @@ public class Health extends Config {
         public HealthHud() {
             super(true);
         }
+    }
+
+    public static int healthLink() {
+        IAttributeInstance attrMaxHealth = mc.thePlayer.getEntityAttribute(SharedMonsterAttributes.maxHealth);
+        float healthMax = (float)attrMaxHealth.getAttributeValue();
+        float absorb = mc.thePlayer.getAbsorptionAmount();
+        int healthRows = MathHelper.ceiling_float_int((healthMax + absorb) / 2.0F / 10.0F);
+        int rowHeight = Math.max(10 - (healthRows - 2), 3);
+        int height = healthRows * rowHeight;
+        if (rowHeight != 10) height += 10 - rowHeight;
+        return HudCore.editing ? 0 : (int) ((height - 10) * (Health.HealthHud.mode ? 1 : -1) * Health.hud.getScale());
     }
 }

@@ -2,17 +2,18 @@
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7",
   "package": "org.polyfrost.vanillahud.mixin",
-  "refmap": "mixins.${id}.refmap.json",
+  "refmap": "mixins.vanillahud.refmap.json",
   "verbose": true,
   "client": [
     "BossStatusMixin",
     "GuiAccessor",
     "GuiIngameAccessor",
-    "GuiIngameForgeMixin",
+    "GuiIngameForgeMixin_Cancel",
     "GuiIngameForgeMixin_Hotbar",
     "GuiIngameMixin",
     "GuiSpectatorAccessor",
     "GuiSpectatorMixin",
+    "HUDOverlayHandlerMixin",
     "MinecraftAccessor"
   ]
 }
