@@ -75,7 +75,7 @@ public class Scoreboard extends Config {
 
         /** Gets OneConfig's Universal Minecraft instance. */
         @Exclude
-        public static final Minecraft mc = UMinecraft.getMinecraft();
+        private static final Minecraft mc = UMinecraft.getMinecraft();
 
         /** Gets OneConfig's Universal Minecraft fontRenderer. */
         @Exclude public static final FontRenderer fontRenderer = UMinecraft.getFontRenderer();

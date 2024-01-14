@@ -13,8 +13,13 @@ public class VanillaHUD {
     public static final String VERSION = "@VER@";
 
     public static ActionBar actionBar;
+    public static Air air;
+    public static Armor armor;
     public static BossBar bossBar;
+    public static Experience experience;
+    public static Health health;
     public static Hotbar hotBar;
+    public static Hunger hunger;
     public static ItemTooltip itemTooltip;
     public static Scoreboard scoreboard;
     public static Title title;
@@ -23,8 +28,13 @@ public class VanillaHUD {
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
         actionBar = new ActionBar();
+        air = new Air();
+        armor = new Armor();
         bossBar = new BossBar();
+        experience = new Experience();
+        health = new Health();
         hotBar = new Hotbar();
+        hunger = new Hunger();
         itemTooltip = new ItemTooltip();
         scoreboard = new Scoreboard();
         title = new Title();

@@ -9,6 +9,7 @@
     "GuiAccessor",
     "GuiIngameAccessor",
     "GuiIngameForgeMixin",
+    "GuiIngameForgeMixin_Hotbar",
     "GuiIngameMixin",
     "GuiSpectatorAccessor",
     "GuiSpectatorMixin",

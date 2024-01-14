@@ -43,7 +43,4 @@ public interface GuiIngameAccessor {
     @Accessor()
     ItemStack getHighlightingItemStack();
 
-    @Invoker("renderTooltip")
-    void renderHotBar(ScaledResolution sr, float partialTicks);
-
 }
