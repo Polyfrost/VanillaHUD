@@ -1,6 +1,5 @@
 package org.polyfrost.vanillahud.mixin;
 
-import cc.polyfrost.oneconfig.config.annotations.Exclude;
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.block.material.Material;
@@ -8,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,17 +16,15 @@ import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import static org.polyfrost.vanillahud.hud.Health.healthLink;
-import static org.polyfrost.vanillahud.hud.Hunger.getMountHud;
-import static org.polyfrost.vanillahud.hud.Hunger.mountLink;
+import static org.polyfrost.vanillahud.hud.Hunger.*;
 
 @Mixin(value = GuiIngameForge.class)
-public abstract class GuiIngameForgeMixin_Hotbar {
+public abstract class GuiIngameForgeMixin {
 
     @Shadow public abstract void renderHealth(int width, int height);
 
@@ -227,6 +225,11 @@ public abstract class GuiIngameForgeMixin_Hotbar {
         GlStateManager.scale(Experience.hud.getScale(), Experience.hud.getScale(), 1F);
         renderExperience(182, 29);
         GlStateManager.popMatrix();
+    }
+
+    @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
+    private boolean tabExample(KeyBinding instance) {
+        return instance.isKeyDown() || HudCore.editing;
     }
 
 }
