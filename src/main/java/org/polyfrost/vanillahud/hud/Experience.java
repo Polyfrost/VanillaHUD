@@ -2,6 +2,7 @@ package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
+import cc.polyfrost.oneconfig.config.annotations.Slider;
 import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
@@ -23,6 +24,12 @@ public class Experience extends Config {
         public ExperienceHud() {
             super(true);
         }
+
+        @Slider(
+                name = "Level Text Height",
+                min = -10f, max = 10f
+        )
+        public static float expHeight = 0;
 
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {

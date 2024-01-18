@@ -40,8 +40,17 @@ public abstract class GuiIngameMixin {
         GlStateManager.pushMatrix();
         GlStateManager.translate((int) Hotbar.hud.position.getX(), (int) Hotbar.hud.position.getY(), 0f);
         GlStateManager.scale(Hotbar.hud.getScale(), Hotbar.hud.getScale(), 1f);
+        GlStateManager.pushMatrix();
+        if (!Hotbar.HotBarHud.hotbarMode) {
+            GlStateManager.translate(22, 0, 0);
+            GlStateManager.rotate(90 , 0 ,0 ,1);
+        }
     }
 
+    @Inject(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;drawTexturedModalRect(IIIIII)V", ordinal = 1, shift = At.Shift.AFTER))
+    private void popRotate(ScaledResolution sr, float partialTicks, CallbackInfo ci) {
+        GlStateManager.popMatrix();
+    }
     @Inject(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderHelper;disableStandardItemLighting()V"))
     private void pop(ScaledResolution sr, float partialTicks, CallbackInfo ci) {
         GlStateManager.popMatrix();
@@ -58,6 +67,6 @@ public abstract class GuiIngameMixin {
 
     @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;renderHotbarItem(IIIFLnet/minecraft/entity/player/EntityPlayer;)V"))
     private void scaleItems(GuiIngame instance, int index, int xPos, int yPos, float partialTicks, EntityPlayer player) {
-        renderHotbarItem(index, index * 20 + 3, 3, partialTicks, player);
+        renderHotbarItem(index, (Hotbar.HotBarHud.hotbarMode ? index * 20 : 0) + 3, (Hotbar.HotBarHud.hotbarMode ? 0 : index * 20) + 3, partialTicks, player);
     }
 }

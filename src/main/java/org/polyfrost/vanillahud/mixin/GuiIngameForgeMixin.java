@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.KeyBinding;
@@ -225,6 +226,11 @@ public abstract class GuiIngameForgeMixin {
         GlStateManager.scale(Experience.hud.getScale(), Experience.hud.getScale(), 1F);
         renderExperience(182, 29);
         GlStateManager.popMatrix();
+    }
+
+    @ModifyArgs(method = "renderExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawString(Ljava/lang/String;III)I"))
+    private void expLevelHeight(Args args) {
+        args.set(2, (int) args.get(2) + 4 - (int) Experience.ExperienceHud.expHeight);
     }
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))

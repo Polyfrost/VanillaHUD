@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
+import cc.polyfrost.oneconfig.config.annotations.DualOption;
 import cc.polyfrost.oneconfig.config.annotations.Exclude;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
 import cc.polyfrost.oneconfig.config.data.Mod;
@@ -32,6 +33,13 @@ public class Hotbar extends Config {
         @Exclude
         private static final Minecraft mc = Minecraft.getMinecraft();
 
+        @DualOption(
+                name = "Mode",
+                left = "Vertical",
+                right = "Horizontal"
+        )
+        public static boolean hotbarMode = true;
+
         @Override
         public boolean isEnabled() {
             boolean isEnable = super.isEnabled();
@@ -45,12 +53,12 @@ public class Hotbar extends Config {
 
         @Override
         protected float getWidth(float scale, boolean example) {
-            return 182f * scale;
+            return (hotbarMode ? 182 : 22) * scale;
         }
 
         @Override
         protected float getHeight(float scale, boolean example) {
-            return 22f * scale;
+            return (hotbarMode ? 22 : 182) * scale;
         }
 
         @Override
