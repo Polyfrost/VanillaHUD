@@ -1,23 +1,37 @@
 package org.polyfrost.vanillahud.mixin;
 
+import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.IChatComponent;
 import org.polyfrost.vanillahud.hud.TabList;
+import org.polyfrost.vanillahud.utils.GameProfileHelper;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.List;
+
 @Mixin(GuiPlayerTabOverlay.class)
 public class GuiPlayerTabOverlayMixin {
+
+    @Shadow private IChatComponent header;
+    @Shadow private IChatComponent footer;
+    @Unique private static final IChatComponent tab$exampleHeader = new ChatComponentText("TabList");
+    @Unique private static final IChatComponent tab$exampleFooter = new ChatComponentText("Vanilla Hud");
 
     @Unique
     int TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
@@ -27,16 +41,37 @@ public class GuiPlayerTabOverlayMixin {
         return 1;
     }
 
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;header:Lnet/minecraft/util/IChatComponent;"))
+    private IChatComponent modifyHeader(GuiPlayerTabOverlay instance) {
+        if (HudCore.editing) return tab$exampleHeader;
+        return header;
+    }
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;footer:Lnet/minecraft/util/IChatComponent;"))
+    private IChatComponent modifyFooter(GuiPlayerTabOverlay instance) {
+        if (HudCore.editing) return tab$exampleFooter;
+        return footer;
+    }
+
+
     @Inject(method = "renderPlayerlist", at = @At(value = "HEAD"))
     private void translate(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
+        TabList.TabHud hud = TabList.hud;
         GlStateManager.pushMatrix();
-        GlStateManager.translate((float) (-width / 2) * TabList.hud.getScale() + (int) TabList.hud.position.getCenterX() , TabList.hud.position.getY(), 0);
-        GlStateManager.scale(TabList.hud.getScale(), TabList.hud.getScale(), 1f);
+        GlStateManager.translate((float) (-width / 2) * hud.getScale() + hud.position.getCenterX() , hud.position.getY() + hud.getPaddingY(), 0);
+        GlStateManager.scale(hud.getScale(), hud.getScale(), 1f);
     }
 
     @Inject(method = "renderPlayerlist", at = @At(value = "TAIL"))
     private void pop(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
         GlStateManager.popMatrix();
+    }
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;"))
+    private List<NetworkPlayerInfo> list(Ordering<NetworkPlayerInfo> instance, Iterable<NetworkPlayerInfo> elements) {
+        if (HudCore.editing) return GameProfileHelper.devInfo;
+        return instance.sortedCopy(elements);
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))

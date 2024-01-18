@@ -5,7 +5,6 @@ import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.KeyBinding;
@@ -236,6 +235,11 @@ public abstract class GuiIngameForgeMixin {
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
         return instance.isKeyDown() || HudCore.editing;
+    }
+
+    @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))
+    private boolean tabExample2(Minecraft instance) {
+        return instance.isIntegratedServerRunning() && !HudCore.editing;
     }
 
 }

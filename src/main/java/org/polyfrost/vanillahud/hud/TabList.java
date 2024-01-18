@@ -30,14 +30,14 @@ public class TabList extends Config {
     public static class TabHud extends BasicHud {
 
         public TabHud() {
-            super(true);
+            super(true, 1920 / 2f, 10);
         }
 
         @Dropdown(
                 name = "Text Type",
                 options = {"No Shadow", "Shadow", "Full Shadow"}
         )
-        public static int textType = 0;
+        public static int textType = 1;
 
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
@@ -50,7 +50,11 @@ public class TabList extends Config {
 
         public void drawBG() {
             if (!background) return;
-            this.drawBackground(position.getX(), position.getY(), width * scale, height * scale, scale);
+            this.drawBackground(position.getX(), position.getY(), position.getWidth(), position.getHeight(), scale);
+        }
+
+        public float getPaddingY() {
+            return paddingY;
         }
 
         @Override
