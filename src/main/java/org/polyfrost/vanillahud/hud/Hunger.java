@@ -53,7 +53,7 @@ public class Hunger extends Config {
         public static boolean mountLink = false;
 
         public HungerHud() {
-            super(true);
+            super(true, 1920 / 2f + 182 / 2f - 81, 1080 - 39, true);
         }
     }
 
@@ -63,7 +63,7 @@ public class Hunger extends Config {
         public static boolean healthLink = false;
 
         public MountHud() {
-            super(false);
+            super(false, 1920 / 2f + 182 / 2f - 81, 1080 - 59, true);
         }
     }
 

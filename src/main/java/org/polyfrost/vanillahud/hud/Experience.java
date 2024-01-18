@@ -22,14 +22,14 @@ public class Experience extends Config {
     public static class ExperienceHud extends Hud {
 
         public ExperienceHud() {
-            super(true);
+            super(true, 1920 / 2f - 182 / 2f, 1080 - 29);
         }
 
         @Slider(
                 name = "Level Text Height",
                 min = -10f, max = 10f
         )
-        public static float expHeight = 0;
+        public static float expHeight = 4;
 
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {

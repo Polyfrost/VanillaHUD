@@ -27,7 +27,7 @@ public class Hotbar extends Config {
     public static class HotBarHud extends Hud {
 
         public HotBarHud() {
-            super(true);
+            super(true, 1920 / 2f - 182 / 2f, 1080 - 22f);
         }
 
         @Exclude

@@ -38,7 +38,7 @@ public class Health extends Config {
         public static boolean mountLink = false;
 
         public HealthHud() {
-            super(true);
+            super(true, 1920 / 2f - 182 / 2f, 1080 - 39, false);
         }
     }
 

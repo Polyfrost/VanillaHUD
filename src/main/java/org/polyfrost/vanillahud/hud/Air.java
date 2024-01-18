@@ -24,10 +24,10 @@ public class Air extends Config {
         public static boolean healthLink = false;
 
         @Checkbox(name = "Link with mount health")
-        public static boolean mountLink = false;
+        public static boolean mountLink = true;
 
         public AirHud() {
-            super(true);
+            super(true, 1920 / 2f + 182 / 2f - 81, 1080 - 49, true);
         }
     }
 

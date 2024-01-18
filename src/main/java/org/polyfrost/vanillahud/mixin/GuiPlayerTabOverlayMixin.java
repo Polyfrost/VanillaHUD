@@ -15,7 +15,7 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import org.polyfrost.vanillahud.hud.TabList;
-import org.polyfrost.vanillahud.utils.GameProfileHelper;
+import org.polyfrost.vanillahud.utils.TabListManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -30,8 +30,8 @@ public class GuiPlayerTabOverlayMixin {
 
     @Shadow private IChatComponent header;
     @Shadow private IChatComponent footer;
-    @Unique private static final IChatComponent tab$exampleHeader = new ChatComponentText("TabList");
-    @Unique private static final IChatComponent tab$exampleFooter = new ChatComponentText("Vanilla Hud");
+    @Unique private static final IChatComponent tab$exampleHeader = new ChatComponentText("Tab List");
+    @Unique private static final IChatComponent tab$exampleFooter = new ChatComponentText("VanillaHud");
 
     @Unique
     int TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
@@ -70,7 +70,7 @@ public class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;"))
     private List<NetworkPlayerInfo> list(Ordering<NetworkPlayerInfo> instance, Iterable<NetworkPlayerInfo> elements) {
-        if (HudCore.editing) return GameProfileHelper.devInfo;
+        if (HudCore.editing) return TabListManager.devInfo;
         return instance.sortedCopy(elements);
     }
 

@@ -6,8 +6,9 @@ import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 
 public class HudBar extends Hud {
 
-    public HudBar(boolean enable) {
-        super(enable);
+    public HudBar(boolean enable, float x, float y, boolean alignment) {
+        super(enable, x, y);
+        this.alignment = alignment;
     }
 
     @DualOption(
@@ -15,7 +16,7 @@ public class HudBar extends Hud {
             left = "Left",
             right = "Right"
     )
-    public boolean alignment = true;
+    public boolean alignment;
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {

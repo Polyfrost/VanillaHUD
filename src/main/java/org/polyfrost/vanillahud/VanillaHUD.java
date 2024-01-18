@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.utils.Notifications;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Loader;
 import org.polyfrost.vanillahud.hud.*;
+import org.polyfrost.vanillahud.utils.TabListManager;
 
 @net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
 public class VanillaHUD {
@@ -40,6 +41,8 @@ public class VanillaHUD {
         scoreboard = new Scoreboard();
         tab = new TabList();
         title = new Title();
+
+//        TabListManager.launchUpdateDevList();
     }
 
     @net.minecraftforge.fml.common.Mod.EventHandler

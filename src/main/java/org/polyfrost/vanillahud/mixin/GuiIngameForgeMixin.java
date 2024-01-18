@@ -234,7 +234,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
-        return instance.isKeyDown() || HudCore.editing;
+        return (instance.isKeyDown() || HudCore.editing) && TabList.hud.isEnabled();
     }
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))

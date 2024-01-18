@@ -19,13 +19,13 @@ public class Armor extends Config {
     public static class ArmorHud extends HudBar {
 
         @Checkbox(name = "Link with health")
-        public static boolean healthLink = false;
+        public static boolean healthLink = true;
 
         @Checkbox(name = "Link with mount health")
         public static boolean mountLink = false;
 
         public ArmorHud() {
-            super(true);
+            super(true, 1920 / 2f - 182 / 2f, 1080 - 49, false);
         }
     }
 

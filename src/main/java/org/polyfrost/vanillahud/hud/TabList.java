@@ -7,7 +7,9 @@ import cc.polyfrost.oneconfig.config.annotations.HUD;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.hud.BasicHud;
+import cc.polyfrost.oneconfig.libs.universal.UChat;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import org.polyfrost.vanillahud.utils.TabListManager;
 
 public class TabList extends Config {
 
@@ -39,8 +41,17 @@ public class TabList extends Config {
         )
         public static int textType = 1;
 
+        @Exclude
+        private static boolean isExample;
+
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
+            if (isExample != example) {
+                if (example) {
+                    TabListManager.launchUpdateDevList();
+                }
+                isExample = example;
+            }
         }
 
         @Override
@@ -54,7 +65,7 @@ public class TabList extends Config {
         }
 
         public float getPaddingY() {
-            return paddingY;
+            return paddingY * scale;
         }
 
         @Override
