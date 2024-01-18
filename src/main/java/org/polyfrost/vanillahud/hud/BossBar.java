@@ -9,6 +9,7 @@ import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.boss.BossStatus;
 import org.polyfrost.vanillahud.hooks.BossStatusHook;
 
@@ -90,6 +91,8 @@ public class BossBar extends Config {
             UGraphics.GL.translate(x / scale, y / scale, 1);
             this.drawHealth(this.getCompleteText(this.getText(example)), this.isBossActive() ? smoothHealth ? BossStatusHook.getPercent() : BossStatus.healthScale : 0.8f, 0, this.renderText ? 10 : 0);
             if (this.renderText) {
+                GlStateManager.enableBlend();
+                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
                 super.draw(matrices, this.getWidth(1, example) / 2 - (float) (fontRenderer.getStringWidth(this.getCompleteText(this.getText(example))) / 2), 0, 1, example);
             }
             UGraphics.GL.popMatrix();

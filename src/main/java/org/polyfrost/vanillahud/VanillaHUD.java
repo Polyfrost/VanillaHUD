@@ -22,7 +22,7 @@ public class VanillaHUD {
     public static Hunger hunger;
     public static ItemTooltip itemTooltip;
     public static Scoreboard scoreboard;
-    public static Tablist tab;
+    public static TabList tab;
     public static Title title;
     private static boolean apec = false;
 
@@ -38,7 +38,7 @@ public class VanillaHUD {
         hunger = new Hunger();
         itemTooltip = new ItemTooltip();
         scoreboard = new Scoreboard();
-        tab = new Tablist();
+        tab = new TabList();
         title = new Title();
     }
 
