@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class TabListManager {
     private static final Gson gson = new GsonBuilder().create();
     private static final Minecraft mc = Minecraft.getMinecraft();
-    private static final String devListURL = "https://raw.githubusercontent.com/ImToggle/UUID-List/main/list.json";
+    private static final String devListURL = "https://raw.githubusercontent.com/Polyfrost/VanillaHUD/main/tablist_uuids.json";
 
     private static final List<String> fallbackDevUUIDs = Arrays.asList(
             "0b4d470f-f2fb-4874-9334-1eaef8ba4804", // DeDiamondPro
