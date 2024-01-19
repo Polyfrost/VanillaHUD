@@ -127,15 +127,27 @@ public class GuiPlayerTabOverlayMixin {
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
     private void playerHead(GuiPlayerTabOverlay instance, int width, int x, int y, NetworkPlayerInfo networkPlayerInfoIn) {
         if (!TabList.TabHud.showPing) return;
+        if (!TabList.TabHud.numberPing) {
+            GlStateManager.pushMatrix();
+            GlStateManager.enableBlend();
+            GlStateManager.enableAlpha();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            GuiPlayerTabOverlayAccessor accessor = (GuiPlayerTabOverlayAccessor) instance;
+            accessor.renderPing(width, x, y, networkPlayerInfoIn);
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
+            return;
+        }
         int ping = networkPlayerInfoIn.getResponseTime();
         OneColor color = tab$getColor(ping);
         String pingString = String.valueOf(ping);
         if (TabList.TabHud.hideFalsePing && (ping <= 1 || ping >= 999)) pingString = "";
-        if (TabList.TabHud.scalePingText) {
+        if (TabList.TabHud.scalePing) {
             GlStateManager.scale(0.5F, 0.5F, 0.5F);
-            TextRenderer.drawScaledString(pingString, 2 * (x + width) - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)) - 4, 2 * y + 4, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.pingType), 1F);
+            TextRenderer.drawScaledString(pingString, 2 * (x + width) - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)) - 4, 2 * y + 4, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
             GlStateManager.scale(2F, 2F, 2F);
-        } else TextRenderer.drawScaledString(pingString, x + width - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)), y, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.pingType), 1F);
+        } else TextRenderer.drawScaledString(pingString, x + width - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)), y, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
     }
 
     @Unique

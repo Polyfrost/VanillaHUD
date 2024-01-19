@@ -38,6 +38,16 @@ public class TabList extends Config {
             }
         });
         initialize();
+
+        addDependency("numberPing", "showPing");
+        addDependency("scalePing", "numberPing");
+        addDependency("hideFalsePing", "numberPing");
+        addDependency("pingLevelOne", "numberPing");
+        addDependency("pingLevelTwo", "numberPing");
+        addDependency("pingLevelThree", "numberPing");
+        addDependency("pingLevelFour", "numberPing");
+        addDependency("pingLevelFive", "numberPing");
+        addDependency("pingLevelSix", "numberPing");
     }
 
 
@@ -47,32 +57,31 @@ public class TabList extends Config {
             super(true, 1920 / 2f, 10);
         }
 
+        @Dropdown(
+                name = "Text Type",
+                options = {"No Shadow", "Shadow", "Full Shadow"}
+        )
+        public static int textType = 1;
+
         @Switch(
                 name = "Show Player's Head"
         )
         public static boolean showHead = true;
-
-        @Dropdown(
-                name = "Name Text Type",
-                options = {"No Shadow", "Shadow", "Full Shadow"}
-        )
-        public static int textType = 1;
 
         @Switch(
                 name = "Show Player's Ping"
         )
         public static boolean showPing = true;
 
-        @Dropdown(
-                name = "Ping Text Type",
-                options = {"No Shadow", "Shadow", "Full Shadow"}
+        @Switch(
+                name = "Use Number Ping"
         )
-        public static int pingType = 1;
+        public static boolean numberPing = true;
 
         @Switch(
                 name = "Scale Ping Text"
         )
-        public static boolean scalePingText = true;
+        public static boolean scalePing = true;
 
         @Switch(
                 name = "Hide False Ping",
