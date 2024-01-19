@@ -6,6 +6,7 @@ import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetworkPlayerInfo;
@@ -93,14 +94,43 @@ public class GuiPlayerTabOverlayMixin {
         TabList.height = args.get(3);
     }
 
+    @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 20, ordinal = 0))
+    private int limit(int constant) {
+        return (HudCore.editing ? 10 : constant);
+    }
+
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int drawText(FontRenderer instance, String text, float x, float y, int color) {
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
+        GlStateManager.enableAlpha();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        TextRenderer.drawScaledString(text, x, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
+        TextRenderer.drawScaledString(text, x - (TabList.TabHud.showHead ? 0 : 8), y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
+        GlStateManager.disableAlpha();
+        GlStateManager.disableBlend();
         GlStateManager.popMatrix();
         return 0;
+    }
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V"))
+    private void playerHead(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
+        if (!TabList.TabHud.showHead) return;
+
+        Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, tileWidth, tileHeight);
+    }
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
+    private void playerHead(GuiPlayerTabOverlay instance, int i, int j, int k, NetworkPlayerInfo networkPlayerInfoIn) {
+        if (!TabList.TabHud.showPing) return;
+        GlStateManager.pushMatrix();
+        GlStateManager.enableBlend();
+        GlStateManager.enableAlpha();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GuiPlayerTabOverlayAccessor accessor = (GuiPlayerTabOverlayAccessor) instance;
+        accessor.renderPing(i, j, k, networkPlayerInfoIn);
+        GlStateManager.disableAlpha();
+        GlStateManager.disableBlend();
+        GlStateManager.popMatrix();
     }
 
 }
