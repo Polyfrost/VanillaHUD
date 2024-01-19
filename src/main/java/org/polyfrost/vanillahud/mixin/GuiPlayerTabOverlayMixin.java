@@ -27,7 +27,8 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
 
-@Mixin(GuiPlayerTabOverlay.class)
+// 1100 priority to load before Patcher
+@Mixin(value = GuiPlayerTabOverlay.class, priority = 1100)
 public class GuiPlayerTabOverlayMixin {
 
     @Shadow private IChatComponent header;
@@ -118,16 +119,10 @@ public class GuiPlayerTabOverlayMixin {
         Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, tileWidth, tileHeight);
     }
 
-    /*
-        The following code has been taken from OverlayTweaks under the LGPLv3 License.
-        https://github.com/MicrocontrollersDev/OverlayTweaks/blob/1.20.4/LICENSE
-        It has been altered to support 1.8.9 and OneConfig, as well as general code cleanup.
-     */
-
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
     private void playerHead(GuiPlayerTabOverlay instance, int width, int x, int y, NetworkPlayerInfo networkPlayerInfoIn) {
         if (!TabList.TabHud.showPing) return;
-        if (!TabList.TabHud.numberPing) {
+        if (!TabList.TabHud.numberPing) { // in order to prevent blending issues we need to set the proper gl state
             GlStateManager.pushMatrix();
             GlStateManager.enableBlend();
             GlStateManager.enableAlpha();
@@ -160,5 +155,10 @@ public class GuiPlayerTabOverlayMixin {
         else if (ping >= 300 && ping < 400) color = TabList.TabHud.pingLevelFive;
         else if (ping >= 400) color = TabList.TabHud.pingLevelSix;
         return color;
+    }
+
+    @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 553648127))
+    private int tabOpacity(int opacity) {
+        return TabList.TabHud.tabWidgetColor.getRGB();
     }
 }

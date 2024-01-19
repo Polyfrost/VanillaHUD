@@ -50,7 +50,6 @@ public class TabList extends Config {
         addDependency("pingLevelSix", "numberPing");
     }
 
-
     public static class TabHud extends BasicHud {
 
         public TabHud() {
@@ -118,6 +117,11 @@ public class TabList extends Config {
                 name = "Ping Above 400"
         )
         public static OneColor pingLevelSix = new OneColor(-4318437);
+
+        @Color(
+                name = "Tab Widget Color"
+        )
+        public static OneColor tabWidgetColor = new OneColor(553648127);
 
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {}
