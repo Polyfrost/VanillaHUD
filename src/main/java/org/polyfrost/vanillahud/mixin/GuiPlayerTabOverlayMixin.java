@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.mixin;
 
+import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
@@ -35,13 +36,12 @@ public class GuiPlayerTabOverlayMixin {
     @Unique private static final IChatComponent tab$exampleFooter = new ChatComponentText("VanillaHud");
 
     @Unique
-    int TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
+    int tab$TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
 
     @ModifyVariable(method = "renderPlayerlist", at = @At(value = "STORE", ordinal = 0), ordinal = 9)
     private int resetY(int y) {
         return 1;
     }
-
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;header:Lnet/minecraft/util/IChatComponent;"))
     private IChatComponent modifyHeader(GuiPlayerTabOverlay instance) {
@@ -54,7 +54,6 @@ public class GuiPlayerTabOverlayMixin {
         if (HudCore.editing) return tab$exampleFooter;
         return footer;
     }
-
 
     @Inject(method = "renderPlayerlist", at = @At(value = "HEAD"))
     private void translate(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
@@ -78,19 +77,19 @@ public class GuiPlayerTabOverlayMixin {
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
     private void captureWidth(Args args) {
         TabList.hud.drawBG();
-        args.set(4, TRANSPARENT);
+        args.set(4, tab$TRANSPARENT);
         int width = new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth() / 2;
         TabList.width = ((int) args.get(2) - width) * 2;
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 1))
     private void cancelRect(Args args) {
-        args.set(4, TRANSPARENT);
+        args.set(4, tab$TRANSPARENT);
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 3))
     private void captureHeight(Args args) {
-        args.set(4, TRANSPARENT);
+        args.set(4, tab$TRANSPARENT);
         TabList.height = args.get(3);
     }
 
@@ -119,18 +118,35 @@ public class GuiPlayerTabOverlayMixin {
         Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, tileWidth, tileHeight);
     }
 
+    /*
+        The following code has been taken from OverlayTweaks under the LGPLv3 License.
+        https://github.com/MicrocontrollersDev/OverlayTweaks/blob/1.20.4/LICENSE
+        It has been altered to support 1.8.9 and OneConfig, as well as general code cleanup.
+     */
+
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
-    private void playerHead(GuiPlayerTabOverlay instance, int i, int j, int k, NetworkPlayerInfo networkPlayerInfoIn) {
+    private void playerHead(GuiPlayerTabOverlay instance, int width, int x, int y, NetworkPlayerInfo networkPlayerInfoIn) {
         if (!TabList.TabHud.showPing) return;
-        GlStateManager.pushMatrix();
-        GlStateManager.enableBlend();
-        GlStateManager.enableAlpha();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GuiPlayerTabOverlayAccessor accessor = (GuiPlayerTabOverlayAccessor) instance;
-        accessor.renderPing(i, j, k, networkPlayerInfoIn);
-        GlStateManager.disableAlpha();
-        GlStateManager.disableBlend();
-        GlStateManager.popMatrix();
+        int ping = networkPlayerInfoIn.getResponseTime();
+        OneColor color = tab$getColor(ping);
+        String pingString = String.valueOf(ping);
+        if (TabList.TabHud.hideFalsePing && (ping <= 1 || ping >= 999)) pingString = "";
+        if (TabList.TabHud.scalePingText) {
+            GlStateManager.scale(0.5F, 0.5F, 0.5F);
+            TextRenderer.drawScaledString(pingString, 2 * (x + width) - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)) - 4, 2 * y + 4, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.pingType), 1F);
+            GlStateManager.scale(2F, 2F, 2F);
+        } else TextRenderer.drawScaledString(pingString, x + width - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)), y, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.pingType), 1F);
     }
 
+    @Unique
+    private static OneColor tab$getColor(int ping) {
+        OneColor color = new OneColor(-5636096);
+        if (ping >= 0 && ping < 75) color = TabList.TabHud.pingLevelOne;
+        else if (ping >= 75 && ping < 145) color = TabList.TabHud.pingLevelTwo;
+        else if (ping >= 145 && ping < 200) color = TabList.TabHud.pingLevelThree;
+        else if (ping >= 200 && ping < 300) color = TabList.TabHud.pingLevelFour;
+        else if (ping >= 300 && ping < 400) color = TabList.TabHud.pingLevelFive;
+        else if (ping >= 400) color = TabList.TabHud.pingLevelSix;
+        return color;
+    }
 }
