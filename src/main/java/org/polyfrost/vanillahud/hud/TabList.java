@@ -7,8 +7,12 @@ import cc.polyfrost.oneconfig.config.annotations.HUD;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.hud.BasicHud;
+import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.libs.universal.UChat;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.polyfrost.vanillahud.utils.TabListManager;
 
 public class TabList extends Config {
@@ -26,8 +30,18 @@ public class TabList extends Config {
 
     public TabList() {
         super(new Mod("TabList", ModType.HUD), "vanilla-hud/tab.json");
+        TabListManager.asyncFetchFallbackList();
+        MinecraftForge.EVENT_BUS.register(new Object() {
+            @SubscribeEvent
+            public void onScreenOpened(GuiScreenEvent.InitGuiEvent.Post event) {
+                if (HudCore.editing) {
+                    TabListManager.asyncUpdateList();
+                }
+            }
+        });
         initialize();
     }
+
 
     public static class TabHud extends BasicHud {
 
@@ -41,18 +55,8 @@ public class TabList extends Config {
         )
         public static int textType = 1;
 
-        @Exclude
-        private static boolean isExample;
-
         @Override
-        protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
-            if (isExample != example) {
-                if (example) {
-                    TabListManager.launchUpdateDevList();
-                }
-                isExample = example;
-            }
-        }
+        protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {}
 
         @Override
         protected void drawBackground(float x, float y, float width, float height, float scale) {

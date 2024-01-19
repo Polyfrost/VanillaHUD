@@ -28,28 +28,32 @@ public class TabListManager {
             "a5331404-0e77-440e-8bef-24c071dac1ae" // Wyvest
     );
 
-    public static List<NetworkPlayerInfo> devInfo = fallbackDevUUIDs.stream()
-            .map(UUID::fromString)
-            .map(TabListManager::getProfile)
-            .map(NetworkPlayerInfo::new)
-            .collect(Collectors.toList());
+    public static List<NetworkPlayerInfo> devInfo = ImmutableList.of();
 
+    public static void asyncFetchFallbackList() {
+        Multithreading.runAsync(() -> {
+            devInfo =  fallbackDevUUIDs.stream()
+                    .map(UUID::fromString)
+                    .map(TabListManager::getProfile)
+                    .map(NetworkPlayerInfo::new)
+                    .collect(Collectors.toList());
+        });
+    }
     public static GameProfile getProfile(UUID uuid) {
         return mc.getSessionService().fillProfileProperties(new GameProfile(uuid, null), true);
     }
 
-    public static void launchUpdateDevList() {
-        Multithreading.runAsync(TabListManager::updateDevList);
+    public static void asyncUpdateList() {
+        Multithreading.runAsync(TabListManager::updateList);
     }
-
-    private static void updateDevList() {
+    private static void updateList() {
         try {
             String input = NetworkUtils.getString(devListURL);
             if (input == null) return;
             DevList list = gson.fromJson(input, DevList.class);
             devInfo = list.toNetworkInfoList();
         } catch (Exception exception) {
-            new RuntimeException("Failed to load dev list", exception).printStackTrace();
+            new RuntimeException("Failed to load list", exception).printStackTrace();
         }
     }
 

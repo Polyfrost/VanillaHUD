@@ -42,7 +42,7 @@ public class VanillaHUD {
         tab = new TabList();
         title = new Title();
 
-//        TabListManager.launchUpdateDevList();
+        TabListManager.asyncUpdateList();
     }
 
     @net.minecraftforge.fml.common.Mod.EventHandler
