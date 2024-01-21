@@ -1,10 +1,8 @@
 package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.Dropdown;
-import cc.polyfrost.oneconfig.config.annotations.Exclude;
-import cc.polyfrost.oneconfig.config.annotations.HUD;
-import cc.polyfrost.oneconfig.config.annotations.Switch;
+import cc.polyfrost.oneconfig.config.annotations.*;
+import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.hud.BasicHud;
@@ -40,8 +38,17 @@ public class TabList extends Config {
             }
         });
         initialize();
-    }
 
+        addDependency("numberPing", "showPing");
+        addDependency("scalePing", "numberPing");
+        addDependency("hideFalsePing", "numberPing");
+        addDependency("pingLevelOne", "numberPing");
+        addDependency("pingLevelTwo", "numberPing");
+        addDependency("pingLevelThree", "numberPing");
+        addDependency("pingLevelFour", "numberPing");
+        addDependency("pingLevelFive", "numberPing");
+        addDependency("pingLevelSix", "numberPing");
+    }
 
     public static class TabHud extends BasicHud {
 
@@ -64,6 +71,57 @@ public class TabList extends Config {
                 name = "Show Player's Ping"
         )
         public static boolean showPing = true;
+
+        @Switch(
+                name = "Use Number Ping"
+        )
+        public static boolean numberPing = true;
+
+        @Switch(
+                name = "Scale Ping Text"
+        )
+        public static boolean scalePing = true;
+
+        @Switch(
+                name = "Hide False Ping",
+                description = "Hides falsified ping numbers such as a ping of 0 or 1 when on Hypixel"
+        )
+        public static boolean hideFalsePing = true;
+
+        @Color(
+                name = "Ping Between 0 and 75"
+        )
+        public static OneColor pingLevelOne = new OneColor(-15466667);
+
+        @Color(
+                name = "Ping Between 75 and 145"
+        )
+        public static OneColor pingLevelTwo = new OneColor(-14773218);
+
+        @Color(
+                name = "Ping Between 145 and 200"
+        )
+        public static OneColor pingLevelThree = new OneColor(-4733653);
+
+        @Color(
+                name = "Ping Between 200 and 300"
+        )
+        public static OneColor pingLevelFour = new OneColor(-13779);
+
+        @Color(
+                name = "Ping Between 300 and 400"
+        )
+        public static OneColor pingLevelFive = new OneColor(-6458098);
+
+        @Color(
+                name = "Ping Above 400"
+        )
+        public static OneColor pingLevelSix = new OneColor(-4318437);
+
+        @Color(
+                name = "Tab Widget Color"
+        )
+        public static OneColor tabWidgetColor = new OneColor(553648127);
 
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {}
