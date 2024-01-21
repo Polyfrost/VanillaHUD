@@ -4,6 +4,7 @@ import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import club.sk1er.patcher.config.PatcherConfig;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -16,6 +17,8 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
+import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.hud.BossBar;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.polyfrost.vanillahud.utils.TabListManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -77,7 +80,8 @@ public class GuiPlayerTabOverlayMixin {
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
     private void captureWidth(Args args) {
-        TabList.hud.drawBG();
+        boolean shouldTranslate = VanillaHUD.isPatcher && PatcherConfig.tabHeightAllow && BossBar.hud.drawingBossBar();
+        TabList.hud.drawBG(shouldTranslate ? PatcherConfig.tabHeight : 0);
         args.set(4, tab$TRANSPARENT);
         int width = new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth() / 2;
         TabList.width = ((int) args.get(2) - width) * 2;

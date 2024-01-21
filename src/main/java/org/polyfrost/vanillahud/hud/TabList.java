@@ -131,9 +131,9 @@ public class TabList extends Config {
             super.drawBackground(x, y, width, height, scale);
         }
 
-        public void drawBG() {
+        public void drawBG(int translate) {
             if (!background) return;
-            this.drawBackground(position.getX(), position.getY(), position.getWidth(), position.getHeight(), scale);
+            this.drawBackground(position.getX(), position.getY() + translate, position.getWidth(), position.getHeight(), scale);
         }
 
         public float getPaddingY() {

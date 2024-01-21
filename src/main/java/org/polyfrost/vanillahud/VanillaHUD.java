@@ -26,6 +26,7 @@ public class VanillaHUD {
     public static TabList tab;
     public static Title title;
     private static boolean apec = false;
+    public static boolean isPatcher = false;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
@@ -55,6 +56,7 @@ public class VanillaHUD {
             Notifications.INSTANCE.send("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).");
         }
         apec = Loader.isModLoaded("apec");
+        isPatcher = Loader.isModLoaded("patcher");
     }
 
     public static boolean isApec() {

@@ -18,7 +18,7 @@ public class BossBar extends Config {
     @HUD(
             name = "Boss Bar"
     )
-    public BossBarHUD hud = new BossBarHUD();
+    public static BossBarHUD hud = new BossBarHUD();
 
     public BossBar() {
         super(new Mod("Boss Bar", ModType.HUD, "/vanillahud_dark.svg"), "bossbar.json");
@@ -98,6 +98,10 @@ public class BossBar extends Config {
 
         @Override
         protected boolean shouldShow() {
+            return drawingBossBar();
+        }
+
+        public boolean drawingBossBar() {
             return this.isBossActive() && super.shouldShow();
         }
 
