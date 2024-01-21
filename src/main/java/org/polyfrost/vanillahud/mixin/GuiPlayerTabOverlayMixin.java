@@ -120,7 +120,7 @@ public class GuiPlayerTabOverlayMixin {
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
-    private void playerHead(GuiPlayerTabOverlay instance, int width, int x, int y, NetworkPlayerInfo networkPlayerInfoIn) {
+    private void drawPing(GuiPlayerTabOverlay instance, int width, int x, int y, NetworkPlayerInfo networkPlayerInfoIn) {
         if (!TabList.TabHud.showPing) return;
         if (!TabList.TabHud.numberPing) { // in order to prevent blending issues we need to set the proper gl state
             GlStateManager.pushMatrix();
