@@ -77,10 +77,12 @@ public class TabList extends Config {
         )
         public static boolean numberPing = true;
 
-        @Switch(
-                name = "Scale Ping Text"
+        @DualOption(
+                name = "Ping Text",
+                left = "Small",
+                right = "Full"
         )
-        public static boolean scalePing = true;
+        public static boolean pingType = false;
 
         @Switch(
                 name = "Hide False Ping",

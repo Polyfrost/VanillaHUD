@@ -142,7 +142,7 @@ public class GuiPlayerTabOverlayMixin {
         OneColor color = tab$getColor(ping);
         String pingString = String.valueOf(ping);
         if (TabList.TabHud.hideFalsePing && (ping <= 1 || ping >= 999)) pingString = "";
-        if (TabList.TabHud.scalePing) {
+        if (!TabList.TabHud.pingType) {
             GlStateManager.scale(0.5F, 0.5F, 0.5F);
             TextRenderer.drawScaledString(pingString, 2 * (x + width) - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)) - 4, 2 * y + 4, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
             GlStateManager.scale(2F, 2F, 2F);
