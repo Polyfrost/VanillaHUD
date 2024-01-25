@@ -31,13 +31,11 @@ public class TabListManager {
     public static List<NetworkPlayerInfo> devInfo = ImmutableList.of();
 
     public static void asyncFetchFallbackList() {
-        Multithreading.runAsync(() -> {
-            devInfo =  fallbackDevUUIDs.stream()
-                    .map(UUID::fromString)
-                    .map(TabListManager::getProfile)
-                    .map(NetworkPlayerInfo::new)
-                    .collect(Collectors.toList());
-        });
+        Multithreading.runAsync(() -> devInfo = fallbackDevUUIDs.stream()
+                .map(UUID::fromString)
+                .map(TabListManager::getProfile)
+                .map(NetworkPlayerInfo::new)
+                .collect(Collectors.toList()));
     }
     public static GameProfile getProfile(UUID uuid) {
         return mc.getSessionService().fillProfileProperties(new GameProfile(uuid, null), true);
