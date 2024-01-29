@@ -56,6 +56,20 @@ public class TabList extends Config {
             super(true, 1920 / 2f, 10);
         }
 
+        @Slider(
+                name = "Tab Player Count",
+                description = "Change how many players can display on tab.",
+                min = 10, max = 120
+        )
+        public static int tabPlayerCount = 80;
+
+        @DualOption(
+                name = "Mode",
+                left = "Held",
+                right = "Toggle"
+        )
+        public static boolean displayMode = false;
+
         @Dropdown(
                 name = "Text Type",
                 options = {"No Shadow", "Shadow", "Full Shadow"}
@@ -126,7 +140,8 @@ public class TabList extends Config {
         public static OneColor tabWidgetColor = new OneColor(553648127);
 
         @Override
-        protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {}
+        protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
+        }
 
         @Override
         protected void drawBackground(float x, float y, float width, float height, float scale) {

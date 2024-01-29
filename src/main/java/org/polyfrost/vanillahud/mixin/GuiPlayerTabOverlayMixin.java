@@ -33,10 +33,14 @@ import java.util.List;
 @Mixin(value = GuiPlayerTabOverlay.class, priority = 1100)
 public class GuiPlayerTabOverlayMixin {
 
-    @Shadow private IChatComponent header;
-    @Shadow private IChatComponent footer;
-    @Unique private static final IChatComponent tab$exampleHeader = new ChatComponentText("Tab List");
-    @Unique private static final IChatComponent tab$exampleFooter = new ChatComponentText("VanillaHud");
+    @Shadow
+    private IChatComponent header;
+    @Shadow
+    private IChatComponent footer;
+    @Unique
+    private static final IChatComponent tab$exampleHeader = new ChatComponentText("Tab List");
+    @Unique
+    private static final IChatComponent tab$exampleFooter = new ChatComponentText("VanillaHud");
 
     @Unique
     int tab$TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
@@ -62,7 +66,7 @@ public class GuiPlayerTabOverlayMixin {
     private void translate(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
         TabList.TabHud hud = TabList.hud;
         GlStateManager.pushMatrix();
-        GlStateManager.translate((float) (-width / 2) * hud.getScale() + hud.position.getCenterX() , hud.position.getY() + hud.getPaddingY(), 0);
+        GlStateManager.translate((float) (-width / 2) * hud.getScale() + hud.position.getCenterX(), hud.position.getY() + hud.getPaddingY(), 0);
         GlStateManager.scale(hud.getScale(), hud.getScale(), 1f);
     }
 
@@ -145,23 +149,39 @@ public class GuiPlayerTabOverlayMixin {
             GlStateManager.scale(0.5F, 0.5F, 0.5F);
             TextRenderer.drawScaledString(pingString, 2 * (x + width) - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)) - 4, 2 * y + 4, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
             GlStateManager.scale(2F, 2F, 2F);
-        } else TextRenderer.drawScaledString(pingString, x + width - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)), y, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
+        } else
+            TextRenderer.drawScaledString(pingString, x + width - Minecraft.getMinecraft().fontRendererObj.getStringWidth(String.valueOf(ping)), y, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
     }
 
     @Unique
     private static OneColor tab$getColor(int ping) {
-        OneColor color = new OneColor(-5636096);
-        if (ping >= 0 && ping < 75) color = TabList.TabHud.pingLevelOne;
-        else if (ping >= 75 && ping < 145) color = TabList.TabHud.pingLevelTwo;
-        else if (ping >= 145 && ping < 200) color = TabList.TabHud.pingLevelThree;
-        else if (ping >= 200 && ping < 300) color = TabList.TabHud.pingLevelFour;
-        else if (ping >= 300 && ping < 400) color = TabList.TabHud.pingLevelFive;
-        else if (ping >= 400) color = TabList.TabHud.pingLevelSix;
+        OneColor color = ping >= 400 ? TabList.TabHud.pingLevelSix
+                        : ping >= 300 ? TabList.TabHud.pingLevelFive
+                        : ping >= 200 ? TabList.TabHud.pingLevelFour
+                        : ping >= 145 ? TabList.TabHud.pingLevelThree
+                        : ping >= 75 ? TabList.TabHud.pingLevelTwo
+                        : TabList.TabHud.pingLevelOne;
+
         return color;
     }
 
     @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 553648127))
     private int tabOpacity(int opacity) {
         return TabList.TabHud.tabWidgetColor.getRGB();
+    }
+
+    @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 80))
+    private int changePlayerCount(int original) {
+        return TabList.TabHud.tabPlayerCount;
+    }
+
+    @ModifyVariable(method = "renderPlayerlist", at = @At(value = "STORE"), ordinal = 0)
+    private List<NetworkPlayerInfo> setLimit(List<NetworkPlayerInfo> value) {
+        return value.subList(0, Math.min(value.size(), TabList.TabHud.tabPlayerCount));
+    }
+
+    @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 1))
+    private int noLimit(int a, int b) {
+        return a;
     }
 }

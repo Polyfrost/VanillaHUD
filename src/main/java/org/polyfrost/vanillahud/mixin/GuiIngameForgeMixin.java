@@ -16,6 +16,7 @@ import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -232,9 +233,20 @@ public abstract class GuiIngameForgeMixin {
         args.set(2, (int) args.get(2) + 4 - (int) Experience.ExperienceHud.expHeight);
     }
 
+    @Unique
+    private boolean toggled, isPressed = false;
+
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
-        return (instance.isKeyDown() || HudCore.editing) && TabList.hud.isEnabled();
+        boolean down = instance.isKeyDown();
+        if (TabList.TabHud.displayMode) {
+            if (down != isPressed && (isPressed = down)) {
+                toggled = !toggled;
+            }
+        } else {
+            toggled = down;
+        }
+        return (toggled || HudCore.editing) && TabList.hud.isEnabled();
     }
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))
