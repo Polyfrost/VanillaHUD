@@ -246,7 +246,7 @@ public abstract class GuiIngameForgeMixin {
         } else {
             toggled = down;
         }
-        return (toggled || HudCore.editing) && TabList.hud.isEnabled();
+        return (toggled || HudCore.editing) && TabList.hud.shouldRender();
     }
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))

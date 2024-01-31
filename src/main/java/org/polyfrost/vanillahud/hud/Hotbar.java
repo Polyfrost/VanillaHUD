@@ -43,12 +43,13 @@ public class Hotbar extends Config {
         @Override
         public boolean isEnabled() {
             boolean isEnable = super.isEnabled();
-            GuiIngameForge.renderHotbar = isEnable;
+            GuiIngameForge.renderHotbar = isEnable && shouldShow();
             return isEnable;
         }
 
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
+            GuiIngameForge.renderHotbar = shouldShow();
         }
 
         @Override

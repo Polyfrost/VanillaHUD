@@ -16,8 +16,6 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
-import org.polyfrost.vanillahud.hooks.PatcherCompatHook;
-import org.polyfrost.vanillahud.hud.BossBar;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.polyfrost.vanillahud.utils.TabListManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -83,8 +81,7 @@ public class GuiPlayerTabOverlayMixin {
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
     private void captureWidth(Args args) {
-        boolean shouldTranslate = PatcherCompatHook.isTabHeightAllow() && BossBar.hud.drawingBossBar();
-        TabList.hud.drawBG(shouldTranslate ? PatcherCompatHook.getTabHeight() : 0);
+        TabList.hud.drawBG();
         args.set(4, tab$TRANSPARENT);
         int width = new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth() / 2;
         TabList.width = ((int) args.get(2) - width) * 2;
@@ -106,17 +103,38 @@ public class GuiPlayerTabOverlayMixin {
         return (HudCore.editing ? 10 : constant);
     }
 
+    @Inject(method = "renderPlayerlist", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"),
+            slice = @Slice(
+                    from = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/NetworkPlayerInfo;getGameProfile()Lcom/mojang/authlib/GameProfile;", ordinal = 1),
+                    to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V")
+            ))
+    private void preHeadTransform(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(TabList.TabHud.showHead ? 0 : -8, 0, 0);
+    }
+
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int drawText(FontRenderer instance, String text, float x, float y, int color) {
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        TextRenderer.drawScaledString(text, x - (TabList.TabHud.showHead ? 0 : 8), y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
+        TextRenderer.drawScaledString(text, x, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
         return 0;
+    }
+
+    @Inject(method = "renderPlayerlist", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I", shift = At.Shift.AFTER),
+            slice = @Slice(
+                    from = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/NetworkPlayerInfo;getGameProfile()Lcom/mojang/authlib/GameProfile;", ordinal = 1),
+                    to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V")
+            ))
+    private void postHeadTransform(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
+        GlStateManager.popMatrix();
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V"))
@@ -156,11 +174,11 @@ public class GuiPlayerTabOverlayMixin {
     @Unique
     private static OneColor tab$getColor(int ping) {
         OneColor color = ping >= 400 ? TabList.TabHud.pingLevelSix
-                        : ping >= 300 ? TabList.TabHud.pingLevelFive
-                        : ping >= 200 ? TabList.TabHud.pingLevelFour
-                        : ping >= 145 ? TabList.TabHud.pingLevelThree
-                        : ping >= 75 ? TabList.TabHud.pingLevelTwo
-                        : TabList.TabHud.pingLevelOne;
+                : ping >= 300 ? TabList.TabHud.pingLevelFive
+                : ping >= 200 ? TabList.TabHud.pingLevelFour
+                : ping >= 145 ? TabList.TabHud.pingLevelThree
+                : ping >= 75 ? TabList.TabHud.pingLevelTwo
+                : TabList.TabHud.pingLevelOne;
 
         return color;
     }
@@ -172,12 +190,12 @@ public class GuiPlayerTabOverlayMixin {
 
     @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 80))
     private int changePlayerCount(int original) {
-        return TabList.TabHud.tabPlayerCount;
+        return TabList.TabHud.getTabPlayerLimit();
     }
 
     @ModifyVariable(method = "renderPlayerlist", at = @At(value = "STORE"), ordinal = 0)
     private List<NetworkPlayerInfo> setLimit(List<NetworkPlayerInfo> value) {
-        return value.subList(0, Math.min(value.size(), TabList.TabHud.tabPlayerCount));
+        return value.subList(0, Math.min(value.size(), TabList.TabHud.getTabPlayerLimit()));
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 1))

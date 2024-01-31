@@ -8,6 +8,7 @@ import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import net.minecraft.util.MathHelper;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -38,16 +39,6 @@ public class TabList extends Config {
             }
         });
         initialize();
-
-        addDependency("numberPing", "showPing");
-        addDependency("scalePing", "numberPing");
-        addDependency("hideFalsePing", "numberPing");
-        addDependency("pingLevelOne", "numberPing");
-        addDependency("pingLevelTwo", "numberPing");
-        addDependency("pingLevelThree", "numberPing");
-        addDependency("pingLevelFour", "numberPing");
-        addDependency("pingLevelFive", "numberPing");
-        addDependency("pingLevelSix", "numberPing");
     }
 
     public static class TabHud extends BasicHud {
@@ -57,11 +48,11 @@ public class TabList extends Config {
         }
 
         @Slider(
-                name = "Tab Player Count",
+                name = "Tab Player Limit",
                 description = "Change how many players can display on tab.",
                 min = 10, max = 120
         )
-        public static int tabPlayerCount = 80;
+        public static int tabPlayerLimit = 80;
 
         @DualOption(
                 name = "Mode",
@@ -139,6 +130,10 @@ public class TabList extends Config {
         )
         public static OneColor tabWidgetColor = new OneColor(553648127);
 
+        public static int getTabPlayerLimit() {
+            return MathHelper.clamp_int(tabPlayerLimit, 10, 120);
+        }
+
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         }
@@ -148,9 +143,13 @@ public class TabList extends Config {
             super.drawBackground(x, y, width, height, scale);
         }
 
-        public void drawBG(int translate) {
+        public boolean shouldRender() {
+            return isEnabled() && shouldShow();
+        }
+
+        public void drawBG() {
             if (!background) return;
-            this.drawBackground(position.getX(), position.getY() + translate, position.getWidth(), position.getHeight(), scale);
+            this.drawBackground(position.getX(), position.getY(), position.getWidth(), position.getHeight(), scale);
         }
 
         public float getPaddingY() {

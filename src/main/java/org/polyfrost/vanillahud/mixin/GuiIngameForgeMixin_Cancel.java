@@ -29,37 +29,37 @@ public class GuiIngameForgeMixin_Cancel {
 
     @Inject(method = "renderJumpBar", at = @At("HEAD"), cancellable = true)
     private void cancelHorsePower(CallbackInfo ci) {
-        if (!Experience.hud.isEnabled()) ci.cancel();
+        if (!Experience.hud.shouldRender()) ci.cancel();
     }
 
     @Inject(method = "renderHealthMount", at = @At("HEAD"), cancellable = true)
     private void cancelHorseHealth(CallbackInfo ci) {
-        if (!Hunger.getMountHud().isEnabled()) ci.cancel();
+        if (!Hunger.getMountHud().shouldRender()) ci.cancel();
     }
 
     @Inject(method = "renderExperience", at = @At("HEAD"), cancellable = true)
     private void cancelExpBar(CallbackInfo ci) {
-        if (!Experience.hud.isEnabled()) ci.cancel();
+        if (!Experience.hud.shouldRender()) ci.cancel();
     }
 
     @Inject(method = "renderHealth", at = @At("HEAD"), cancellable = true)
     private void cancelHealth(CallbackInfo ci) {
-        if (!Health.hud.isEnabled()) ci.cancel();
+        if (!Health.hud.shouldRender()) ci.cancel();
     }
 
     @Inject(method = "renderFood", at = @At("HEAD"), cancellable = true)
     private void cancelHunger(CallbackInfo ci) {
-        if (!Hunger.hud.isEnabled()) ci.cancel();
+        if (!Hunger.hud.shouldRender()) ci.cancel();
     }
 
     @Inject(method = "renderArmor", at = @At("HEAD"), cancellable = true)
     private void cancelArmor(CallbackInfo ci) {
-        if (!Armor.hud.isEnabled()) ci.cancel();
+        if (!Armor.hud.shouldRender()) ci.cancel();
     }
 
     @Inject(method = "renderAir", at = @At("HEAD"), cancellable = true)
     private void cancelAir(CallbackInfo ci) {
-        if (!Air.hud.isEnabled()) ci.cancel();
+        if (!Air.hud.shouldRender()) ci.cancel();
     }
 
 }

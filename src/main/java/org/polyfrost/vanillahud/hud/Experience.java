@@ -31,6 +31,10 @@ public class Experience extends Config {
         )
         public static float expHeight = 4;
 
+        public boolean shouldRender() {
+            return isEnabled() && shouldShow();
+        }
+
         @Override
         protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         }

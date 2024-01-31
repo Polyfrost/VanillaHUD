@@ -32,4 +32,8 @@ public class HudBar extends Hud {
         return 9f * scale;
     }
 
+    public boolean shouldRender() {
+        return isEnabled() && shouldShow();
+    }
+
 }
