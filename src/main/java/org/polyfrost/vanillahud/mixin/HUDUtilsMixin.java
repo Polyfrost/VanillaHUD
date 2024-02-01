@@ -3,14 +3,13 @@ package org.polyfrost.vanillahud.mixin;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
 import cc.polyfrost.oneconfig.config.core.ConfigUtils;
-import cc.polyfrost.oneconfig.config.elements.BasicOption;
-import cc.polyfrost.oneconfig.config.elements.OptionPage;
+import cc.polyfrost.oneconfig.config.elements.*;
 import cc.polyfrost.oneconfig.hud.HUDUtils;
+import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import org.polyfrost.vanillahud.hud.TabList;
+import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.lang.reflect.Field;
@@ -20,7 +19,8 @@ public class HUDUtilsMixin {
 
     @Inject(method = "addHudOptions", at = @At("TAIL"))
     private static void hudUtils$modifyOptions(OptionPage page, Field field, Object instance, Config config, CallbackInfo ci) {
-        if (!(ConfigUtils.getField(field, instance) instanceof TabList.TabHud)) return;
+        Hud hud = (Hud) ConfigUtils.getField(field, instance);
+        if (!(hud instanceof TabList.TabHud) && !(hud instanceof Scoreboard.ScoreboardHUD)) return;
         HudCore.hudOptions.removeIf(HUDUtilsMixin::hudUtils$addDependency);
         HUD hudAnnotation = field.getAnnotation(HUD.class);
         ConfigUtils.getSubCategory(page, hudAnnotation.category(), hudAnnotation.subcategory()).options.removeIf(HUDUtilsMixin::hudUtils$addDependency);
@@ -31,7 +31,8 @@ public class HUDUtilsMixin {
         if (fieldName.contains("pingLevel")) fieldName = "pingLevel";
         Object hud = option.getParent();
         boolean isTabList = hud instanceof TabList.TabHud;
-        if (!isTabList) return false;
+        boolean isScoreboard = hud instanceof Scoreboard.ScoreboardHUD;
+        if (!isTabList && !isScoreboard) return false;
         switch (fieldName) {
             case "pingType":
             case "hideFalsePing":
@@ -40,6 +41,11 @@ public class HUDUtilsMixin {
                 option.addDependency("numberPing", () -> TabList.TabHud.numberPing);
             case "numberPing":
                 option.addDependency("showPing", () -> TabList.TabHud.showPing);
+            case "scorePointsColor":
+                option.addDependency("scoreboardPoints", () -> Scoreboard.ScoreboardHUD.scoreboardPoints);
+            case "persistentTitle":
+            case "titleColor":
+                option.addDependency("scoreboardTitle", () -> Scoreboard.ScoreboardHUD.scoreboardTitle);
         }
         return false;
     }

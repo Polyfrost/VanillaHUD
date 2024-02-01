@@ -1,14 +1,12 @@
 package org.polyfrost.vanillahud.mixin;
 
-import cc.polyfrost.oneconfig.gui.animations.Animation;
-import cc.polyfrost.oneconfig.gui.animations.DummyAnimation;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.hooks.GuiHook;
+import org.polyfrost.vanillahud.hooks.TooltipHook;
 import org.polyfrost.vanillahud.hud.ScrollableTooltip;
 import org.polyfrost.vanillahud.utils.EaseOutQuart;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,14 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
+import static org.polyfrost.vanillahud.hooks.TooltipHook.*;
+
 @Mixin(value = GuiUtils.class, remap = false)
 public class GuiUtilsMixin {
 
     @Unique
-    private static int gui$tooltipY, gui$tooltipHeight, gui$scrollY;
-
-    @Unique
-    private static Animation gui$animationY = new DummyAnimation(0f);
+    private static int gui$tooltipY, gui$tooltipHeight;
 
     @Unique
     private static boolean gui$overScreen;
@@ -55,13 +52,12 @@ public class GuiUtilsMixin {
         int height = bottom - top;
         gui$overScreen = height + 4 > screenHeight;
         if (!textLines.equals(gui$lines)) {
-            gui$scrollY = 0;
-            gui$animationY = new DummyAnimation(0f);
+            TooltipHook.resetScrolling();
             gui$lines = textLines;
         }
-        GuiHook.isScrolling = VanillaHUD.scrollableTooltip.enabled && (gui$overScreen || top < 0);
+        TooltipHook.isScrolling = VanillaHUD.scrollableTooltip.enabled && (gui$overScreen || top < 0);
         int mouseDWheel = Mouse.getDWheel();
-        if (GuiHook.isScrolling) {
+        if (TooltipHook.isScrolling) {
             if (mouseDWheel < 0) {
                 gui$scrollY -= 10;
             } else if (mouseDWheel > 0) {

@@ -45,7 +45,7 @@ public class Scoreboard extends Config {
                 name = "Show Score Points",
                 category = "Score Points"
         )
-        public boolean scoreboardPoints = false;
+        public static boolean scoreboardPoints = false;
 
         @Color(
                 name = "Score Points Color"
@@ -55,7 +55,7 @@ public class Scoreboard extends Config {
         @Switch(
                 name = "Scoreboard Title"
         )
-        public boolean scoreboardTitle = true;
+        public static boolean scoreboardTitle = true;
 
         @Switch(
                 name = "Persistent Scoreboard Title"
