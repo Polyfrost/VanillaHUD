@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.lwjgl.input.Mouse;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.GuiHook;
 import org.polyfrost.vanillahud.hud.ScrollableTooltip;
 import org.polyfrost.vanillahud.utils.EaseOutQuart;
@@ -36,7 +37,7 @@ public class GuiUtilsMixin {
 
     @ModifyVariable(method = "drawHoveringText", at = @At("STORE"), name = "tooltipY")
     private static int captureY(int y) {
-        gui$tooltipY = gui$overScreen && ScrollableTooltip.startAtTop ? 6 : y;
+        gui$tooltipY = gui$overScreen && VanillaHUD.scrollableTooltip.enabled && ScrollableTooltip.startAtTop ? 6 : y;
         return gui$tooltipY;
     }
 
@@ -58,9 +59,9 @@ public class GuiUtilsMixin {
             gui$animationY = new DummyAnimation(0f);
             gui$lines = textLines;
         }
-        boolean canScroll = gui$overScreen || top < 0;
+        GuiHook.isScrolling = VanillaHUD.scrollableTooltip.enabled && (gui$overScreen || top < 0);
         int mouseDWheel = Mouse.getDWheel();
-        if (canScroll) {
+        if (GuiHook.isScrolling) {
             if (mouseDWheel < 0) {
                 gui$scrollY -= 10;
             } else if (mouseDWheel > 0) {
@@ -68,7 +69,7 @@ public class GuiUtilsMixin {
             }
             gui$scrollY = MathHelper.clamp_int(gui$scrollY, screenHeight - bottom - 5, 2 - top);
 
-        } GuiHook.isScrolling = canScroll;
+        }
         if (gui$scrollY != gui$animationY.getEnd()) {
             gui$animationY = new EaseOutQuart(200, current, gui$scrollY, false);
         }
