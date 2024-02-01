@@ -7,6 +7,7 @@
   "client": [
     "BossStatusMixin",
     "GuiAccessor",
+    "GuiContainerCreativeMixin",
     "GuiIngameAccessor",
     "GuiIngameForgeMixin",
     "GuiIngameForgeMixin_Cancel",
@@ -15,6 +16,7 @@
     "GuiPlayerTabOverlayMixin",
     "GuiSpectatorAccessor",
     "GuiSpectatorMixin",
+    "GuiUtilsMixin",
     "HUDOverlayHandlerMixin",
     "MinecraftAccessor"
   ],

@@ -1,8 +1,6 @@
 package org.polyfrost.vanillahud.mixin;
 
-import cc.polyfrost.oneconfig.config.annotations.Exclude;
 import cc.polyfrost.oneconfig.libs.universal.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,14 +9,9 @@ import org.polyfrost.vanillahud.hud.Hotbar;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(value = GuiIngame.class, priority = 9000)
 public abstract class GuiIngameMixin {
-
-    @Unique
-    @Exclude
-    private final Minecraft mc = Minecraft.getMinecraft();
 
     @Shadow
     protected abstract void renderHotbarItem(int index, int xPos, int yPos, float partialTicks, EntityPlayer player);
@@ -56,13 +49,17 @@ public abstract class GuiIngameMixin {
         GlStateManager.popMatrix();
     }
 
-    @ModifyArgs(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;drawTexturedModalRect(IIIIII)V"))
-    private void setPosition(Args args) {
-        ScaledResolution sr = new ScaledResolution(mc);
+    @Inject(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;drawTexturedModalRect(IIIIII)V"))
+    private void prePosition(ScaledResolution sr, float partialTicks, CallbackInfo ci) {
         int x = sr.getScaledWidth() / 2 - 91;
         int y = sr.getScaledHeight() - 22;
-        args.set(0, (int) args.get(0) - x);
-        args.set(1, (int) args.get(1) - y);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(-x, -y, 0);
+    }
+
+    @Inject(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;drawTexturedModalRect(IIIIII)V", shift = At.Shift.AFTER))
+    private void postPosition(ScaledResolution sr, float partialTicks, CallbackInfo ci) {
+        GlStateManager.popMatrix();
     }
 
     @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;renderHotbarItem(IIIFLnet/minecraft/entity/player/EntityPlayer;)V"))
