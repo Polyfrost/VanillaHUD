@@ -82,13 +82,14 @@ public class GuiPlayerTabOverlayMixin {
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
     private void captureWidth(Args args) {
         args.set(4, tab$TRANSPARENT);
-        TabList.width = (int) args.get(2) - (int) args.get(0);
-        TabList.hud.drawBG();
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 1))
     private void cancelRect(Args args) {
         args.set(4, tab$TRANSPARENT);
+        TabList.hud.drawBG();
+        TabList.width = (int) args.get(2) - (int) args.get(0);
+        TabList.height = args.get(3);
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 3))
