@@ -24,7 +24,7 @@ import java.util.List;
 public class GuiUtilsMixin {
 
     @Unique
-    private static int gui$tooltipY, gui$tooltipHeight, gui$scrollY, gui$lastScroll;
+    private static int gui$tooltipY, gui$tooltipHeight, gui$scrollY;
 
     @Unique
     private static Animation gui$animationY = new DummyAnimation(0f);
@@ -73,13 +73,12 @@ public class GuiUtilsMixin {
         if (gui$scrollY != gui$animationY.getEnd()) {
             gui$animationY = new EaseOutQuart(200, current, gui$scrollY, false);
         }
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(0, current, 0);
+        GlStateManager.translate(0, gui$animationY.get(), 0);
     }
 
     @Inject(method = "drawHoveringText", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;enableLighting()V"))
     private static void pop(List<String> textLines, int mouseX, int mouseY, int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font, CallbackInfo ci) {
-        GlStateManager.popMatrix();
+        GlStateManager.translate(0, -gui$animationY.get(), 0);
     }
 
 }

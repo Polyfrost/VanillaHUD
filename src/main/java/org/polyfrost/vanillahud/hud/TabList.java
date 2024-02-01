@@ -98,32 +98,32 @@ public class TabList extends Config {
         @Color(
                 name = "Ping Between 0 and 75"
         )
-        public static OneColor pingLevelOne = new OneColor(-15466667);
+        public static OneColor pingLevelOne = new OneColor("55FF55FF");
 
         @Color(
                 name = "Ping Between 75 and 145"
         )
-        public static OneColor pingLevelTwo = new OneColor(-14773218);
+        public static OneColor pingLevelTwo = new OneColor("00AA00FF");
 
         @Color(
                 name = "Ping Between 145 and 200"
         )
-        public static OneColor pingLevelThree = new OneColor(-4733653);
+        public static OneColor pingLevelThree = new OneColor("FFFF55FF");
 
         @Color(
                 name = "Ping Between 200 and 300"
         )
-        public static OneColor pingLevelFour = new OneColor(-13779);
+        public static OneColor pingLevelFour = new OneColor("FFAA00FF");
 
         @Color(
                 name = "Ping Between 300 and 400"
         )
-        public static OneColor pingLevelFive = new OneColor(-6458098);
+        public static OneColor pingLevelFive = new OneColor("FF5555FF");
 
         @Color(
                 name = "Ping Above 400"
         )
-        public static OneColor pingLevelSix = new OneColor(-4318437);
+        public static OneColor pingLevelSix = new OneColor("AA0000FF");
 
         @Color(
                 name = "Tab Widget Color"
