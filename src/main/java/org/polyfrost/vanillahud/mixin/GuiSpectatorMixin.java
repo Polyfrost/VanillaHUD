@@ -1,8 +1,7 @@
 package org.polyfrost.vanillahud.mixin;
 
-import net.minecraft.client.Minecraft;
+import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import net.minecraft.client.gui.GuiSpectator;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.spectator.ISpectatorMenuObject;
 import net.minecraft.client.renderer.GlStateManager;
 import org.polyfrost.vanillahud.hud.Hotbar;
@@ -17,16 +16,14 @@ public abstract class GuiSpectatorMixin {
     @ModifyArg(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;func_175258_a(Lnet/minecraft/client/gui/ScaledResolution;FIFLnet/minecraft/client/gui/spectator/categories/SpectatorDetails;)V"), index = 3)
     private float y(float f) {
         if (!Hotbar.hud.isEnabled()) return f;
-        ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-        return sr.getScaledHeight() - 22;
+        return UResolution.getScaledHeight() - 22;
     }
 
     @ModifyArgs(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;drawTexturedModalRect(FFIIII)V"))
     private void setPosition(Args args) {
         if (!Hotbar.hud.isEnabled()) return;
-        ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-        int x = sr.getScaledWidth() / 2 - 91;
-        int y = sr.getScaledHeight() - 22;
+        int x = UResolution.getScaledWidth() / 2 - 91;
+        int y = UResolution.getScaledHeight() - 22;
         args.set(0, ((float) args.get(0)) - x);
         args.set(1, ((float) args.get(1)) - y);
     }

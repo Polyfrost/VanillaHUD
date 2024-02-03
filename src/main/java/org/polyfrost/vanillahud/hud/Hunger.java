@@ -68,6 +68,7 @@ public class Hunger extends Config {
     }
 
     public static int mountLink() {
+        if (HudCore.editing) return 0;
         EntityPlayer player = (EntityPlayer) mc.getRenderViewEntity();
         Entity tmp = player.ridingEntity;
         if (!(tmp instanceof EntityLivingBase)) return 0;
@@ -76,6 +77,6 @@ public class Hunger extends Config {
         if (hearts > 30) hearts = 30;
         int rows = MathHelper.ceiling_float_int(hearts / 10f) - 1;
         HudBar hud = getMountHud();
-        return HudCore.editing ? 0 : (int) (rows * 10 * (Hunger.mode ? 1 : -1) * hud.getScale());
+        return  (int) (rows * 10 * (Hunger.mode ? 1 : -1) * hud.getScale());
     }
 }
