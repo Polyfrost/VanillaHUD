@@ -42,6 +42,7 @@ public class HUDUtilsMixin {
                 break;
             case "numberPing":
                 option.addDependency("showPing", () -> TabList.TabHud.showPing);
+                break;
             case "scorePointsColor":
                 option.addDependency("scoreboardPoints", () -> Scoreboard.ScoreboardHUD.scoreboardPoints);
                 break;

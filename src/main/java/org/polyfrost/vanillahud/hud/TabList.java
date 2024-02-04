@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.gui.animations.*;
 import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
@@ -12,6 +13,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.polyfrost.vanillahud.utils.EaseOutQuart;
 import org.polyfrost.vanillahud.utils.TabListManager;
 
 public class TabList extends Config {
@@ -22,10 +24,10 @@ public class TabList extends Config {
     public static TabHud hud = new TabHud();
 
     @Exclude
-    public static int width;
+    public static int width, height;
 
     @Exclude
-    public static int height;
+    public static Animation animation = new DummyAnimation(0f);
 
     public TabList() {
         super(new Mod("TabList", ModType.HUD), "vanilla-hud/tab.json");
@@ -46,6 +48,17 @@ public class TabList extends Config {
         public TabHud() {
             super(true, 1920 / 2f, 10);
         }
+
+        @Switch(
+                name = "Animations"
+        )
+        public static boolean tabAnimation = false;
+
+        @Slider(
+                name = "Duration",
+                min = 50f, max = 1000f
+        )
+        public static float tabDuration = 400f;
 
         @Slider(
                 name = "Tab Player Limit",
@@ -147,9 +160,32 @@ public class TabList extends Config {
             return isEnabled() && shouldShow();
         }
 
-        public void drawBG() {
+        @Exclude
+        private static boolean lastToggled;
+
+        public void drawBG(boolean toggled) {
+            if (toggled != lastToggled) {
+                lastToggled = toggled;
+
+                if (tabAnimation) {
+                    if (toggled) {
+                        animation = new EaseOutQuart(tabDuration, 0f, position.getHeight(), false);
+                    } else {
+                        animation = new EaseOutQuart(tabDuration, position.getHeight(), 0f, false);
+                    }
+                }
+            }
+
+            if (animation.isFinished()) {
+                if (toggled) {
+                    animation = new DummyAnimation(position.getHeight());
+                } else {
+                    return;
+                }
+            }
+
             if (!background) return;
-            this.drawBackground(position.getX(), position.getY(), position.getWidth(), position.getHeight(), scale);
+            this.drawBackground(position.getX(), position.getY(), position.getWidth(), animation.get(), scale);
         }
 
         public float getPaddingY() {

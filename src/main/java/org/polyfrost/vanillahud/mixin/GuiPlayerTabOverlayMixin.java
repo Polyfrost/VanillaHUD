@@ -81,13 +81,11 @@ public class GuiPlayerTabOverlayMixin {
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
     private void captureWidth(Args args) {
         args.set(4, tab$TRANSPARENT);
-        TabList.hud.drawBG();
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 1))
     private void cancelRect(Args args) {
         args.set(4, tab$TRANSPARENT);
-        if (header == null) TabList.hud.drawBG();
         TabList.width = (int) args.get(2) - (int) args.get(0);
         TabList.height = args.get(3);
     }
@@ -173,14 +171,12 @@ public class GuiPlayerTabOverlayMixin {
 
     @Unique
     private static OneColor tab$getColor(int ping) {
-        OneColor color = ping >= 400 ? TabList.TabHud.pingLevelSix
+        return ping >= 400 ? TabList.TabHud.pingLevelSix
                 : ping >= 300 ? TabList.TabHud.pingLevelFive
                 : ping >= 200 ? TabList.TabHud.pingLevelFour
                 : ping >= 145 ? TabList.TabHud.pingLevelThree
                 : ping >= 75 ? TabList.TabHud.pingLevelTwo
                 : TabList.TabHud.pingLevelOne;
-
-        return color;
     }
 
     @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 553648127))

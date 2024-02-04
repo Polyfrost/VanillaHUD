@@ -1,17 +1,22 @@
 package org.polyfrost.vanillahud.mixin;
 
 import cc.polyfrost.oneconfig.hud.Hud;
+import cc.polyfrost.oneconfig.hud.Position;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.GuiIngameForge;
+import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,25 +32,38 @@ import static org.polyfrost.vanillahud.hud.Hunger.*;
 @Mixin(value = GuiIngameForge.class)
 public abstract class GuiIngameForgeMixin {
 
-    @Shadow public abstract void renderHealth(int width, int height);
+    @Unique
+    private static final Minecraft mc = Minecraft.getMinecraft();
 
-    @Shadow public static int left_height;
+    @Shadow
+    public abstract void renderHealth(int width, int height);
 
-    @Shadow public static int right_height;
+    @Shadow
+    public static int left_height;
 
-    @Shadow public static boolean renderHealthMount;
+    @Shadow
+    public static int right_height;
 
-    @Shadow protected abstract void renderHealthMount(int width, int height);
+    @Shadow
+    public static boolean renderHealthMount;
 
-    @Shadow public static boolean renderFood;
+    @Shadow
+    protected abstract void renderHealthMount(int width, int height);
 
-    @Shadow protected abstract void renderExperience(int width, int height);
+    @Shadow
+    public static boolean renderFood;
 
-    @Shadow protected abstract void renderJumpBar(int width, int height);
+    @Shadow
+    protected abstract void renderExperience(int width, int height);
 
-    @Shadow protected abstract void renderAir(int width, int height);
+    @Shadow
+    protected abstract void renderJumpBar(int width, int height);
 
-    @Shadow protected abstract void renderArmor(int width, int height);
+    @Shadow
+    protected abstract void renderAir(int width, int height);
+
+    @Shadow
+    protected abstract void renderArmor(int width, int height);
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderAir(II)V"))
     private void air(GuiIngameForge instance, int width, int height) {
@@ -143,7 +161,7 @@ public abstract class GuiIngameForgeMixin {
     private int healthMode(int y) {
         if (HudCore.editing) return 0;
         if (Health.HealthHud.mode) return y;
-        return - y;
+        return -y;
     }
 
     @Redirect(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
@@ -171,7 +189,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyVariable(method = "renderFood", at = @At("STORE"), ordinal = 8, remap = false)
     private int hungerAlignment(int x) {
-        return Hunger.hud.alignment ? 81 + x : - (x + 9);
+        return Hunger.hud.alignment ? 81 + x : -(x + 9);
     }
 
     @Redirect(method = "renderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
@@ -190,7 +208,7 @@ public abstract class GuiIngameForgeMixin {
     @ModifyVariable(method = "renderHealthMount", at = @At("STORE"), ordinal = 13, remap = false)
     private int mountAlignment(int x) {
         boolean alignment = Hunger.mountHud.isEnabled() ? Hunger.mountHud.alignment : Hunger.hud.alignment;
-        return alignment ? 81 + x : - (x + 9);
+        return alignment ? 81 + x : -(x + 9);
     }
 
     @Redirect(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
@@ -255,10 +273,22 @@ public abstract class GuiIngameForgeMixin {
     }
 
     @Unique
-    private boolean toggled, isPressed = false;
+    private boolean toggled, isPressed;
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
+        ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
+        NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
+
+        if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null) {
+            GlStateManager.pushMatrix();
+            GlStateManager.scale(0f, 0f, 1);
+            mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
+            GlStateManager.popMatrix();
+        } else {
+            return toggled = false;
+        }
+
         boolean down = instance.isKeyDown();
         if (TabList.TabHud.displayMode) {
             if (down != isPressed && (isPressed = down)) {
@@ -267,7 +297,10 @@ public abstract class GuiIngameForgeMixin {
         } else {
             toggled = down;
         }
-        return (toggled || HudCore.editing) && TabList.hud.shouldRender();
+
+        TabList.hud.drawBG(toggled);
+
+        return (toggled || !TabList.animation.isFinished() || HudCore.editing) && TabList.hud.shouldRender();
     }
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))
@@ -275,4 +308,16 @@ public abstract class GuiIngameForgeMixin {
         return instance.isIntegratedServerRunning() && !HudCore.editing;
     }
 
+    @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))
+    private void enableScissor(int width, int height, CallbackInfo ci) {
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        Position position = TabList.hud.position;
+        int scale = (int) UResolution.getScaleFactor();
+        GL11.glScissor((int) (position.getX() * scale), (int) ((UResolution.getScaledHeight() - position.getY() - TabList.animation.get()) * scale), (int) (position.getWidth() * scale), (int) (TabList.animation.get() * scale));
+    }
+
+    @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V", shift = At.Shift.AFTER))
+    private void disable(int width, int height, CallbackInfo ci) {
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+    }
 }
