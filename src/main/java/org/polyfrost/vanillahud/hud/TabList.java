@@ -5,10 +5,10 @@ import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
-import cc.polyfrost.oneconfig.gui.animations.*;
 import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,7 +27,7 @@ public class TabList extends Config {
     public static int width, height;
 
     @Exclude
-    public static Animation animation = new DummyAnimation(0f);
+    public static EaseOutQuart animation = new EaseOutQuart(0, 0, 0, false);
 
     public TabList() {
         super(new Mod("TabList", ModType.HUD), "vanilla-hud/tab.json");
@@ -79,6 +79,21 @@ public class TabList extends Config {
                 options = {"No Shadow", "Shadow", "Full Shadow"}
         )
         public static int textType = 1;
+
+        @Switch(
+                name = "Show Header"
+        )
+        public static boolean showHeader = true;
+
+        @Switch(
+                name = "Show Footer"
+        )
+        public static boolean showFooter = true;
+
+        @Switch(
+                name = "Show Self At Top"
+        )
+        public static boolean selfAtTop = true;
 
         @Switch(
                 name = "Show Player's Head"
@@ -178,13 +193,17 @@ public class TabList extends Config {
 
             if (animation.isFinished()) {
                 if (toggled) {
-                    animation = new DummyAnimation(position.getHeight());
+                    animation = new EaseOutQuart(0, 0, position.getHeight(), false);
                 } else {
                     return;
                 }
+            } else {
+                if (animation.getEnd() != 0f && toggled && animation.getEnd() != position.getHeight()) {
+                    animation = new EaseOutQuart(tabDuration - Minecraft.getSystemTime() + animation.startTime, animation.get(), position.getHeight(), false);
+                }
             }
 
-            if (!background) return;
+            if (!background || !isEnabled()) return;
             this.drawBackground(position.getX(), position.getY(), position.getWidth(), animation.get(), scale);
         }
 

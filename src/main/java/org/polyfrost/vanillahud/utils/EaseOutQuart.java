@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 
 public class EaseOutQuart extends Animation {
 
-    private static long startTime = 0L;
+    public long startTime = 0L;
 
     public EaseOutQuart(float duration, float start, float end, boolean reverse) {
         super(duration, start, end, reverse);
