@@ -203,7 +203,7 @@ public class TabList extends Config {
                 }
             }
 
-            if (!background || !isEnabled()) return;
+            if (!background || !shouldRender()) return;
             this.drawBackground(position.getX(), position.getY(), position.getWidth(), animation.get(), scale);
         }
 
