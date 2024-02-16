@@ -44,7 +44,7 @@ public class HUDUtilsMixin {
                 option.addDependency("showPing", () -> TabList.TabHud.showPing);
                 break;
             case "scorePointsColor":
-                option.addDependency("scoreboardPoints", () -> Scoreboard.ScoreboardHUD.scoreboardPoints);
+                option.addDependency("scoreboardPoints", () -> Scoreboard.ScoreboardHUD.scoreboardPoints > 0);
                 break;
             case "persistentTitle":
             case "titleColor":

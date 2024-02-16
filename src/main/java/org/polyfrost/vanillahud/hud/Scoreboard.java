@@ -1,6 +1,5 @@
 package org.polyfrost.vanillahud.hud;
 
-import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
@@ -8,12 +7,9 @@ import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.BasicHud;
-import cc.polyfrost.oneconfig.libs.universal.UGraphics;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
+import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
-import cc.polyfrost.oneconfig.renderer.scissor.Scissor;
 import cc.polyfrost.oneconfig.renderer.scissor.ScissorHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -22,7 +18,6 @@ import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.EnumChatFormatting;
-import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
 
 import java.util.Collection;
@@ -41,11 +36,12 @@ public class Scoreboard extends Config {
 
     public static class ScoreboardHUD extends BasicHud {
 
-        @Switch(
+        @Dropdown(
                 name = "Show Score Points",
-                category = "Score Points"
+                category = "Score Points",
+                options = {"Hide", "Hide Only if Consecutive", "Show Always"}
         )
-        public static boolean scoreboardPoints = false;
+        public static int scoreboardPoints = 1;
 
         @Color(
                 name = "Score Points Color"
@@ -130,7 +126,7 @@ public class Scoreboard extends Config {
             UGraphics.enableBlend();
             net.minecraft.scoreboard.Scoreboard scoreboard = scoreObjective.getScoreboard();
             Collection<Score> sortedScores = scoreboard.getSortedScores(scoreObjective);
-            boolean showScorePoints = this.scoreboardPoints;
+            boolean showScorePoints = (this.scoreboardPoints == 2 || (this.scoreboardPoints == 1 && isNonConsecutive(scoreObjective)));
             String displayName = scoreObjective.getDisplayName();
             int displayNameStringWidth = fontRenderer.getStringWidth(displayName);
 
@@ -162,6 +158,22 @@ public class Scoreboard extends Config {
 
             this.width = displayNameStringWidth + 2;
             this.height = sortedScores.size() * fontRenderer.FONT_HEIGHT + (this.scoreboardTitle ? 10 : 1);
+        }
+
+        /*
+            The following code is taken from Ugly Scoreboard Fix under the Apache-2.0 License
+            https://github.com/Lortseam/ugly-scoreboard-fix/blob/master/LICENSE
+         */
+        private boolean isNonConsecutive(ScoreObjective scoreObjective) {
+            int[] scorePoints = scoreObjective.getScoreboard().getSortedScores(scoreObjective).stream().mapToInt(Score::getScorePoints).toArray();
+            if (scorePoints.length > 1) {
+                for (int line = 1; line < scorePoints.length; line++) {
+                    if (scorePoints[line] != scorePoints[line - 1] + 1) { // check if the score is just 1 higher than previous
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
