@@ -1,33 +1,23 @@
 package org.polyfrost.vanillahud.hud;
 
-import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
-import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.BasicHud;
-import cc.polyfrost.oneconfig.libs.universal.UGraphics;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
-import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
-import cc.polyfrost.oneconfig.renderer.scissor.Scissor;
+import cc.polyfrost.oneconfig.libs.universal.*;
+import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.renderer.scissor.ScissorHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.scoreboard.IScoreObjectiveCriteria;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.*;
 import net.minecraft.util.EnumChatFormatting;
-import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.config.HudConfig;
 
 import java.util.Collection;
 
-public class Scoreboard extends Config {
+public class Scoreboard extends HudConfig {
 
     @HUD(
             name = "Scoreboard"
@@ -35,7 +25,7 @@ public class Scoreboard extends Config {
     public ScoreboardHUD hud = new ScoreboardHUD();
 
     public Scoreboard() {
-        super(new Mod("Scoreboard", ModType.HUD, "/vanillahud_dark.svg"), "scoreboard.json");
+        super(new Mod("Scoreboard", ModType.HUD), "scoreboard.json");
         initialize();
     }
 

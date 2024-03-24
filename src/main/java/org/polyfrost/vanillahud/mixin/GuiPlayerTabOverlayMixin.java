@@ -6,20 +6,14 @@ import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiPlayerTabOverlay;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.scoreboard.*;
+import net.minecraft.util.*;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.polyfrost.vanillahud.utils.TabListManager;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -33,6 +27,7 @@ public class GuiPlayerTabOverlayMixin {
     @Shadow
     private IChatComponent header, footer;
 
+    @Shadow @Final private Minecraft mc;
     @Unique
     private static final IChatComponent tab$exampleHeader = new ChatComponentText("Tab List");
     @Unique
@@ -40,9 +35,6 @@ public class GuiPlayerTabOverlayMixin {
 
     @Unique
     private int entryX, entryWidth, tab$TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
-
-    @Unique
-    private static final Minecraft mc = Minecraft.getMinecraft();
 
     @Unique
     List<NetworkPlayerInfo> renderingList;

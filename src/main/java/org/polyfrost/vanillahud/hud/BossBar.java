@@ -9,11 +9,11 @@ import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.boss.BossStatus;
+import org.polyfrost.vanillahud.config.HudConfig;
 import org.polyfrost.vanillahud.hooks.BossStatusHook;
 
-public class BossBar extends Config {
+public class BossBar extends HudConfig {
 
     @HUD(
             name = "Boss Bar"
@@ -21,7 +21,7 @@ public class BossBar extends Config {
     public static BossBarHUD hud = new BossBarHUD();
 
     public BossBar() {
-        super(new Mod("Boss Bar", ModType.HUD, "/vanillahud_dark.svg"), "bossbar.json");
+        super(new Mod("Boss Bar", ModType.HUD), "bossbar.json");
         initialize();
     }
 
