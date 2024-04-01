@@ -21,6 +21,9 @@
     "MinecraftAccessor"
   ],
   "mixins": [
-    "HUDUtilsMixin"
+    "HUDUtilsMixin",
+    "ModCardMixin",
+    "ModsPageAccessor",
+    "ModsPageMixin"
   ]
 }

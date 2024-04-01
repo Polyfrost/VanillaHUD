@@ -1,20 +1,16 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.Checkbox;
-import cc.polyfrost.oneconfig.config.annotations.DualOption;
-import cc.polyfrost.oneconfig.config.annotations.HUD;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.config.annotations.*;
+import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
+import org.polyfrost.vanillahud.config.HudConfig;
 
 import static org.polyfrost.vanillahud.hud.BossBar.BossBarHUD.mc;
 
-public class Hunger extends Config {
+public class Hunger extends HudConfig {
 
     @HUD(
             name = "Hunger"

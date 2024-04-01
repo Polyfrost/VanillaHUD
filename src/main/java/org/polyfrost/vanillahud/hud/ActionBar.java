@@ -1,26 +1,20 @@
 package org.polyfrost.vanillahud.hud;
 
-import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
-import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
-import cc.polyfrost.oneconfig.libs.universal.UGraphics;
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft;
-import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import cc.polyfrost.oneconfig.libs.universal.*;
+import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
-import net.minecraft.client.Minecraft;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
-import org.polyfrost.vanillahud.mixin.MinecraftAccessor;
+import org.polyfrost.vanillahud.config.HudConfig;
+import org.polyfrost.vanillahud.mixin.*;
 
 import java.awt.Color;
 
-public class ActionBar extends Config {
+public class ActionBar extends HudConfig {
 
     @HUD(
             name = "Action Bar"
@@ -28,7 +22,7 @@ public class ActionBar extends Config {
     public ActionBarHUD hud = new ActionBarHUD();
 
     public ActionBar() {
-        super(new Mod("Action Bar", ModType.HUD, "/vanillahud_dark.svg"), "actionbar.json");
+        super(new Mod("Action Bar", ModType.HUD), "actionbar.json");
         initialize();
     }
 

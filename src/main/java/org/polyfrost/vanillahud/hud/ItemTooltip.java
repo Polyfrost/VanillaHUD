@@ -1,7 +1,5 @@
 package org.polyfrost.vanillahud.hud;
 
-import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
-import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.*;
@@ -11,14 +9,13 @@ import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.spectator.ISpectatorMenuObject;
-import net.minecraft.client.gui.spectator.SpectatorMenu;
+import net.minecraft.client.gui.spectator.*;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.mixin.GuiIngameAccessor;
+import org.polyfrost.vanillahud.config.HudConfig;
+import org.polyfrost.vanillahud.mixin.*;
 import net.minecraft.util.EnumChatFormatting;
-import org.polyfrost.vanillahud.mixin.GuiSpectatorAccessor;
 
-public class ItemTooltip extends Config {
+public class ItemTooltip extends HudConfig {
 
     @HUD(
             name = "Held Item Tooltip"
@@ -27,7 +24,7 @@ public class ItemTooltip extends Config {
 
 
     public ItemTooltip() {
-        super(new Mod("Held Item Tooltip", ModType.HUD, "/vanillahud_dark.svg"), "itemtooltip.json");
+        super(new Mod("Held Item Tooltip", ModType.HUD), "itemtooltip.json");
         initialize();
     }
 

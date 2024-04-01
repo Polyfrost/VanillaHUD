@@ -1,7 +1,6 @@
 package org.polyfrost.vanillahud.mixin;
 
-import cc.polyfrost.oneconfig.hud.Hud;
-import cc.polyfrost.oneconfig.hud.Position;
+import cc.polyfrost.oneconfig.hud.*;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import net.minecraft.block.material.Material;
@@ -11,17 +10,13 @@ import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.GuiIngameForge;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.hud.*;
-import org.spongepowered.asm.mixin.Dynamic;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
@@ -33,7 +28,7 @@ import static org.polyfrost.vanillahud.hud.Hunger.*;
 public abstract class GuiIngameForgeMixin {
 
     @Unique
-    private static final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     @Shadow
     public abstract void renderHealth(int width, int height);

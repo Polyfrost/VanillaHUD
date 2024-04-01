@@ -1,10 +1,8 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.Config;
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
+import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
@@ -13,10 +11,10 @@ import net.minecraft.util.MathHelper;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.polyfrost.vanillahud.utils.EaseOutQuart;
-import org.polyfrost.vanillahud.utils.TabListManager;
+import org.polyfrost.vanillahud.config.HudConfig;
+import org.polyfrost.vanillahud.utils.*;
 
-public class TabList extends Config {
+public class TabList extends HudConfig {
 
     @HUD(
             name = "TabList"
