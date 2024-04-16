@@ -14,7 +14,6 @@
     "GuiIngameMixin",
     "GuiPlayerTabOverlayAccessor",
     "GuiPlayerTabOverlayMixin",
-    "GuiSlotMixin",
     "GuiSpectatorAccessor",
     "GuiSpectatorMixin",
     "GuiUtilsMixin",
