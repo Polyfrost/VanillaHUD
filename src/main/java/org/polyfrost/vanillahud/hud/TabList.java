@@ -25,6 +25,9 @@ public class TabList extends HudConfig {
     public static int width, height;
 
     @Exclude
+    public static boolean isGuiIngame = false;
+
+    @Exclude
     public static EaseOutQuart animation = new EaseOutQuart(0, 0, 0, false);
 
     public TabList() {
@@ -170,7 +173,7 @@ public class TabList extends HudConfig {
         }
 
         public boolean shouldRender() {
-            return isEnabled() && shouldShow();
+            return isEnabled() && shouldShow() && (isGuiIngame ^ isCachingIgnored());
         }
 
         @Exclude

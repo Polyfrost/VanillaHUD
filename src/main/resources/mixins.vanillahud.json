@@ -6,9 +6,11 @@
   "verbose": true,
   "client": [
     "BossStatusMixin",
+    "EntityRendererMixin",
     "GuiAccessor",
     "GuiContainerCreativeMixin",
     "GuiIngameAccessor",
+    "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",
     "GuiIngameForgeMixin_Cancel",
     "GuiIngameMixin",

@@ -15,6 +15,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.GuiIngameForge;
 import org.lwjgl.opengl.GL11;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -265,6 +266,11 @@ public abstract class GuiIngameForgeMixin {
         GlStateManager.scale(Experience.hud.getScale(), Experience.hud.getScale(), 1F);
         renderJumpBar(182, 29);
         GlStateManager.popMatrix();
+    }
+
+    @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderPlayerList(II)V"))
+    private void setCheck(float partialTicks, CallbackInfo ci) {
+        TabList.isGuiIngame = true;
     }
 
     @Unique
