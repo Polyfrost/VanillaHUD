@@ -48,6 +48,7 @@ public class TabList extends HudConfig {
 
         public TabHud() {
             super(true, 1920 / 2f, 10);
+            ignoreCaching = true;
         }
 
         @Switch(
