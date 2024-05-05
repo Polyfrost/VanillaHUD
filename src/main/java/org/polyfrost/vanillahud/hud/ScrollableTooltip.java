@@ -15,6 +15,7 @@ public class ScrollableTooltip extends HudConfig {
 
     public ScrollableTooltip() {
         super("Scrollable Tooltip", "vanilla-hud/scrollable-tooltip.json");
+        initialize();
         addListener("startAtTop", TooltipHook::resetScrolling);
     }
 

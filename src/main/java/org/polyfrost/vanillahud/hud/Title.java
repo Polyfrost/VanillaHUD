@@ -24,6 +24,7 @@ public class Title extends HudConfig {
 
     public Title() {
         super("Title", "title.json");
+        initialize();
     }
 
     public static class TitleHUD extends SingleTextHud {

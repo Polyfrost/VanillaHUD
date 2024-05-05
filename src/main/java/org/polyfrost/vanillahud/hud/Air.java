@@ -12,6 +12,7 @@ public class Air extends HudConfig {
 
     public Air() {
         super("Air", "vanilla-hud/air.json");
+        initialize();
     }
 
     public static class AirHud extends HudBar {

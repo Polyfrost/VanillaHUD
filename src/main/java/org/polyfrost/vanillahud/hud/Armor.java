@@ -13,6 +13,7 @@ public class Armor extends HudConfig {
 
     public Armor() {
         super("Armor", "vanilla-hud/armor.json");
+        initialize();
     }
 
     public static class ArmorHud extends HudBar {

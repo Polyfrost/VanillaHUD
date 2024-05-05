@@ -15,6 +15,7 @@ public class Experience extends HudConfig {
 
     public Experience() {
         super("Experience", "vanilla-hud/experience.json");
+        initialize();
     }
 
     public static class ExperienceHud extends Hud {

@@ -18,6 +18,7 @@ public class Hotbar extends HudConfig {
 
     public Hotbar() {
         super("HotBar", "vanilla-hud/hotbar.json");
+        initialize();
     }
 
     public static class HotBarHud extends Hud {

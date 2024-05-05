@@ -19,6 +19,7 @@ public class Health extends HudConfig {
 
     public Health() {
         super("Health", "vanilla-hud/health.json");
+        initialize();
     }
 
     public static class HealthHud extends HudBar {

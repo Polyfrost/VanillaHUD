@@ -22,6 +22,7 @@ public class ActionBar extends HudConfig {
 
     public ActionBar() {
         super("Action Bar", "actionbar.json");
+        initialize();
     }
 
     public static class ActionBarHUD extends SingleTextHud {

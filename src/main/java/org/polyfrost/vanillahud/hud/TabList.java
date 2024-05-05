@@ -32,6 +32,7 @@ public class TabList extends HudConfig {
 
     public TabList() {
         super("TabList", "vanilla-hud/tab.json");
+        initialize();
         TabListManager.asyncFetchFallbackList();
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent

@@ -37,6 +37,7 @@ public class Hunger extends HudConfig {
 
     public Hunger() {
         super("Hunger", "vanilla-hud/hunger.json");
+        initialize();
     }
 
     public static class HungerHud extends HudBar {

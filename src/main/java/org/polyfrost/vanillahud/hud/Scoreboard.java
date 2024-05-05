@@ -26,6 +26,7 @@ public class Scoreboard extends HudConfig {
 
     public Scoreboard() {
         super("Scoreboard", "scoreboard.json");
+        initialize();
     }
 
     public static class ScoreboardHUD extends BasicHud {

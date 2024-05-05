@@ -22,6 +22,7 @@ public class BossBar extends HudConfig {
 
     public BossBar() {
         super("Boss Bar", "bossbar.json");
+        initialize();
     }
 
     public static class BossBarHUD extends SingleTextHud {
