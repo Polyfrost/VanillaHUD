@@ -53,7 +53,7 @@ public class TabList extends HudConfig {
         @Switch(
                 name = "Animations"
         )
-        public static boolean tabAnimation = false;
+        public static boolean tabAnimation = true;
 
         @Slider(
                 name = "Duration",
