@@ -18,8 +18,7 @@ public class Health extends HudConfig {
     public static HealthHud hud = new HealthHud();
 
     public Health() {
-        super(new Mod("Health", ModType.HUD), "vanilla-hud/health.json");
-        initialize();
+        super("Health", "vanilla-hud/health.json");
     }
 
     public static class HealthHud extends HudBar {

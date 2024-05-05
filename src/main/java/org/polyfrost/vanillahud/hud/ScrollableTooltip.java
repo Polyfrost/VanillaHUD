@@ -14,8 +14,7 @@ public class ScrollableTooltip extends HudConfig {
     public static boolean startAtTop = false;
 
     public ScrollableTooltip() {
-        super(new Mod("Scrollable Tooltip", ModType.HUD), "vanilla-hud/scrollable-tooltip.json");
-        initialize();
+        super("Scrollable Tooltip", "vanilla-hud/scrollable-tooltip.json");
         addListener("startAtTop", TooltipHook::resetScrolling);
     }
 

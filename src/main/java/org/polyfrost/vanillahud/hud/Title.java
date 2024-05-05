@@ -23,8 +23,7 @@ public class Title extends HudConfig {
     public SubTitleHUD subtitleHUD = new SubTitleHUD();
 
     public Title() {
-        super(new Mod("Title", ModType.HUD), "title.json");
-        initialize();
+        super("Title", "title.json");
     }
 
     public static class TitleHUD extends SingleTextHud {

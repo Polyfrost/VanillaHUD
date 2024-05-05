@@ -1,22 +1,11 @@
 package org.polyfrost.vanillahud.config;
 
-import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import org.polyfrost.vanillahud.VanillaHUD;
+import cc.polyfrost.oneconfig.config.elements.SubConfig;
 
-public class HudConfig extends Config {
+public class HudConfig extends SubConfig {
 
-    public HudConfig(Mod mod, String file, boolean enabled) {
-        super(mod, file, enabled);
+    public HudConfig(String name, String file) {
+        super(name, file, null, true);
     }
 
-    public HudConfig(Mod mod, String file) {
-        this(mod, file, true);
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-        VanillaHUD.mods.add(mod);
-    }
 }

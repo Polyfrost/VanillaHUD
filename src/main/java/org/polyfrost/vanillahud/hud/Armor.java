@@ -12,8 +12,7 @@ public class Armor extends HudConfig {
     public static ArmorHud hud = new ArmorHud();
 
     public Armor() {
-        super(new Mod("Armor", ModType.HUD), "vanilla-hud/armor.json");
-        initialize();
+        super("Armor", "vanilla-hud/armor.json");
     }
 
     public static class ArmorHud extends HudBar {

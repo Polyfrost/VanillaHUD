@@ -21,8 +21,7 @@ public class BossBar extends HudConfig {
     public static BossBarHUD hud = new BossBarHUD();
 
     public BossBar() {
-        super(new Mod("Boss Bar", ModType.HUD), "bossbar.json");
-        initialize();
+        super("Boss Bar", "bossbar.json");
     }
 
     public static class BossBarHUD extends SingleTextHud {

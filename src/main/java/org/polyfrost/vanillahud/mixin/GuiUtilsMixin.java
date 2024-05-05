@@ -6,6 +6,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.lwjgl.input.Mouse;
 import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hooks.TooltipHook;
 import org.polyfrost.vanillahud.hud.ScrollableTooltip;
 import org.polyfrost.vanillahud.utils.EaseOutQuart;
@@ -34,7 +35,7 @@ public class GuiUtilsMixin {
 
     @ModifyVariable(method = "drawHoveringText", at = @At("STORE"), name = "tooltipY")
     private static int captureY(int y) {
-        gui$tooltipY = gui$overScreen && VanillaHUD.scrollableTooltip.enabled && ScrollableTooltip.startAtTop ? 6 : y;
+        gui$tooltipY = gui$overScreen && ModConfig.scrollableTooltip.enabled && ScrollableTooltip.startAtTop ? 6 : y;
         return gui$tooltipY;
     }
 
@@ -55,7 +56,7 @@ public class GuiUtilsMixin {
             TooltipHook.resetScrolling();
             gui$lines = textLines;
         }
-        TooltipHook.isScrolling = VanillaHUD.scrollableTooltip.enabled && (gui$overScreen || top < 0);
+        TooltipHook.isScrolling = ModConfig.scrollableTooltip.enabled && (gui$overScreen || top < 0);
         int mouseDWheel = Mouse.getDWheel();
         if (TooltipHook.isScrolling) {
             if (mouseDWheel < 0) {

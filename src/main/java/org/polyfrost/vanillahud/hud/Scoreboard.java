@@ -25,8 +25,7 @@ public class Scoreboard extends HudConfig {
     public ScoreboardHUD hud = new ScoreboardHUD();
 
     public Scoreboard() {
-        super(new Mod("Scoreboard", ModType.HUD), "scoreboard.json");
-        initialize();
+        super("Scoreboard", "scoreboard.json");
     }
 
     public static class ScoreboardHUD extends BasicHud {

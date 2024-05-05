@@ -24,8 +24,7 @@ public class ItemTooltip extends HudConfig {
 
 
     public ItemTooltip() {
-        super(new Mod("Held Item Tooltip", ModType.HUD), "itemtooltip.json");
-        initialize();
+        super("Held Item Tooltip", "itemtooltip.json");
     }
 
     public static class HeldItemTooltipHUD extends SingleTextHud {

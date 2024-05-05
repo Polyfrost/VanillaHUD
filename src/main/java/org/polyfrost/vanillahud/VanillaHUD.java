@@ -18,19 +18,6 @@ public class VanillaHUD {
     public static final String VERSION = "@VER@";
 
     public static ModConfig modConfig;
-    public static ActionBar actionBar;
-    public static Air air;
-    public static Armor armor;
-    public static BossBar bossBar;
-    public static Experience experience;
-    public static Health health;
-    public static Hotbar hotBar;
-    public static Hunger hunger;
-    public static ItemTooltip itemTooltip;
-    public static Scoreboard scoreboard;
-    public static ScrollableTooltip scrollableTooltip;
-    public static TabList tab;
-    public static Title title;
     private static boolean apec = false;
     public static boolean isPatcher = false;
     public static ArrayList<Mod> mods = new ArrayList<>();
@@ -38,20 +25,6 @@ public class VanillaHUD {
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
         modConfig = new ModConfig();
-        actionBar = new ActionBar();
-        air = new Air();
-        armor = new Armor();
-        bossBar = new BossBar();
-        experience = new Experience();
-        health = new Health();
-        hotBar = new Hotbar();
-        hunger = new Hunger();
-        itemTooltip = new ItemTooltip();
-        scoreboard = new Scoreboard();
-        scrollableTooltip = new ScrollableTooltip();
-        tab = new TabList();
-        title = new Title();
-
         TabListManager.asyncUpdateList();
     }
 

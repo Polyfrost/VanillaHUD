@@ -23,4 +23,10 @@ public class EaseOutQuart extends Animation {
     protected float animate(float x) {
         return -1 * (x - 1) * (x - 1) * (x - 1) * (x - 1) + 1;
     }
+
+    @Override
+    public boolean isFinished() {
+        timePassed = (float) (Minecraft.getSystemTime() - startTime);
+        return super.isFinished();
+    }
 }

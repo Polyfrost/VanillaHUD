@@ -2,7 +2,6 @@ package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
@@ -22,8 +21,7 @@ public class ActionBar extends HudConfig {
     public ActionBarHUD hud = new ActionBarHUD();
 
     public ActionBar() {
-        super(new Mod("Action Bar", ModType.HUD), "actionbar.json");
-        initialize();
+        super("Action Bar", "actionbar.json");
     }
 
     public static class ActionBarHUD extends SingleTextHud {

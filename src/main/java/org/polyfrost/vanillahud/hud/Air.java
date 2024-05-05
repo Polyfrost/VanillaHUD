@@ -1,7 +1,6 @@
 package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.data.*;
 import org.polyfrost.vanillahud.config.HudConfig;
 
 public class Air extends HudConfig {
@@ -12,8 +11,7 @@ public class Air extends HudConfig {
     public static AirHud hud = new AirHud();
 
     public Air() {
-        super(new Mod("Air", ModType.HUD), "vanilla-hud/air.json");
-        initialize();
+        super("Air", "vanilla-hud/air.json");
     }
 
     public static class AirHud extends HudBar {

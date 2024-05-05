@@ -36,8 +36,7 @@ public class Hunger extends HudConfig {
     }
 
     public Hunger() {
-        super(new Mod("Hunger", ModType.HUD), "vanilla-hud/hunger.json");
-        initialize();
+        super("Hunger", "vanilla-hud/hunger.json");
     }
 
     public static class HungerHud extends HudBar {

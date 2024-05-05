@@ -2,7 +2,7 @@ package org.polyfrost.vanillahud.hooks;
 
 import cc.polyfrost.oneconfig.utils.MathUtils;
 import net.minecraft.entity.boss.BossStatus;
-import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.hud.BossBar;
 
 public class BossStatusHook {
     private static float lerpedBossHealth;
@@ -15,7 +15,7 @@ public class BossStatusHook {
 
     public static float getPercent() {
         long l = System.currentTimeMillis() - percentSetTime;
-        float f = MathUtils.clamp((float)l / VanillaHUD.bossBar.hud.lerpSpeed, 0.0f, 1.0f);
+        float f = MathUtils.clamp((float)l / BossBar.hud.lerpSpeed, 0.0f, 1.0f);
         return lerp(f, lerpedBossHealth, BossStatus.healthScale);
     }
 

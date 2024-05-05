@@ -31,7 +31,7 @@ public class TabList extends HudConfig {
     public static EaseOutQuart animation = new EaseOutQuart(0, 0, 0, false);
 
     public TabList() {
-        super(new Mod("TabList", ModType.HUD), "vanilla-hud/tab.json");
+        super("TabList", "vanilla-hud/tab.json");
         TabListManager.asyncFetchFallbackList();
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
@@ -41,7 +41,6 @@ public class TabList extends HudConfig {
                 }
             }
         });
-        initialize();
     }
 
     public static class TabHud extends BasicHud {
