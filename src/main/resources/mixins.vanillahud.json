@@ -13,6 +13,7 @@
     "GuiIngameForgeAccessor",
     "GuiIngameForgeMixin",
     "GuiIngameForgeMixin_Cancel",
+    "GuiIngameForgeMixin_CancelLow",
     "GuiIngameMixin",
     "GuiPlayerTabOverlayAccessor",
     "GuiPlayerTabOverlayMixin",
