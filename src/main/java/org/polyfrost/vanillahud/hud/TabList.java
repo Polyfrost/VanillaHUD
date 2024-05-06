@@ -156,9 +156,20 @@ public class TabList extends HudConfig {
         public static OneColor pingLevelSix = new OneColor("AA0000FF");
 
         @Color(
-                name = "Tab Widget Color"
+                name = "Tab Widget Color", size = 2
         )
         public static OneColor tabWidgetColor = new OneColor(553648127);
+
+        @Info(
+                text = "Might causes tablist go over screen",
+                type = InfoType.WARNING
+        )
+        private static Runnable info = () -> { }; //runnable so it wont be saved
+
+        @Switch(
+                name = "Fix TabList Entry Width"
+        )
+        public static boolean fixWidth = false;
 
         public static int getTabPlayerLimit() {
             return MathHelper.clamp_int(tabPlayerLimit, 10, 120);

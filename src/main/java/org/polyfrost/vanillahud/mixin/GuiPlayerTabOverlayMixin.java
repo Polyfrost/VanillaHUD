@@ -303,7 +303,7 @@ public class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 1))
     private int noLimit(int a, int b) {
-        if (VanillaHUD.inSBASkyblock()) return a;
+        if (VanillaHUD.inSBASkyblock() || !TabList.TabHud.fixWidth) return Math.min(a, b);
         return a;
     }
 }
