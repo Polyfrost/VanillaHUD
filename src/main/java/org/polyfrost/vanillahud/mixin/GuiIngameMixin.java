@@ -81,6 +81,7 @@ public abstract class GuiIngameMixin {
     @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;renderHotbarItem(IIIFLnet/minecraft/entity/player/EntityPlayer;)V"))
     private void scaleItems(GuiIngame instance, int index, int xPos, int yPos, float partialTicks, EntityPlayer player) {
         if (VanillaHUD.isApec()) {
+            renderHotbarItem(index, xPos, yPos, partialTicks, player);
             return;
         }
         renderHotbarItem(index, (Hotbar.HotBarHud.hotbarMode ? index * 20 : 0) + 3, (Hotbar.HotBarHud.hotbarMode ? 0 : index * 20) + 3, partialTicks, player);
