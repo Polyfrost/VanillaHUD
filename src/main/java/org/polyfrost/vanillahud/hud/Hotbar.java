@@ -37,6 +37,9 @@ public class Hotbar extends HudConfig {
         )
         public static boolean hotbarMode = true;
 
+        @Switch(name = "Animation")
+        public static boolean animation = true;
+
         @Override
         public boolean isEnabled() {
             boolean isEnable = super.isEnabled();

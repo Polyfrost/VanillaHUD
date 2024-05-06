@@ -29,7 +29,7 @@ public class GuiIngameForgeMixin_CancelLow {
         if (!Health.hud.shouldRender()) ci.cancel();
     }
 
-    @Inject(method = "renderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"), cancellable = true)
+    @Inject(method = "renderFood", at = @At(value = "HEAD"), cancellable = true, remap = false)
     private void cancelHunger(CallbackInfo ci) {
         if (!Hunger.hud.shouldRender()) ci.cancel();
     }

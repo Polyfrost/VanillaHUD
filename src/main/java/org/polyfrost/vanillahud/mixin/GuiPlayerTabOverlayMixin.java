@@ -198,11 +198,7 @@ public class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V"))
     private void playerHead(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (VanillaHUD.inSBASkyblock()) {
-            Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, tileWidth, tileHeight);
-            return;
-        }
-        if (!TabList.TabHud.showHead) return;
+        if (!TabList.TabHud.showHead && !VanillaHUD.inSBASkyblock()) return;
 
         Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, tileWidth, tileHeight);
     }
@@ -217,10 +213,6 @@ public class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawScoreboardValues(Lnet/minecraft/scoreboard/ScoreObjective;ILjava/lang/String;IILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
     private void scoreboard(GuiPlayerTabOverlay instance, ScoreObjective scoreObjective, int i, String string, int j, int k, NetworkPlayerInfo networkPlayerInfo) {
-        if (VanillaHUD.inSBASkyblock()) {
-            ((GuiPlayerTabOverlayAccessor) instance).renderScore(scoreObjective, i, string, j, k, networkPlayerInfo);
-            return;
-        }
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
@@ -306,4 +298,10 @@ public class GuiPlayerTabOverlayMixin {
         if (VanillaHUD.inSBASkyblock() || !TabList.TabHud.fixWidth) return Math.min(a, b);
         return a;
     }
+
+    @Inject(method = "renderPlayerlist", at = @At("TAIL"))
+    private void alpha(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
+        GlStateManager.enableAlpha(); //somehow this fixes hud edit bug
+    }
+
 }

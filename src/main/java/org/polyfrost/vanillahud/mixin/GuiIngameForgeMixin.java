@@ -23,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.Random;
+
 import static org.polyfrost.vanillahud.hud.Health.healthLink;
 import static org.polyfrost.vanillahud.hud.Hunger.*;
 
@@ -317,6 +319,17 @@ public abstract class GuiIngameForgeMixin {
         return HudCore.editing ? instance.thePlayer : instance.getRenderViewEntity();
     }
 
+
+    @ModifyVariable(method = "renderHealth", at = @At(value = "STORE"), name = "regen", remap = false)
+    private int healthAnimation(int value) {
+        return Health.HealthHud.animation ? value : -1;
+    }
+
+    @Redirect(method = "renderHealth", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I"), remap = false)
+    private int healthAnimation1(Random instance, int i) {
+        return Health.HealthHud.animation ? instance.nextInt(i) : 0;
+    }
+
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderFood(II)V"))
     private void renderFood(Args args) {
         if (VanillaHUD.isApec()) {
@@ -326,37 +339,26 @@ public abstract class GuiIngameForgeMixin {
         args.set(1, right_height);
     }
 
-    private boolean needsToResetHunger = false;
+    @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderFood(II)V"))
+    private void hungerTranslate(float partialTicks, CallbackInfo ci) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate((int) Hunger.hud.position.getX(), (int) Hunger.hud.position.getY() - (Hunger.HungerHud.healthLink ? healthLink() : 0) - (Hunger.HungerHud.mountLink ? mountLink() : 0), 0F);
+        GlStateManager.scale(Hunger.hud.getScale(), Hunger.hud.getScale(), 1F);
+    }
 
-    @Inject(method = "renderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"), cancellable = true)
-    private void hunger(int width, int height, CallbackInfo ci) {
+    @Inject(method = "renderFood", at = @At("HEAD"), cancellable = true, remap = false)
+    private void hungerCancel(int width, int height, CallbackInfo ci) {
         if (VanillaHUD.isApec()) {
             return;
         }
         if (!(renderFood || Hunger.mountHud.isEnabled())) {
             ci.cancel();
-            return;
         }
-        GlStateManager.pushMatrix();
-        GlStateManager.translate((int) Hunger.hud.position.getX(), (int) Hunger.hud.position.getY() - (Hunger.HungerHud.healthLink ? healthLink() : 0) - (Hunger.HungerHud.mountLink ? mountLink() : 0), 0F);
-        GlStateManager.scale(Hunger.hud.getScale(), Hunger.hud.getScale(), 1F);
-        needsToResetHunger = true;
     }
 
-    @Inject(method = "renderFood", at = @At("RETURN"), remap = false)
+    @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderFood(II)V", shift = At.Shift.AFTER))
     private void hungerReturn(CallbackInfo ci) {
-        if (needsToResetHunger) {
-            GlStateManager.popMatrix();
-            needsToResetHunger = false;
-        }
-    }
-
-    @Inject(method = "renderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;endSection()V"), remap = false)
-    private void hungerPop(CallbackInfo ci) {
-        if (needsToResetHunger) {
-            GlStateManager.popMatrix();
-            needsToResetHunger = false;
-        }
+        GlStateManager.popMatrix();
     }
 
     @ModifyVariable(method = "renderFood", at = @At("STORE"), ordinal = 8, remap = false)
@@ -373,6 +375,11 @@ public abstract class GuiIngameForgeMixin {
             return instance.getRenderViewEntity();
         }
         return HudCore.editing ? instance.thePlayer : instance.getRenderViewEntity();
+    }
+
+    @Redirect(method = "renderFood", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I"), remap = false)
+    private int hungerAnimation(Random instance, int i) {
+        return HungerHud.animation ? instance.nextInt(i) : 1;
     }
 
     @Redirect(method = "renderHealthMount", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/EntityPlayer;ridingEntity:Lnet/minecraft/entity/Entity;"))

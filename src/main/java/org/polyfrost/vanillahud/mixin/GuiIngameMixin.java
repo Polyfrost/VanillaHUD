@@ -59,6 +59,11 @@ public abstract class GuiIngameMixin {
         GlStateManager.popMatrix();
     }
 
+    @ModifyVariable(method = "renderHotbarItem", at = @At("STORE"), name = "f")
+    private float animation(float value) {
+        return Hotbar.HotBarHud.animation ? value : 0f;
+    }
+
     @Inject(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;drawTexturedModalRect(IIIIII)V"))
     private void prePosition(ScaledResolution sr, float partialTicks, CallbackInfo ci) {
         if (VanillaHUD.isApec()) {

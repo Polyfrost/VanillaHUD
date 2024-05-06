@@ -48,6 +48,9 @@ public class Hunger extends HudConfig {
         @Checkbox(name = "Link with mount health")
         public static boolean mountLink = false;
 
+        @Switch(name = "Animation")
+        public static boolean animation = true;
+
         public HungerHud() {
             super(true, 1920 / 2f + 182 / 2f - 81, 1080 - 39, true);
         }
