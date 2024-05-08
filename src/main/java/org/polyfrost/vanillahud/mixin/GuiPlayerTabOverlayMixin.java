@@ -299,9 +299,9 @@ public class GuiPlayerTabOverlayMixin {
         return a;
     }
 
-//    @Inject(method = "renderPlayerlist", at = @At("TAIL"))
-//    private void alpha(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
-//        GlStateManager.enableAlpha(); //somehow this fixes hud edit bug
-//    }
+    @Inject(method = "renderPlayerlist", at = @At("TAIL"))
+    private void alpha(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
+        GlStateManager.enableAlpha(); //somehow this fixes hud edit bug
+    }
 
 }
