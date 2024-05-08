@@ -17,6 +17,7 @@ import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -535,18 +536,13 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
-        if (VanillaHUD.inSBASkyblock()) {
+        if (VanillaHUD.inSBASkyblock() || !ModConfig.tab.enabled) {
             return instance.isKeyDown();
         }
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
-            GlStateManager.pushMatrix();
-            GlStateManager.scale(0f, 0f, 1);
-            mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
-            GlStateManager.popMatrix();
-        } else {
+        if (mc.isIntegratedServerRunning() && handler.getPlayerInfoMap().size() <= 1 && scoreobjective == null && !HudCore.editing) {
             return toggled = false;
         }
 
