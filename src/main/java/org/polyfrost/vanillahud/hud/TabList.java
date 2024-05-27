@@ -103,12 +103,18 @@ public class TabList extends HudConfig {
         public static boolean showHead = true;
 
         @Switch(
+                name = "Better Hat Layer"
+        )
+        public static boolean betterHatLayer = false;
+
+        @Switch(
                 name = "Show Player's Ping"
         )
         public static boolean showPing = true;
 
         @Switch(
-                name = "Use Number Ping"
+                name = "Use Number Ping",
+                size = 2
         )
         public static boolean numberPing = true;
 
@@ -196,11 +202,7 @@ public class TabList extends HudConfig {
                 lastToggled = toggled;
 
                 if (tabAnimation) {
-                    if (toggled) {
-                        animation = new EaseOutQuart(tabDuration, 0f, position.getHeight(), false);
-                    } else {
-                        animation = new EaseOutQuart(tabDuration, position.getHeight(), 0f, false);
-                    }
+                    animation = new EaseOutQuart(tabDuration, position.getHeight(), 0f, toggled);
                 }
             }
 

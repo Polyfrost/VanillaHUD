@@ -18,6 +18,7 @@ import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.ModConfig;
+import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -36,9 +37,6 @@ public abstract class GuiIngameForgeMixin {
     private final Minecraft mc = Minecraft.getMinecraft();
 
     @Shadow
-    public abstract void renderHealth(int width, int height);
-
-    @Shadow
     public static int left_height;
 
     @Shadow
@@ -48,22 +46,7 @@ public abstract class GuiIngameForgeMixin {
     public static boolean renderHealthMount;
 
     @Shadow
-    protected abstract void renderHealthMount(int width, int height);
-
-    @Shadow
     public static boolean renderFood;
-
-    @Shadow
-    protected abstract void renderExperience(int width, int height);
-
-    @Shadow
-    protected abstract void renderJumpBar(int width, int height);
-
-    @Shadow
-    protected abstract void renderAir(int width, int height);
-
-    @Shadow
-    protected abstract void renderArmor(int width, int height);
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderAir(II)V"))
     private void air(Args args) {
@@ -542,7 +525,10 @@ public abstract class GuiIngameForgeMixin {
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        if (mc.isIntegratedServerRunning() && handler.getPlayerInfoMap().size() <= 1 && scoreobjective == null && !HudCore.editing) {
+        if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
+            TabHook.gettingSize = true;
+            mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
+        } else {
             return toggled = false;
         }
 

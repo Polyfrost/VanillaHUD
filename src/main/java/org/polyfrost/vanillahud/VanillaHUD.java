@@ -28,7 +28,6 @@ public class VanillaHUD {
     public static boolean isPatcher = false;
     private static boolean isSBA = false;
     private static boolean inSkyblock = false;
-    public static ArrayList<Mod> mods = new ArrayList<>();
     private int tickAmount = 0;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
