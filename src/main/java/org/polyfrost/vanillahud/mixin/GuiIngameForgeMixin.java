@@ -519,7 +519,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
-        if (VanillaHUD.inSBASkyblock() || !ModConfig.tab.enabled) {
+        if (VanillaHUD.isSBATab() || !ModConfig.tab.enabled) {
             return instance.isKeyDown();
         }
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
@@ -553,7 +553,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))
     private void enableScissor(int width, int height, CallbackInfo ci) {
-        if (HudCore.editing || VanillaHUD.inSBASkyblock()) return;
+        if (HudCore.editing || VanillaHUD.isSBATab()) return;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Position position = TabList.hud.position;
         int scale = (int) UResolution.getScaleFactor();
@@ -562,7 +562,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V", shift = At.Shift.AFTER))
     private void disable(int width, int height, CallbackInfo ci) {
-        if (HudCore.editing || VanillaHUD.inSBASkyblock()) return;
+        if (HudCore.editing || VanillaHUD.isSBATab()) return;
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 }
