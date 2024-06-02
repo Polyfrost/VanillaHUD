@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.ScoreObjective;
 import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 import org.polyfrost.vanillahud.hud.Hotbar;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -24,8 +25,9 @@ public abstract class GuiIngameMixin {
         UMinecraft.getMinecraft().getTextureManager().bindTexture(Gui.icons);
     }
 
-    @Inject(method = "renderScoreboard", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "renderScoreboard", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/ScoreObjective;getScoreboard()Lnet/minecraft/scoreboard/Scoreboard;", shift = At.Shift.AFTER), cancellable = true)
     private void cancelScoreboard(ScoreObjective s, ScaledResolution sr, CallbackInfo ci) {
+        ScoreboardHook.canDraw = true;
         ci.cancel();
     }
 

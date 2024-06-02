@@ -18,6 +18,7 @@ import net.minecraft.scoreboard.*;
 import net.minecraft.util.EnumChatFormatting;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.HudConfig;
+import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 
 import java.util.Collection;
 
@@ -109,7 +110,7 @@ public class Scoreboard extends HudConfig {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
+            if (VanillaHUD.isApec() || !ScoreboardHook.canDraw) { // I love Apec Mod Minecraft
                 return false;
             }
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);

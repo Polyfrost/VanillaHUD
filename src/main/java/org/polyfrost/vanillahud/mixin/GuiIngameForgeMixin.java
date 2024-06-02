@@ -18,6 +18,7 @@ import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.ModConfig;
+import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.*;
@@ -565,4 +566,10 @@ public abstract class GuiIngameForgeMixin {
         if (HudCore.editing || VanillaHUD.isSBATab()) return;
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
+
+    @Inject(method = "renderGameOverlay", at = @At("HEAD"))
+    private void head(float partialTicks, CallbackInfo ci) {
+        ScoreboardHook.canDraw = false;
+    }
+
 }
