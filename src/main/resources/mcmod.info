@@ -2,13 +2,13 @@
   {
     "modid": "${id}",
     "name": "${name}",
-    "description": "Customize vanilla HUDs!",
+    "description": "Adds in a load of customization to a few native UI elements such as the bossbar, scoreboard, etc.",
     "version": "${version}",
     "mcversion": "1.8.9",
     "url": "",
     "updateUrl": "",
     "authorList": [
-      "W-OVERFLOW"
+      "Polyfrost"
     ],
     "credits": "",
     "logoFile": "",
