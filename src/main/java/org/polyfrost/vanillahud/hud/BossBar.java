@@ -130,8 +130,6 @@ public class BossBar extends HudConfig {
                     mc.ingameGUI.drawTexturedModalRect(x, y, 0, 79, (int) remainingHealth, 5);
                 }
             }
-
-            UGraphics.disableBlend();
         }
 
         @Override

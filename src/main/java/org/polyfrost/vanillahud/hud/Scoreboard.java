@@ -154,8 +154,6 @@ public class Scoreboard extends HudConfig {
                 }
             }
 
-            UGraphics.disableBlend();
-
             this.width = displayNameStringWidth + 2;
             this.height = sortedScores.size() * fontRenderer.FONT_HEIGHT + (this.scoreboardTitle ? 10 : 1);
         }

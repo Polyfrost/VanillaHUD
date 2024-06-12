@@ -59,7 +59,6 @@ public class ItemTooltip extends HudConfig {
             OneColor color = new OneColor(ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity)) | this.opacity << 24);
             UGraphics.enableBlend();
             super.drawLine(line, x, y, color, scale);
-            UGraphics.disableBlend();
         }
 
         @Override
@@ -67,7 +66,6 @@ public class ItemTooltip extends HudConfig {
             OneColor color = new OneColor(ColorUtils.setAlpha(c.getRGB(), Math.min(c.getAlpha(), this.opacity)) | this.opacity << 24);
             UGraphics.enableBlend();
             super.drawLine(line, x, y, color, scale);
-            UGraphics.disableBlend();
         }
 
         @Override
