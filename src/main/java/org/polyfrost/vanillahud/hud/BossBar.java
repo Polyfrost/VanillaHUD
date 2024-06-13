@@ -114,6 +114,7 @@ public class BossBar extends HudConfig {
                 --BossStatus.statusBarTime;
             }
 
+            UGraphics.enableBlend();
             UGraphics.color4f(1.0F, 1.0F, 1.0F, 1.0F);
             mc.getTextureManager().bindTexture(Gui.icons);
 
