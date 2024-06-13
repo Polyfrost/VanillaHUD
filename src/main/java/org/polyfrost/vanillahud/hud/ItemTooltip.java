@@ -57,14 +57,12 @@ public class ItemTooltip extends HudConfig {
         @Override
         protected void drawLine(String line, float x, float y, float scale) {
             OneColor color = new OneColor(ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity)) | this.opacity << 24);
-            UGraphics.enableBlend();
             super.drawLine(line, x, y, color, scale);
         }
 
         @Override
         protected void drawLine(String line, float x, float y, OneColor c, float scale) {
             OneColor color = new OneColor(ColorUtils.setAlpha(c.getRGB(), Math.min(c.getAlpha(), this.opacity)) | this.opacity << 24);
-            UGraphics.enableBlend();
             super.drawLine(line, x, y, color, scale);
         }
 

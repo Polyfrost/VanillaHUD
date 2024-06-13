@@ -123,7 +123,6 @@ public class Scoreboard extends HudConfig {
         }
 
         private void renderObjective(ScoreObjective scoreObjective) {
-            UGraphics.enableBlend();
             net.minecraft.scoreboard.Scoreboard scoreboard = scoreObjective.getScoreboard();
             Collection<Score> sortedScores = scoreboard.getSortedScores(scoreObjective);
             boolean showScorePoints = (this.scoreboardPoints == 2 || (this.scoreboardPoints == 1 && isNonConsecutive(scoreObjective)));
