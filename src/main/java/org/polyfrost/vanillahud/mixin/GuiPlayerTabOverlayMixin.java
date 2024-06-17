@@ -107,6 +107,9 @@ public abstract class GuiPlayerTabOverlayMixin {
         if (TabHook.gettingSize) {
             vanillaHUD$setSize(width, scoreboardIn, scoreObjectiveIn);
             TabHook.gettingSize = false;
+            if (DummyClassUtils.willPatcherShiftDown()) {
+                GlStateManager.popMatrix();
+            }
             ci.cancel();
             return;
         }
