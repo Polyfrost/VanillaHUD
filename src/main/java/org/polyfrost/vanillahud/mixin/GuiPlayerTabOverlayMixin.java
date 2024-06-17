@@ -332,7 +332,7 @@ public abstract class GuiPlayerTabOverlayMixin {
     @Unique
     private void vanillaHUD$setSize(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn) {
         NetHandlerPlayClient netHandlerPlayClient = this.mc.thePlayer.sendQueue;
-        List<NetworkPlayerInfo> list = setLimit(list(field_175252_a, field_175252_a.sortedCopy(netHandlerPlayClient.getPlayerInfoMap())));
+        List<NetworkPlayerInfo> list = setLimit(list(field_175252_a, field_175252_a.sortedCopy(DummyClassUtils.hytilsHideTabNpcs(netHandlerPlayClient.getPlayerInfoMap()))));
         int i = 0;
         int j = 0;
         Iterator iterator = list.iterator();
@@ -376,7 +376,7 @@ public abstract class GuiPlayerTabOverlayMixin {
         Iterator iterator2;
         String string;
         if (modifyHeader((GuiPlayerTabOverlay) (Object) this) != null) {
-            list2 = this.mc.fontRendererObj.listFormattedStringToWidth(modifyHeader((GuiPlayerTabOverlay) (Object) this).getFormattedText(), width - 50);
+            list2 = DummyClassUtils.hytilsModifyHeader(mc.fontRendererObj, modifyHeader((GuiPlayerTabOverlay) (Object) this).getFormattedText(), width - 50);
 
             for(iterator2 = list2.iterator(); iterator2.hasNext(); r = Math.max(r, this.mc.fontRendererObj.getStringWidth(string))) {
                 string = (String)iterator2.next();
@@ -384,7 +384,7 @@ public abstract class GuiPlayerTabOverlayMixin {
         }
 
         if (modifyFooter((GuiPlayerTabOverlay) (Object) this) != null) {
-            list3 = this.mc.fontRendererObj.listFormattedStringToWidth(modifyFooter((GuiPlayerTabOverlay) (Object) this).getFormattedText(), width - 50);
+            list3 = DummyClassUtils.hytilsModifyFooter(mc.fontRendererObj, modifyFooter((GuiPlayerTabOverlay) (Object) this).getFormattedText(), width - 50);
 
             for(iterator2 = list3.iterator(); iterator2.hasNext(); r = Math.max(r, this.mc.fontRendererObj.getStringWidth(string))) {
                 string = (String)iterator2.next();

@@ -20,6 +20,7 @@ public class VanillaHUD {
     public static ModConfig modConfig;
     private static boolean apec = false;
     public static boolean isPatcher = false;
+    public static boolean isHytils = false;
     private static boolean isSBA = false;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
@@ -40,6 +41,7 @@ public class VanillaHUD {
         }
         apec = Loader.isModLoaded("apec");
         isPatcher = Loader.isModLoaded("patcher");
+        isHytils = Loader.isModLoaded("hytils-reborn");
         isSBA = Loader.isModLoaded("skyblockaddons") || Loader.isModLoaded("sbaunofficial");
     }
 
