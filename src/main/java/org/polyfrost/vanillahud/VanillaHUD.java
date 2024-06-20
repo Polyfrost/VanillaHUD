@@ -48,8 +48,10 @@ public class VanillaHUD {
 
         if (!TabList.TabHud.updatedHeight) {
             TabList.TabHud.updatedHeight = true;
-            TabList.hud.position.setY(TabList.hud.position.getY() + 10);
-            ModConfig.tab.save();
+            if (TabList.hud.position.getY() == 10) {
+                TabList.hud.position.setY(TabList.hud.position.getY() + 10);
+                ModConfig.tab.save();
+            }
         }
 
         if (isPatcher) {
