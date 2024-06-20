@@ -47,7 +47,7 @@ public class TabList extends HudConfig {
     public static class TabHud extends BasicHud {
 
         public TabHud() {
-            super(true, 1920 / 2f, 20);
+            super(true, 1920 / 2f, 10);
             ignoreCaching = true;
         }
 
