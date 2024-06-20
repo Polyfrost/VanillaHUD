@@ -117,6 +117,7 @@ public class VanillaHUD {
                     ModConfig.actionBar.save();
                 }
                 ModConfig.hasMigratedPatcher = true;
+                modConfig.save();
                 if (saveTitle || saveTab || saveActionBar) {
                     Notifications.INSTANCE.send("VanillaHUD", "Migrated Patcher settings replaced by VanillaHUD. Please check VanillaHUD's settings to make sure they are correct.");
                 }
