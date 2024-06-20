@@ -2,7 +2,6 @@ package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.*;
@@ -49,16 +48,16 @@ public class Title extends HudConfig {
 
         @Override
         protected void drawLine(String line, float x, float y, float scale) {
-            OneColor color = new OneColor(ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity)) | this.opacity << 24);
+            int color = ColorUtils.setAlpha(this.color.getRGB(), Math.min(this.color.getAlpha(), this.opacity));
             UGraphics.enableBlend();
-            super.drawLine(line, x, y, color, scale);
+            TextRenderer.drawScaledString(line, x, y, color, TextRenderer.TextType.toType(textType), scale);
         }
 
         @Override
         protected void drawLine(String line, float x, float y, OneColor c, float scale) {
-            OneColor color = new OneColor(ColorUtils.setAlpha(c.getRGB(), Math.min(c.getAlpha(), this.opacity)) | this.opacity << 24);
+            int color = ColorUtils.setAlpha(c.getRGB(), Math.min(c.getAlpha(), this.opacity));
             UGraphics.enableBlend();
-            super.drawLine(line, x, y, color, scale);
+            TextRenderer.drawScaledString(line, x, y, color, TextRenderer.TextType.toType(textType), scale);
         }
 
         @Override
@@ -82,7 +81,7 @@ public class Title extends HudConfig {
             if (o > 255) {
                 o = 255;
             }
-            opacity = instantFade? 255 : o;
+            opacity = instantFade ? 255 : o;
             return o > 8 && super.shouldShow();
         }
 
@@ -115,6 +114,10 @@ public class Title extends HudConfig {
             }
 
             return ingameGUI.getDisplayedTitle();
+        }
+
+        public OneColor getColor() {
+            return color;
         }
     }
 

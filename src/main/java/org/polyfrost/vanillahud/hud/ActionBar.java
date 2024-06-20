@@ -103,6 +103,14 @@ public class ActionBar extends HudConfig {
 
             return ingameGUI.getRecordPlaying();
         }
+
+        public void setTextType(int textType) {
+            this.textType = textType;
+        }
+
+        public void setBackground(boolean background) {
+            this.background = background;
+        }
     }
 }
 

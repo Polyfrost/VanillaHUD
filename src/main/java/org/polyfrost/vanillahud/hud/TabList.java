@@ -47,7 +47,7 @@ public class TabList extends HudConfig {
     public static class TabHud extends BasicHud {
 
         public TabHud() {
-            super(true, 1920 / 2f, 10);
+            super(true, 1920 / 2f, 20);
             ignoreCaching = true;
         }
 
@@ -177,6 +177,8 @@ public class TabList extends HudConfig {
         )
         public static boolean fixWidth = false;
 
+        public static boolean updatedHeight;
+
         public static int getTabPlayerLimit() {
             return MathHelper.clamp_int(tabPlayerLimit, 10, 120);
         }
@@ -239,6 +241,10 @@ public class TabList extends HudConfig {
         @Override
         protected float getHeight(float scale, boolean example) {
             return height * scale;
+        }
+
+        public OneColor getBackgroundColor() {
+            return bgColor;
         }
     }
 
