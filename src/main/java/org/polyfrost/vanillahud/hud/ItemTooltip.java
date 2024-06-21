@@ -2,7 +2,6 @@ package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
 import cc.polyfrost.oneconfig.libs.universal.*;
@@ -48,9 +47,6 @@ public class ItemTooltip extends HudConfig {
         @Exclude
         private static final Minecraft mc = UMinecraft.getMinecraft();
 
-        @Exclude
-        private boolean example = false;
-
         public HeldItemTooltipHUD() {
             super("", true, 1920f / 2, 1080f - 37f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
             this.textType = 1;
@@ -73,7 +69,9 @@ public class ItemTooltip extends HudConfig {
 
         @Override
         public void drawAll(UMatrixStack matrices, boolean example) {
-            this.example = example;
+            if (example) {
+                opacity = 255;
+            }
             super.drawAll(matrices, example);
         }
 
@@ -88,7 +86,7 @@ public class ItemTooltip extends HudConfig {
             if (o > 255) {
                 o = 255;
             }
-            opacity = example || instantFade ? 255 : o;
+            opacity = instantFade ? 255 : o;
             String spectatorText = null;
             if (mc.thePlayer != null && mc.thePlayer.isSpectator()) {
                 GuiSpectatorAccessor spectatorAccessor = (GuiSpectatorAccessor) mc.ingameGUI.getSpectatorGui();
@@ -107,7 +105,6 @@ public class ItemTooltip extends HudConfig {
         }
 
         protected void drawBackground(float x, float y, float width, float height, float scale) {
-
             NanoVGHelper nanoVGHelper = NanoVGHelper.INSTANCE;
             nanoVGHelper.setupAndDraw(true, (vg) -> {
                 int bgColor = ColorUtils.setAlpha(this.bgColor.getRGB(), Math.min(this.bgColor.getAlpha(), this.opacity));
