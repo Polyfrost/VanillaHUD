@@ -95,7 +95,7 @@ public class TabList extends HudConfig {
         @Switch(
                 name = "Show Self At Top"
         )
-        public static boolean selfAtTop = true;
+        public static boolean selfAtTop = false;
 
         @Switch(
                 name = "Show Player's Head"
