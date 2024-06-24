@@ -40,5 +40,6 @@ public class ModConfig extends Config {
     @SubConfig
     public static Title title = new Title();
     public static boolean hasMigratedPatcher = false;
+    public static boolean doneDebugMigration = false;
 
 }

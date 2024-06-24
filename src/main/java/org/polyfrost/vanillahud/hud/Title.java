@@ -44,6 +44,7 @@ public class Title extends HudConfig {
         public TitleHUD(float x, float y, float scale) {
             super("", true, x, y, scale, false, false, 2, 2, 2, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
             this.textType = 1;
+            showInDebug = true;
         }
 
         @Override

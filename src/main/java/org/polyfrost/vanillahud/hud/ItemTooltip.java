@@ -50,6 +50,7 @@ public class ItemTooltip extends HudConfig {
         public HeldItemTooltipHUD() {
             super("", true, 1920f / 2, 1080f - 37f, 1, false, false, 0, 0, 0, new OneColor(0, 0, 0, 80), false, 2, new OneColor(0, 0, 0));
             this.textType = 1;
+            showInDebug = true;
             EventManager.INSTANCE.register(this);
         }
 

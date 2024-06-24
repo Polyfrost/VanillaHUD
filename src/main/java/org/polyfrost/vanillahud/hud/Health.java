@@ -39,6 +39,7 @@ public class Health extends HudConfig {
 
         public HealthHud() {
             super(true, 1920 / 2f - 182 / 2f, 1080 - 39, false);
+            showInDebug = true;
         }
     }
 

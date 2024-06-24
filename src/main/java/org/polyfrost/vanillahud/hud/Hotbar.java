@@ -25,6 +25,7 @@ public class Hotbar extends HudConfig {
 
         public HotBarHud() {
             super(true, 1920 / 2f - 182 / 2f, 1080 - 22f);
+            showInDebug = true;
         }
 
         @Exclude

@@ -22,6 +22,7 @@ public class Experience extends HudConfig {
 
         public ExperienceHud() {
             super(true, 1920 / 2f - 182 / 2f, 1080 - 29);
+            showInDebug = true;
         }
 
         @Slider(

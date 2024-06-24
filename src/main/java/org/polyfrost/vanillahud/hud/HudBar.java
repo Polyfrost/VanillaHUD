@@ -8,6 +8,7 @@ public class HudBar extends Hud {
 
     public HudBar(boolean enable, float x, float y, boolean alignment) {
         super(enable, x, y);
+        showInDebug = true;
         this.alignment = alignment;
     }
 

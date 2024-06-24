@@ -25,6 +25,7 @@ public class Air extends HudConfig {
 
         public AirHud() {
             super(true, 1920 / 2f + 182 / 2f - 81, 1080 - 49, true);
+            showInDebug = true;
         }
     }
 

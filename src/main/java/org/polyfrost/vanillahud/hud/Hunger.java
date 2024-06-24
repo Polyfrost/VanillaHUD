@@ -53,6 +53,7 @@ public class Hunger extends HudConfig {
 
         public HungerHud() {
             super(true, 1920 / 2f + 182 / 2f - 81, 1080 - 39, true);
+            showInDebug = true;
         }
     }
 
@@ -63,6 +64,7 @@ public class Hunger extends HudConfig {
 
         public MountHud() {
             super(false, 1920 / 2f + 182 / 2f - 81, 1080 - 59, true);
+            showInDebug = true;
         }
     }
 

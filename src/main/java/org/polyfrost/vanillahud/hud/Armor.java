@@ -26,6 +26,7 @@ public class Armor extends HudConfig {
 
         public ArmorHud() {
             super(true, 1920 / 2f - 182 / 2f, 1080 - 49, false);
+            showInDebug = true;
         }
     }
 
