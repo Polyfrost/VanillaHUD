@@ -27,6 +27,9 @@ public abstract class GuiIngameMixin {
 
     @Inject(method = "renderScoreboard", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/ScoreObjective;getScoreboard()Lnet/minecraft/scoreboard/Scoreboard;", shift = At.Shift.AFTER), cancellable = true)
     private void cancelScoreboard(ScoreObjective s, ScaledResolution sr, CallbackInfo ci) {
+        if (VanillaHUD.isSkyHanniScoreboard()) {
+            return;
+        }
         ScoreboardHook.canDraw = true;
         ci.cancel();
     }

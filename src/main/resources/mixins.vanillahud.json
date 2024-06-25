@@ -20,10 +20,8 @@
     "GuiSpectatorAccessor",
     "GuiSpectatorMixin",
     "GuiUtilsMixin",
+    "HUDUtilsMixin",
     "HUDOverlayHandlerMixin",
     "MinecraftAccessor"
-  ],
-  "mixins": [
-    "HUDUtilsMixin"
   ]
 }

@@ -111,7 +111,7 @@ public class Scoreboard extends HudConfig {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD.isApec() || !ScoreboardHook.canDraw) { // I love Apec Mod Minecraft
+            if (VanillaHUD.isApec() || !ScoreboardHook.canDraw || VanillaHUD.isSkyHanniScoreboard()) { // I love Apec Mod Minecraft
                 return false;
             }
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);

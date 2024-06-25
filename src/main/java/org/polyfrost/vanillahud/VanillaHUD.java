@@ -15,6 +15,11 @@ import net.minecraftforge.fml.common.Loader;
 import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hud.*;
 import org.polyfrost.vanillahud.utils.TabListManager;
+import org.polyfrost.vanillahud.utils.Utils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 @net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
 public class VanillaHUD {
@@ -28,6 +33,7 @@ public class VanillaHUD {
     public static boolean isHytils = false;
     private static boolean isSBA = false;
     private static boolean isSkyHanni = false;
+    private static boolean forceDisableCompactTab = false;
     private static boolean skyHanniField = false;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
@@ -35,6 +41,7 @@ public class VanillaHUD {
         modConfig = new ModConfig();
         TabListManager.asyncUpdateList();
         EventManager.INSTANCE.register(this);
+        EventManager.INSTANCE.register(new Utils());
     }
 
     @net.minecraftforge.fml.common.Mod.EventHandler
@@ -51,29 +58,117 @@ public class VanillaHUD {
         isHytils = Loader.isModLoaded("hytils-reborn");
         isSBA = Loader.isModLoaded("skyblockaddons") || Loader.isModLoaded("sbaunofficial");
         isSkyHanni = Loader.isModLoaded("skyhanni");
+
+        checkForSkyHanni();
+        doDebugMigration();
+        updateHeight();
+        doPatcherMigration();
+    }
+
+    private void checkForSkyHanni() {
         if (isSkyHanni) {
             try {
                 // make sure the classes are loaded
-                Class.forName("at.hannibal2.skyhanni.config.features.gui.GUIConfig", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.config.Features", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.Property", false, getClass().getClassLoader());
+                Class<?> guiConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.GUIConfig", false, getClass().getClassLoader());
+                try {
+                    guiConfig.getDeclaredField("compactTabList");
+                    guiConfig.getDeclaredField("customScoreboard");
+                } catch (NoSuchFieldException e) {
+                    forceDisableCompactTab = true;
+                    System.out.println("SkyHanni: compactTabList not found");
+                    return;
+                }
+                Class<?> property = Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.Property", false, getClass().getClassLoader());
                 Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.GetSetter", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.RenderColumn", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.utils.LorenzUtils", false, getClass().getClassLoader());
+                Class<?> compactTabListConfig = Class.forName("at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig", false, getClass().getClassLoader());
+                try {
+                    Field enabled = compactTabListConfig.getDeclaredField("enabled");
+                    if (enabled.getType() != property) {
+                        forceDisableCompactTab = true;
+                        System.out.println("SkyHanni: enabled not found");
+                        return;
+                    }
+                } catch (NoSuchFieldException e) {
+                    forceDisableCompactTab = true;
+                    System.out.println("SkyHanni: enabled not found");
+                    return;
+                }
+                Class<?> features = Class.forName("at.hannibal2.skyhanni.config.Features", false, getClass().getClassLoader());
+                try {
+                    features.getDeclaredField("gui");
+                } catch (NoSuchFieldException e) {
+                    //skyHanniMisc = true;
+                    forceDisableCompactTab = true;
+                    System.out.println("SkyHanni: gui not found");
+                    return;
+                    //try {
+                    //    features.getDeclaredField("misc");
+                    //} catch (NoSuchFieldException e1) {
+                    //    isSkyHanni = false;
+                    //    return;
+                    //}
+                }
+                Class<?> renderColumn = Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.RenderColumn", false, getClass().getClassLoader());
+                Class<?> tabListReader = Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader", false, getClass().getClassLoader());
+                try {
+                    Method method = tabListReader.getDeclaredMethod("getRenderColumns"); // this is a list
+                    // get the type parameter of the list
+                    java.lang.reflect.Type returnType = method.getGenericReturnType();
+                    if (!(returnType instanceof java.lang.reflect.ParameterizedType)) {
+                        System.out.println("SkyHanni: !(returnType instanceof java.lang.reflect.ParameterizedType)");
+                        forceDisableCompactTab = true;
+                        return;
+                    }
+                    java.lang.reflect.ParameterizedType parameterizedType = (java.lang.reflect.ParameterizedType) returnType;
+                    java.lang.reflect.Type[] typeParameters = parameterizedType.getActualTypeArguments();
+                    if (typeParameters.length != 1) {
+                        System.out.println("SkyHanni: typeParameters.length != 1");
+                        forceDisableCompactTab = true;
+                        return;
+                    } else {
+                        Type renderColumnParameter = typeParameters[0];
+                        if (renderColumnParameter == null || !renderColumn.getName().equals(renderColumnParameter.getTypeName())) {
+                            System.out.println("SkyHanni: renderColumnParameter == null || !renderColumn.equals(renderColumnParameter.getGenericDeclaration())");
+                            forceDisableCompactTab = true;
+                            return;
+                        }
+                    }
+                } catch (NoSuchMethodException e) {
+                    forceDisableCompactTab = true;
+                    System.out.println("SkyHanni: getRenderColumns not found");
+                    return;
+                }
+                Class<?> lorenzUtils = Class.forName("at.hannibal2.skyhanni.utils.LorenzUtils", false, getClass().getClassLoader());
+                try {
+                    lorenzUtils.getDeclaredMethod("getInSkyBlock");
+                } catch (NoSuchMethodException e) {
+                    forceDisableCompactTab = true;
+                    System.out.println("SkyHanni: getInSkyBlock not found");
+                    return;
+                }
                 Class<?> clazz = Class.forName("at.hannibal2.skyhanni.SkyHanniMod", true, getClass().getClassLoader());
                 try {
                     clazz.getDeclaredField("feature");
                     skyHanniField = true;
                 } catch (NoSuchFieldException e) {
                     skyHanniField = false;
+                    try {
+                        clazz.getDeclaredMethod("getFeature");
+                    } catch (NoSuchMethodException e1) {
+                        forceDisableCompactTab = true;
+                        System.out.println("SkyHanni: getFeature not found");
+                        return;
+                    }
                 }
             } catch (ClassNotFoundException e) {
-                isSkyHanni = false;
+                System.out.println("SkyHanni: class not found");
+                e.printStackTrace();
+                forceDisableCompactTab = true;
             }
         }
+    }
 
+    private void doDebugMigration() {
         if (!ModConfig.doneDebugMigration) {
             if (!ModConfig.actionBar.hud.showInDebug) {
                 ModConfig.actionBar.hud.showInDebug = true;
@@ -138,7 +233,9 @@ public class VanillaHUD {
             ModConfig.doneDebugMigration = true;
             modConfig.save();
         }
+    }
 
+    private void updateHeight() {
         if (!TabList.TabHud.updatedHeight) {
             TabList.TabHud.updatedHeight = true;
             if (TabList.hud.position.getY() == 10) {
@@ -146,7 +243,9 @@ public class VanillaHUD {
                 ModConfig.tab.save();
             }
         }
+    }
 
+    private void doPatcherMigration() {
         if (isPatcher) {
             try {
                 if (ModConfig.hasMigratedPatcher) return;
@@ -226,6 +325,10 @@ public class VanillaHUD {
 
     public static boolean isCompactTab() {
         return (isSBA && SkyblockAddons.getInstance().getUtils().isOnSkyblock() && SkyblockAddons.getInstance().getConfigValues().isEnabled(Feature.COMPACT_TAB_LIST) && TabListParser.getRenderColumns() != null)
-                || (isSkyHanni && LorenzUtils.INSTANCE.getInSkyBlock() && (skyHanniField ? SkyHanniMod.feature.gui.compactTabList.enabled.get() : SkyHanniMod.getFeature().gui.compactTabList.enabled.get()) && TabListReader.INSTANCE.getRenderColumns() != null);
+                || (isSkyHanni && ((forceDisableCompactTab && Utils.inSkyblock) || (LorenzUtils.INSTANCE.getInSkyBlock() && (skyHanniField ? SkyHanniMod.feature.gui.compactTabList.enabled.get() : SkyHanniMod.getFeature().gui.compactTabList.enabled.get()) && TabListReader.INSTANCE.getRenderColumns() != null)));
+    }
+
+    public static boolean isSkyHanniScoreboard() {
+        return (isSkyHanni && ((forceDisableCompactTab && Utils.inSkyblock) || (LorenzUtils.INSTANCE.getInSkyBlock() && (skyHanniField ? SkyHanniMod.feature.gui.customScoreboard.enabled.get() : SkyHanniMod.getFeature().gui.customScoreboard.enabled.get()))));
     }
 }
