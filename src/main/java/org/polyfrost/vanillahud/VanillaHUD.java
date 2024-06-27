@@ -81,9 +81,16 @@ public class VanillaHUD {
                 Class<?> property = Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.Property", false, getClass().getClassLoader());
                 Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.GetSetter", false, getClass().getClassLoader());
                 Class<?> compactTabListConfig = Class.forName("at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig", false, getClass().getClassLoader());
+                Class<?> customScoreboardConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.customscoreboard.CustomScoreboardConfig", false, getClass().getClassLoader());
                 try {
-                    Field enabled = compactTabListConfig.getDeclaredField("enabled");
-                    if (enabled.getType() != property) {
+                    Field enabledTab = compactTabListConfig.getDeclaredField("enabled");
+                    if (enabledTab.getType() != property) {
+                        forceDisableCompactTab = true;
+                        System.out.println("SkyHanni: enabled not found");
+                        return;
+                    }
+                    Field enabledScoreboard = customScoreboardConfig.getDeclaredField("enabled");
+                    if (enabledScoreboard.getType() != property) {
                         forceDisableCompactTab = true;
                         System.out.println("SkyHanni: enabled not found");
                         return;
@@ -324,11 +331,33 @@ public class VanillaHUD {
     }
 
     public static boolean isCompactTab() {
-        return (isSBA && SkyblockAddons.getInstance().getUtils().isOnSkyblock() && SkyblockAddons.getInstance().getConfigValues().isEnabled(Feature.COMPACT_TAB_LIST) && TabListParser.getRenderColumns() != null)
-                || (isSkyHanni && ((forceDisableCompactTab && Utils.inSkyblock) || (LorenzUtils.INSTANCE.getInSkyBlock() && (skyHanniField ? SkyHanniMod.feature.gui.compactTabList.enabled.get() : SkyHanniMod.getFeature().gui.compactTabList.enabled.get()) && TabListReader.INSTANCE.getRenderColumns() != null)));
+        if (isSBA) {
+            return SkyblockAddons.getInstance().getUtils().isOnSkyblock() && SkyblockAddons.getInstance().getConfigValues().isEnabled(Feature.COMPACT_TAB_LIST) && TabListParser.getRenderColumns() != null;
+        } else {
+            if (!isSkyHanni) return false;
+            if (forceDisableCompactTab) {
+                return Utils.inSkyblock;
+            }
+            if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
+            if (skyHanniField) {
+                if (!SkyHanniMod.feature.gui.compactTabList.enabled.get()) return false;
+            } else {
+                if (!SkyHanniMod.getFeature().gui.compactTabList.enabled.get()) return false;
+            }
+            return TabListReader.INSTANCE.getRenderColumns() != null;
+        }
     }
 
     public static boolean isSkyHanniScoreboard() {
-        return (isSkyHanni && ((forceDisableCompactTab && Utils.inSkyblock) || (LorenzUtils.INSTANCE.getInSkyBlock() && (skyHanniField ? SkyHanniMod.feature.gui.customScoreboard.enabled.get() : SkyHanniMod.getFeature().gui.customScoreboard.enabled.get()))));
+        if (!isSkyHanni) return false;
+        if (forceDisableCompactTab) {
+            return Utils.inSkyblock;
+        }
+        if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
+        if (skyHanniField) {
+            return SkyHanniMod.feature.gui.customScoreboard.enabled.get();
+        } else {
+            return SkyHanniMod.getFeature().gui.customScoreboard.enabled.get();
+        }
     }
 }
