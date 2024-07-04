@@ -331,21 +331,25 @@ public class VanillaHUD {
     }
 
     public static boolean isCompactTab() {
-        if (isSBA) {
-            return SkyblockAddons.getInstance().getUtils().isOnSkyblock() && SkyblockAddons.getInstance().getConfigValues().isEnabled(Feature.COMPACT_TAB_LIST) && TabListParser.getRenderColumns() != null;
-        } else {
-            if (!isSkyHanni) return false;
-            if (forceDisableCompactTab) {
-                return Utils.inSkyblock;
-            }
-            if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
-            if (skyHanniField) {
-                if (!SkyHanniMod.feature.gui.compactTabList.enabled.get()) return false;
-            } else {
-                if (!SkyHanniMod.getFeature().gui.compactTabList.enabled.get()) return false;
-            }
-            return TabListReader.INSTANCE.getRenderColumns() != null;
+        return isSBACompactTab() || isSkyHanniCompactTab();
+    }
+
+    private static boolean isSBACompactTab() {
+        return isSBA && SkyblockAddons.getInstance().getUtils().isOnSkyblock() && SkyblockAddons.getInstance().getConfigValues().isEnabled(Feature.COMPACT_TAB_LIST) && TabListParser.getRenderColumns() != null;
+    }
+
+    private static boolean isSkyHanniCompactTab() {
+        if (!isSkyHanni) return false;
+        if (forceDisableCompactTab) {
+            return Utils.inSkyblock;
         }
+        if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
+        if (skyHanniField) {
+            if (!SkyHanniMod.feature.gui.compactTabList.enabled.get()) return false;
+        } else {
+            if (!SkyHanniMod.getFeature().gui.compactTabList.enabled.get()) return false;
+        }
+        return TabListReader.INSTANCE.getRenderColumns() != null;
     }
 
     public static boolean isSkyHanniScoreboard() {
