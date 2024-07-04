@@ -529,6 +529,7 @@ public abstract class GuiIngameForgeMixin {
         if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
             TabHook.gettingSize = true;
             mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
+            TabHook.gettingSize = false;
         } else {
             return toggled = false;
         }

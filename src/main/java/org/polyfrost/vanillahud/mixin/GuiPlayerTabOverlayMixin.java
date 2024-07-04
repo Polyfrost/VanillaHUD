@@ -3,11 +3,9 @@ package org.polyfrost.vanillahud.mixin;
 import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import cc.polyfrost.oneconfig.renderer.TextRenderer;
-import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.scoreboard.*;
@@ -43,7 +41,7 @@ public abstract class GuiPlayerTabOverlayMixin {
     private static final IChatComponent tab$exampleFooter = new ChatComponentText("VanillaHud");
 
     @Unique
-    private int entryX, entryWidth, tab$TRANSPARENT = ColorUtils.getColor(0, 0, 0, 0);
+    private int entryX, entryWidth;
 
     @Unique
     List<NetworkPlayerInfo> renderingList;
@@ -102,17 +100,8 @@ public abstract class GuiPlayerTabOverlayMixin {
         return footer;
     }
 
-    @Inject(method = "renderPlayerlist", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "renderPlayerlist", at = @At(value = "HEAD"))
     private void translate(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
-        if (TabHook.gettingSize) {
-            vanillaHUD$setSize(width, scoreboardIn, scoreObjectiveIn);
-            TabHook.gettingSize = false;
-            if (DummyClassUtils.willPatcherShiftDown()) {
-                GlStateManager.popMatrix();
-            }
-            ci.cancel();
-            return;
-        }
         if (VanillaHUD.isCompactTab()) return;
         TabList.TabHud hud = TabList.hud;
         GlStateManager.pushMatrix();
@@ -146,26 +135,30 @@ public abstract class GuiPlayerTabOverlayMixin {
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
-    private void cancelRect(Args args) {
+    private void cancelRects(Args args) {
         if (VanillaHUD.isCompactTab()) return;
-        args.set(4, tab$TRANSPARENT);
+        TabHook.cancelRect = true;
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 1))
-    private void cancelRect1(Args args) {
+    private void captureWidth(Args args) {
         if (VanillaHUD.isCompactTab()) return;
-        args.set(4, tab$TRANSPARENT);
+        TabList.width = (int) args.get(2) - (int) args.get(0);
+        TabList.height = args.get(3);
+        TabHook.cancelRect = true;
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 3))
-    private void cancelRect2(Args args) {
+    private void captureHeight(Args args) {
         if (VanillaHUD.isCompactTab()) return;
-        args.set(4, tab$TRANSPARENT);
+        TabList.height = args.get(3);
+        TabHook.cancelRect = true;
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 2))
     private void fixWidth(Args args) {
         if (VanillaHUD.isCompactTab()) return;
+        if (TabHook.gettingSize) TabHook.cancelRect = true;
         args.set(2, (int) args.get(2) - 1);
     }
 
@@ -182,13 +175,14 @@ public abstract class GuiPlayerTabOverlayMixin {
                     to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V")
             ))
     private void preHeadTransform(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) return;
+        if (VanillaHUD.isCompactTab() || TabHook.gettingSize) return;
         GlStateManager.pushMatrix();
         GlStateManager.translate(TabList.TabHud.showHead ? 0 : -8, 0, 0);
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int drawText(FontRenderer instance, String text, float x, float y, int color) {
+        if (TabHook.gettingSize) return 0;
         if (VanillaHUD.isCompactTab()) return instance.drawStringWithShadow(text, x, y, color);
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -208,20 +202,20 @@ public abstract class GuiPlayerTabOverlayMixin {
                     to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V")
             ))
     private void postHeadTransform(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) return;
+        if (VanillaHUD.isCompactTab() || TabHook.gettingSize) return;
         GlStateManager.popMatrix();
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 0))
     private void playerHead(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (!TabList.TabHud.showHead && !VanillaHUD.isCompactTab()) return;
+        if (!TabList.TabHud.showHead && !VanillaHUD.isCompactTab() || TabHook.gettingSize) return;
 
         Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, tileWidth, tileHeight);
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 1))
     private void playerHead1(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (!TabList.TabHud.showHead && !VanillaHUD.isCompactTab()) return;
+        if (!TabList.TabHud.showHead && !VanillaHUD.isCompactTab() || TabHook.gettingSize) return;
         if (TabList.TabHud.betterHatLayer) {
             GlStateManager.translate(-0.5f, -0.5f, 0f);
             Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, 9, 9, tileWidth, tileHeight);
@@ -241,6 +235,7 @@ public abstract class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawScoreboardValues(Lnet/minecraft/scoreboard/ScoreObjective;ILjava/lang/String;IILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
     private void scoreboard(GuiPlayerTabOverlay instance, ScoreObjective scoreObjective, int i, String string, int j, int k, NetworkPlayerInfo networkPlayerInfo) {
+        if (TabHook.gettingSize) return;
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
@@ -253,6 +248,7 @@ public abstract class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "drawScoreboardValues", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I", ordinal = 1))
     private int translate(FontRenderer instance, String text, float x, float y, int color) {
+        if (TabHook.gettingSize) return 0;
         if (VanillaHUD.isCompactTab()) return instance.drawStringWithShadow(text, x, y, color);
         int ping = info.getResponseTime();
         boolean offset = TabList.TabHud.numberPing && TabList.TabHud.hideFalsePing && (ping <= 1 || ping >= 999) || !TabList.TabHud.showPing;
@@ -264,6 +260,7 @@ public abstract class GuiPlayerTabOverlayMixin {
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawPing(IIILnet/minecraft/client/network/NetworkPlayerInfo;)V"))
     private void redirectDrawPing(GuiPlayerTabOverlay instance, int width, int x, int y, NetworkPlayerInfo networkPlayerInfoIn) {
+        if (TabHook.gettingSize) return;
         if (VanillaHUD.isCompactTab()) {
             ((GuiPlayerTabOverlayAccessor) instance).renderPing(width, x, y, networkPlayerInfoIn);
             return;
@@ -330,84 +327,6 @@ public abstract class GuiPlayerTabOverlayMixin {
     @Inject(method = "renderPlayerlist", at = @At("TAIL"))
     private void alpha(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn, CallbackInfo ci) {
         GlStateManager.enableAlpha(); //somehow this fixes hud edit bug
-    }
-
-    @Unique
-    private void vanillaHUD$setSize(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn) {
-        NetHandlerPlayClient netHandlerPlayClient = this.mc.thePlayer.sendQueue;
-        List<NetworkPlayerInfo> list = setLimit(list(field_175252_a, field_175252_a.sortedCopy(DummyClassUtils.hytilsHideTabNpcs(netHandlerPlayClient.getPlayerInfoMap()))));
-        int i = 0;
-        int j = 0;
-        Iterator iterator = list.iterator();
-
-        int k;
-        while(iterator.hasNext()) {
-            NetworkPlayerInfo networkPlayerInfo = (NetworkPlayerInfo)iterator.next();
-            k = this.mc.fontRendererObj.getStringWidth(this.getPlayerName(networkPlayerInfo));
-            i = Math.max(i, k);
-            if (scoreObjectiveIn != null && scoreObjectiveIn.getRenderType() != IScoreObjectiveCriteria.EnumRenderType.HEARTS) {
-                k = this.mc.fontRendererObj.getStringWidth(" " + scoreboardIn.getValueFromObjective(networkPlayerInfo.getGameProfile().getName(), scoreObjectiveIn).getScorePoints());
-                j = Math.max(j, k);
-            }
-        }
-
-        list = list.subList(0, Math.min(list.size(), changePlayerCount(80)));
-        int l = list.size();
-        int m = l;
-
-        for(k = 1; m > limit(20); m = (l + k - 1) / k) {
-            ++k;
-        }
-
-        boolean bl = this.mc.isIntegratedServerRunning() || this.mc.getNetHandler().getNetworkManager().getIsencrypted();
-        int n;
-        if (scoreObjectiveIn != null) {
-            if (scoreObjectiveIn.getRenderType() == IScoreObjectiveCriteria.EnumRenderType.HEARTS) {
-                n = 90;
-            } else {
-                n = j;
-            }
-        } else {
-            n = 0;
-        }
-
-        int o = noLimit(k * ((bl ? 9 : 0) + i + n + pingWidth(13)), width - 50) / k;
-        int q = 1;
-        int r = o * k + (k - 1) * 5;
-        List<String> list2 = null;
-        List<String> list3 = null;
-        Iterator iterator2;
-        String string;
-        if (modifyHeader((GuiPlayerTabOverlay) (Object) this) != null) {
-            list2 = DummyClassUtils.hytilsModifyHeader(mc.fontRendererObj, modifyHeader((GuiPlayerTabOverlay) (Object) this).getFormattedText(), width - 50);
-
-            for(iterator2 = list2.iterator(); iterator2.hasNext(); r = Math.max(r, this.mc.fontRendererObj.getStringWidth(string))) {
-                string = (String)iterator2.next();
-            }
-        }
-
-        if (modifyFooter((GuiPlayerTabOverlay) (Object) this) != null) {
-            list3 = DummyClassUtils.hytilsModifyFooter(mc.fontRendererObj, modifyFooter((GuiPlayerTabOverlay) (Object) this).getFormattedText(), width - 50);
-
-            for(iterator2 = list3.iterator(); iterator2.hasNext(); r = Math.max(r, this.mc.fontRendererObj.getStringWidth(string))) {
-                string = (String)iterator2.next();
-            }
-        }
-
-        TabList.width = r + 2;
-
-        if (list2 != null) {
-            q += this.mc.fontRendererObj.FONT_HEIGHT * list2.size();
-
-            ++q;
-        }
-
-        TabList.height = q + m * 9;
-
-        if (list3 != null) {
-            q += m * 9 + 1;
-            TabList.height = q + list3.size() * this.mc.fontRendererObj.FONT_HEIGHT;
-        }
     }
 
 }

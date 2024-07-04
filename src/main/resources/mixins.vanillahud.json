@@ -15,13 +15,14 @@
     "GuiIngameForgeMixin_Cancel",
     "GuiIngameForgeMixin_CancelLow",
     "GuiIngameMixin",
+    "GuiMixin",
     "GuiPlayerTabOverlayAccessor",
     "GuiPlayerTabOverlayMixin",
     "GuiSpectatorAccessor",
     "GuiSpectatorMixin",
     "GuiUtilsMixin",
-    "HUDUtilsMixin",
     "HUDOverlayHandlerMixin",
+    "HUDUtilsMixin",
     "MinecraftAccessor"
   ]
 }
