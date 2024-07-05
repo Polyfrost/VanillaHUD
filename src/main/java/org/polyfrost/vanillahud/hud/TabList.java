@@ -247,6 +247,12 @@ public class TabList extends HudConfig {
         public OneColor getBackgroundColor() {
             return bgColor;
         }
+
+        @Override
+        protected void resetPosition() {
+            super.resetPosition();
+            TabList.hud.position.setY(20);
+        }
     }
 
 }
