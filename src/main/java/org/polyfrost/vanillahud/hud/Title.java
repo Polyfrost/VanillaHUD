@@ -7,7 +7,8 @@ import cc.polyfrost.oneconfig.libs.universal.*;
 import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import org.polyfrost.vanillahud.config.HudConfig;
-import org.polyfrost.vanillahud.mixin.*;
+import org.polyfrost.vanillahud.mixin.minecraft.GuiIngameAccessor;
+import org.polyfrost.vanillahud.mixin.minecraft.MinecraftAccessor;
 
 public class Title extends HudConfig {
 

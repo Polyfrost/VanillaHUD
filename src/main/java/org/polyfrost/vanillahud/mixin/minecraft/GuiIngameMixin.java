@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import cc.polyfrost.oneconfig.libs.universal.*;
 import net.minecraft.client.gui.*;

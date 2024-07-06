@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import net.minecraft.entity.boss.BossStatus;
 import net.minecraft.entity.boss.IBossDisplayData;

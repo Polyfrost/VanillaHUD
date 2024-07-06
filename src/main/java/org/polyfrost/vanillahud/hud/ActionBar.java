@@ -9,7 +9,8 @@ import cc.polyfrost.oneconfig.renderer.*;
 import cc.polyfrost.oneconfig.utils.color.ColorUtils;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.HudConfig;
-import org.polyfrost.vanillahud.mixin.*;
+import org.polyfrost.vanillahud.mixin.minecraft.GuiIngameAccessor;
+import org.polyfrost.vanillahud.mixin.minecraft.MinecraftAccessor;
 
 import java.awt.Color;
 

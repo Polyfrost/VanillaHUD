@@ -1,13 +1,12 @@
 package org.polyfrost.vanillahud.hud;
 
 import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.data.*;
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.GuiIngameForge;
 import org.polyfrost.vanillahud.config.HudConfig;
-import org.polyfrost.vanillahud.mixin.*;
+import org.polyfrost.vanillahud.mixin.minecraft.GuiSpectatorAccessor;
 
 public class Hotbar extends HudConfig {
 

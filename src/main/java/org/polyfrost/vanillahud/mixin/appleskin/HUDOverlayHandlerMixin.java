@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.appleskin;
 
 import org.polyfrost.vanillahud.hud.Hunger;
 import org.spongepowered.asm.mixin.Dynamic;

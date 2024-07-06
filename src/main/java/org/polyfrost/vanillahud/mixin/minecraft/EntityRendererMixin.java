@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import cc.polyfrost.oneconfig.libs.universal.UResolution;
 import net.minecraft.client.Minecraft;
@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class EntityRendererMixin {
     @Inject(method = "updateCameraAndRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;renderGameOverlay(F)V", shift = At.Shift.AFTER))
     private void draw(float partialTicks, long nanoTime, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) {
-            return;
-        }
+//        if (VanillaHUD.isCompactTab()) {
+//            return;
+//        }
         TabList.isGuiIngame = false;
         ((GuiIngameForgeAccessor) Minecraft.getMinecraft().ingameGUI).drawPlayerList(UResolution.getScaledWidth(), UResolution.getScaledHeight());
     }

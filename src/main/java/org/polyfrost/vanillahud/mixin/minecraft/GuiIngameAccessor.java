@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.item.ItemStack;

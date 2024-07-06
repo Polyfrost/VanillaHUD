@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import net.minecraftforge.client.GuiIngameForge;
 import org.polyfrost.vanillahud.VanillaHUD;

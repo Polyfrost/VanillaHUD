@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import cc.polyfrost.oneconfig.hud.*;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
@@ -520,21 +520,25 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
-        if (VanillaHUD.isCompactTab() || !ModConfig.tab.enabled) {
+        if (!ModConfig.tab.enabled) {
             return instance.isKeyDown();
         }
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
-            TabHook.gettingSize = true;
-            GlStateManager.pushMatrix();
-            GlStateManager.scale(0f, 0f, 1f);
-            mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
-            GlStateManager.popMatrix();
-            TabHook.gettingSize = false;
-        } else {
-            return toggled = false;
+        boolean flag = !VanillaHUD.isCompactTab() || HudCore.editing;
+
+        if (flag) {
+            if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
+                TabHook.gettingSize = true;
+                GlStateManager.pushMatrix();
+                GlStateManager.scale(0f, 0f, 1f);
+                mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
+                GlStateManager.popMatrix();
+                TabHook.gettingSize = false;
+            } else {
+                return toggled = false;
+            }
         }
 
         boolean down = instance.isKeyDown();
@@ -546,7 +550,8 @@ public abstract class GuiIngameForgeMixin {
             toggled = down;
         }
 
-        TabList.hud.drawBG(toggled || HudCore.editing);
+        TabList.hud.doAnimation(toggled || HudCore.editing);
+        if (flag) TabList.hud.drawBG();
 
         return (toggled || !TabList.animation.isFinished() || HudCore.editing) && TabList.hud.shouldRender();
     }
@@ -558,7 +563,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))
     private void enableScissor(int width, int height, CallbackInfo ci) {
-        if (HudCore.editing || VanillaHUD.isCompactTab()) return;
+        if (VanillaHUD.isCompactTab()) return;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Position position = TabList.hud.position;
         int scale = (int) UResolution.getScaleFactor();
@@ -567,7 +572,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V", shift = At.Shift.AFTER))
     private void disable(int width, int height, CallbackInfo ci) {
-        if (HudCore.editing || VanillaHUD.isCompactTab()) return;
+        if (VanillaHUD.isCompactTab()) return;
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 

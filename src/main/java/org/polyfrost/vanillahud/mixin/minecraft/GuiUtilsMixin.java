@@ -1,11 +1,10 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.minecraft;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import org.lwjgl.input.Mouse;
-import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hooks.TooltipHook;
 import org.polyfrost.vanillahud.hud.ScrollableTooltip;

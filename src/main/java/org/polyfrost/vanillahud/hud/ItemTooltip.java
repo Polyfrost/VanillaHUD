@@ -11,8 +11,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.spectator.*;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.HudConfig;
-import org.polyfrost.vanillahud.mixin.*;
 import net.minecraft.util.EnumChatFormatting;
+import org.polyfrost.vanillahud.mixin.minecraft.GuiIngameAccessor;
+import org.polyfrost.vanillahud.mixin.minecraft.GuiSpectatorAccessor;
 
 public class ItemTooltip extends HudConfig {
 

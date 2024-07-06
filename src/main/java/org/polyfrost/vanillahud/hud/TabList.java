@@ -200,7 +200,7 @@ public class TabList extends HudConfig {
         @Exclude
         private static boolean lastToggled;
 
-        public void drawBG(boolean toggled) {
+        public void doAnimation(boolean toggled) {
             if (toggled != lastToggled) {
                 lastToggled = toggled;
 
@@ -211,17 +211,17 @@ public class TabList extends HudConfig {
 
             if (animation.isFinished()) {
                 if (toggled) {
-                    animation = new EaseOutQuart(0, 0, position.getHeight(), false);
-                } else {
-                    return;
+                    animation = new EaseOutQuart(0, 0f, position.getHeight(), false);
                 }
             } else {
                 if (animation.getEnd() != 0f && toggled && animation.getEnd() != position.getHeight()) {
                     animation = new EaseOutQuart(tabDuration - Minecraft.getSystemTime() + animation.startTime, animation.get(), position.getHeight(), false);
                 }
             }
+        }
 
-            if (!background || !shouldRender()) return;
+        public void drawBG() {
+            if (!background || !shouldRender() || animation.get() == 0f) return;
             this.drawBackground(position.getX(), position.getY(), position.getWidth(), animation.get(), scale);
         }
 
