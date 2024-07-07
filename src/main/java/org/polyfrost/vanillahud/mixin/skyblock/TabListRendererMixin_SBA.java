@@ -12,7 +12,6 @@ import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.polyfrost.vanillahud.mixin.minecraft.GuiPlayerTabOverlayAccessor;
-import org.polyfrost.vanillahud.utils.DummyClassUtils;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -34,9 +33,6 @@ public class TabListRendererMixin_SBA {
         GlStateManager.pushMatrix();
         GlStateManager.translate((float) (-UResolution.getScaledWidth() / 2) * hud.getScale() + hud.position.getCenterX(), hud.position.getY() + hud.getPaddingY(), 0);
         GlStateManager.scale(hud.getScale(), hud.getScale(), 1f);
-        if (DummyClassUtils.willPatcherShiftDown()) {
-            GlStateManager.translate(0, -DummyClassUtils.patcherTabHeight(), 0);
-        }
         TabList.width = (int) args.get(2) - (int) args.get(0);
         TabList.height = (int) args.get(3) - (int) args.get(1);
         TabHook.cancelRect = true;

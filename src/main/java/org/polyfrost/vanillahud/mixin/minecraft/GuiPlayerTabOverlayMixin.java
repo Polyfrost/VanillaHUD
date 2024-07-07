@@ -13,7 +13,6 @@ import net.minecraft.util.*;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.TabList;
-import org.polyfrost.vanillahud.utils.DummyClassUtils;
 import org.polyfrost.vanillahud.utils.TabListManager;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -30,9 +29,6 @@ public abstract class GuiPlayerTabOverlayMixin {
     private IChatComponent header, footer;
 
     @Shadow @Final private Minecraft mc;
-    @Shadow @Final private static Ordering<NetworkPlayerInfo> field_175252_a;
-
-    @Shadow public abstract String getPlayerName(NetworkPlayerInfo networkPlayerInfoIn);
 
     @Unique
     private static final IChatComponent tab$exampleHeader = new ChatComponentText("Tab List");
@@ -101,9 +97,6 @@ public abstract class GuiPlayerTabOverlayMixin {
         GlStateManager.pushMatrix();
         GlStateManager.translate((float) (-width / 2) * hud.getScale() + hud.position.getCenterX(), hud.position.getY() + hud.getPaddingY(), 0);
         GlStateManager.scale(hud.getScale(), hud.getScale(), 1f);
-        if (DummyClassUtils.willPatcherShiftDown()) {
-            GlStateManager.translate(0, -DummyClassUtils.patcherTabHeight(), 0);
-        }
     }
 
     @Inject(method = "renderPlayerlist", at = @At(value = "TAIL"))
