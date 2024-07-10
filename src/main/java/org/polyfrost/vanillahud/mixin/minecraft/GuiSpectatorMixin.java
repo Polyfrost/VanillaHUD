@@ -7,12 +7,15 @@ import net.minecraft.client.renderer.GlStateManager;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.Hotbar;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(GuiSpectator.class)
 public abstract class GuiSpectatorMixin {
+
+    @Shadow protected abstract void func_175266_a(int i, int j, float f, float g, ISpectatorMenuObject iSpectatorMenuObject);
 
     @ModifyArg(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;func_175258_a(Lnet/minecraft/client/gui/ScaledResolution;FIFLnet/minecraft/client/gui/spectator/categories/SpectatorDetails;)V"), index = 3)
     private float y(float f) {
@@ -55,12 +58,11 @@ public abstract class GuiSpectatorMixin {
 
     @Redirect(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;func_175266_a(IIFFLnet/minecraft/client/gui/spectator/ISpectatorMenuObject;)V"))
     private void icon(GuiSpectator instance, int i, int j, float f, float g, ISpectatorMenuObject iSpectatorMenuObject) {
-        GuiSpectatorAccessor accessor = (GuiSpectatorAccessor) instance;
         if (VanillaHUD.isApec()) {
-            accessor.drawItem(i, j, f, g, iSpectatorMenuObject);
+            func_175266_a(i, j, f, g, iSpectatorMenuObject);
             return;
         }
-        accessor.drawItem(i, i * 20 + 3, 3f, g, iSpectatorMenuObject);
+        func_175266_a(i, i * 20 + 3, 3f, g, iSpectatorMenuObject);
     }
 
 }
