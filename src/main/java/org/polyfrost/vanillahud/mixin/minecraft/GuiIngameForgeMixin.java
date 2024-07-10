@@ -14,6 +14,7 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.GuiIngameForge;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
@@ -28,6 +29,8 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.Random;
 
+import static net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType.FOOD;
+import static net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType.HEALTHMOUNT;
 import static org.polyfrost.vanillahud.hud.Health.healthLink;
 import static org.polyfrost.vanillahud.hud.Hunger.*;
 
@@ -48,6 +51,8 @@ public abstract class GuiIngameForgeMixin {
 
     @Shadow
     public static boolean renderFood;
+
+    @Shadow protected abstract void post(RenderGameOverlayEvent.ElementType type);
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderAir(II)V"))
     private void air(Args args) {
@@ -338,6 +343,7 @@ public abstract class GuiIngameForgeMixin {
         }
         if (!(renderFood || Hunger.mountHud.isEnabled())) {
             ci.cancel();
+            post(FOOD);
         }
     }
 
@@ -446,6 +452,7 @@ public abstract class GuiIngameForgeMixin {
         }
         if (!(renderHealthMount || Hunger.mountHud.isEnabled())) {
             ci.cancel();
+            post(HEALTHMOUNT);
             return;
         }
         Hud hud = getMountHud();
