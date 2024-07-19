@@ -65,7 +65,7 @@ public class Title extends HudConfig {
         @Override
         protected boolean shouldShow() {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
-            if (ingameGUI.getTitlesTimer() <= 0) {
+            if (ingameGUI == null || ingameGUI.getTitlesTimer() <= 0) {
                 return false;
             }
 

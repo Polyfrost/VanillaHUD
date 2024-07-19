@@ -69,11 +69,9 @@ public class Scoreboard extends HudConfig {
         )
         public int textType = 0;
 
-        /** Gets OneConfig's Universal Minecraft instance. */
         @Exclude
         private static final Minecraft mc = UMinecraft.getMinecraft();
 
-        /** Gets OneConfig's Universal Minecraft fontRenderer. */
         @Exclude public static final FontRenderer fontRenderer = UMinecraft.getFontRenderer();
 
         @Exclude public float width = 0f;
@@ -111,7 +109,7 @@ public class Scoreboard extends HudConfig {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD.isApec() || !ScoreboardHook.canDraw || VanillaHUD.isSkyHanniScoreboard()) { // I love Apec Mod Minecraft
+            if (VanillaHUD.isApec() || !ScoreboardHook.canDraw || VanillaHUD.isSkyHanniScoreboard() || mc.theWorld == null) { // I love Apec Mod Minecraft
                 return false;
             }
             ScoreObjective objective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
@@ -138,7 +136,7 @@ public class Scoreboard extends HudConfig {
             }
 
             if (this.scoreboardTitle) {
-                TextRenderer.drawScaledString(displayName, this.width / 2.0f - fontRenderer.getStringWidth(displayName) / 2.0f, 1 - this.paddingY, -1, TextRenderer.TextType.toType(textType), 1);
+                TextRenderer.drawScaledString(displayName, this.width / 2.0f - fontRenderer.getStringWidth(displayName) / 2.0f, 1, -1, TextRenderer.TextType.toType(textType), 1);
             }
 
             UGraphics.GL.translate(0.0f, this.height, 0.0f);
@@ -182,11 +180,11 @@ public class Scoreboard extends HudConfig {
                     if (this.scoreboardTitle) {
                         ScissorHelper helper = ScissorHelper.INSTANCE;
 
-                        helper.scissor(vg, x, y, width, fontRenderer.FONT_HEIGHT);
+                        helper.scissor(vg, x, y, width, fontRenderer.FONT_HEIGHT + paddingY);
                         nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, height, this.titleColor.getRGB(), this.cornerRadius * scale, this.cornerRadius * scale, 0, 0);
                         helper.clearScissors(vg);
 
-                        helper.scissor(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT);
+                        helper.scissor(vg, x, y + fontRenderer.FONT_HEIGHT + paddingY, width, height - fontRenderer.FONT_HEIGHT - paddingY);
                         nanoVGHelper.drawRoundedRectVaried(vg, x, y, width, height, this.bgColor.getRGB(), 0, 0, this.cornerRadius * scale, this.cornerRadius * scale);
                         helper.clearScissors(vg);
                     } else {
@@ -197,8 +195,8 @@ public class Scoreboard extends HudConfig {
                     }
                 } else {
                     if (this.scoreboardTitle) {
-                        nanoVGHelper.drawRect(vg, x, y, width, fontRenderer.FONT_HEIGHT, this.titleColor.getRGB());
-                        nanoVGHelper.drawRect(vg, x, y + fontRenderer.FONT_HEIGHT, width, height - fontRenderer.FONT_HEIGHT, bgColor.getRGB());
+                        nanoVGHelper.drawRect(vg, x, y, width, fontRenderer.FONT_HEIGHT + paddingY, this.titleColor.getRGB());
+                        nanoVGHelper.drawRect(vg, x, y + fontRenderer.FONT_HEIGHT + paddingY, width, height - fontRenderer.FONT_HEIGHT - paddingY, bgColor.getRGB());
                     } else {
                         nanoVGHelper.drawRect(vg, x, y, width, height, bgColor.getRGB());
                     }

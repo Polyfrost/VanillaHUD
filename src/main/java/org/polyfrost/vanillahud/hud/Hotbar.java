@@ -64,6 +64,7 @@ public class Hotbar extends HudConfig {
 
         @Override
         protected boolean shouldShow() {
+            if (mc.thePlayer == null || mc.ingameGUI == null) return false;
             GuiSpectatorAccessor accessor = (GuiSpectatorAccessor) mc.ingameGUI.getSpectatorGui();
             return super.shouldShow() && (!mc.thePlayer.isSpectator()|| accessor.alpha() > 0f);
         }
