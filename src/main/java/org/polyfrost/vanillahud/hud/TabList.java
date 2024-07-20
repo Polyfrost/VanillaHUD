@@ -203,7 +203,6 @@ public class TabList extends HudConfig {
         public void doAnimation(boolean toggled) {
             if (toggled != lastToggled) {
                 lastToggled = toggled;
-
                 if (tabAnimation) {
                     animation = new EaseOutQuart(tabDuration, position.getHeight(), 0f, toggled);
                 }
@@ -221,7 +220,7 @@ public class TabList extends HudConfig {
         }
 
         public void drawBG() {
-            if (!background || !shouldRender() || animation.get() == 0f) return;
+            if (!background || !shouldRender() || animation.get() == 0f || (animation.isFinished() && !lastToggled)) return;
             this.drawBackground(position.getX(), position.getY(), position.getWidth(), animation.get(), scale);
         }
 
