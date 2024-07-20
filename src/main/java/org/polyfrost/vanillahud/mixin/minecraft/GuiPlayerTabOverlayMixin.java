@@ -138,9 +138,8 @@ public abstract class GuiPlayerTabOverlayMixin {
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 2))
-    private void fixWidth(Args args) {
+    private void widget(Args args) {
         if (TabHook.gettingSize) TabHook.cancelRect = true;
-        args.set(2, (int) args.get(2) - 1);
     }
 
     @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 20, ordinal = 0))
