@@ -23,9 +23,7 @@
     "minecraft.GuiSpectatorMixin",
     "minecraft.GuiUtilsMixin",
     "minecraft.MinecraftAccessor",
-    "oneconfig.HUDUtilsMixin"
-  ],
-  "mixins": [
+    "oneconfig.HUDUtilsMixin",
     "overflowanimations.TabOverlayHookMixin",
     "skyblock.RenderListenerMixin",
     "skyblock.TabListRendererMixin_SBA",
