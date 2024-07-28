@@ -12,6 +12,7 @@ import codes.biscuit.skyblockaddons.core.Feature;
 import codes.biscuit.skyblockaddons.features.tablist.TabListParser;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Loader;
+import org.polyfrost.overflowanimations.config.OldAnimationsSettings;
 import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hud.*;
 import org.polyfrost.vanillahud.utils.TabListManager;
@@ -33,6 +34,7 @@ public class VanillaHUD {
     public static boolean isHytils = false;
     private static boolean isSBA = false;
     private static boolean isSkyHanni = false;
+    private static boolean isOAM = false;
     private static boolean forceDisableCompactTab = false;
     private static boolean skyHanniField = false;
 
@@ -58,6 +60,7 @@ public class VanillaHUD {
         isHytils = Loader.isModLoaded("hytils-reborn");
         isSBA = Loader.isModLoaded("skyblockaddons") || Loader.isModLoaded("sbaunofficial");
         isSkyHanni = Loader.isModLoaded("skyhanni");
+        isOAM = Loader.isModLoaded("overflowanimations");
 
         checkForSkyHanni();
         doDebugMigration();
@@ -363,5 +366,9 @@ public class VanillaHUD {
         } else {
             return SkyHanniMod.getFeature().gui.customScoreboard.enabled.get();
         }
+    }
+
+    public static boolean isLegacyTablist() {
+        return isOAM && OldAnimationsSettings.INSTANCE.enabled && OldAnimationsSettings.INSTANCE.tabMode == 0;
     }
 }

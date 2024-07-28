@@ -5,6 +5,7 @@
   "refmap": "mixins.vanillahud.refmap.json",
   "verbose": true,
   "client": [
+    "appleskin.HUDOverlayHandlerMixin",
     "minecraft.BossStatusMixin",
     "minecraft.EntityRendererMixin",
     "minecraft.GuiAccessor",
@@ -22,10 +23,10 @@
     "minecraft.GuiSpectatorMixin",
     "minecraft.GuiUtilsMixin",
     "minecraft.MinecraftAccessor",
-    "appleskin.HUDOverlayHandlerMixin",
     "oneconfig.HUDUtilsMixin"
   ],
   "mixins": [
+    "overflowanimations.TabOverlayHookMixin",
     "skyblock.RenderListenerMixin",
     "skyblock.TabListRendererMixin_SBA",
     "skyblock.TabListRendererMixin_SkyHanni"

@@ -533,7 +533,7 @@ public abstract class GuiIngameForgeMixin {
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        boolean flag = !VanillaHUD.isCompactTab() || HudCore.editing;
+        boolean flag = (!VanillaHUD.isCompactTab() || HudCore.editing) && !VanillaHUD.isLegacyTablist();
 
         if (flag) {
             if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
