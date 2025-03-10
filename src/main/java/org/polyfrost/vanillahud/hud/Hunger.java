@@ -1,8 +1,8 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.data.*;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.oneconfig.api.config.v1.annotations.*;
+import org.polyfrost.oneconfig.api.config.v1.data.*;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;

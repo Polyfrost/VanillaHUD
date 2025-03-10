@@ -1,9 +1,9 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.data.*;
-import cc.polyfrost.oneconfig.hud.Hud;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import org.polyfrost.oneconfig.api.config.v1.annotations.*;
+import org.polyfrost.oneconfig.api.config.v1.data.*;
+import org.polyfrost.oneconfig.hud.Hud;
+import org.polyfrost.universal.UMatrixStack;
 import org.polyfrost.vanillahud.config.HudConfig;
 
 public class Experience extends HudConfig {

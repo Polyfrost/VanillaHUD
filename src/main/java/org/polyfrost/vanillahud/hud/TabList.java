@@ -1,11 +1,12 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.*;
-import cc.polyfrost.oneconfig.hud.BasicHud;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import org.polyfrost.oneconfig.api.config.v1.annotations.*;
+import org.polyfrost.polyui.color.PolyColor;
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
+import org.polyfrost.oneconfig.api.config.v1.data.*;
+import org.polyfrost.oneconfig.hud.BasicHud;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.universal.UMatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.client.event.GuiScreenEvent;

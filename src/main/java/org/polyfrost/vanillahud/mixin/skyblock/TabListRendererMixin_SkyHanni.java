@@ -2,10 +2,10 @@ package org.polyfrost.vanillahud.mixin.skyblock;
 
 import at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig;
 import at.hannibal2.skyhanni.utils.TabListData;
-import cc.polyfrost.oneconfig.hud.Position;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import org.polyfrost.oneconfig.hud.Position;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.universal.UResolution;
+import org.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;

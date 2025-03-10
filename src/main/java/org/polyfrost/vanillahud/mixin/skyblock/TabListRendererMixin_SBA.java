@@ -1,8 +1,8 @@
 package org.polyfrost.vanillahud.mixin.skyblock;
 
-import cc.polyfrost.oneconfig.hud.Position;
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import org.polyfrost.oneconfig.hud.Position;
+import org.polyfrost.universal.UResolution;
+import org.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;

@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
-import cc.polyfrost.oneconfig.libs.universal.*;
+import net.minecraft.client.Minecraft;
+import org.polyfrost.universal.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,8 +22,8 @@ public abstract class GuiIngameMixin {
     @Inject(method = "renderBossHealth", at = @At("HEAD"), cancellable = true)
     private void cancelBossBar(CallbackInfo ci) {
         ci.cancel();
-        UGraphics.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        UMinecraft.getMinecraft().getTextureManager().bindTexture(Gui.icons);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(Gui.icons);
     }
 
     @Inject(method = "renderScoreboard", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/ScoreObjective;getScoreboard()Lnet/minecraft/scoreboard/Scoreboard;", shift = At.Shift.AFTER), cancellable = true)

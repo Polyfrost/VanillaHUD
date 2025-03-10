@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.annotations.*;
+import org.polyfrost.oneconfig.api.config.v1.annotations.*;
 import org.polyfrost.vanillahud.config.HudConfig;
 
 public class Air extends HudConfig {

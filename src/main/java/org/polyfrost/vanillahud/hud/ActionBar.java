@@ -1,20 +1,25 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.events.EventManager;
-import cc.polyfrost.oneconfig.hud.SingleTextHud;
-import cc.polyfrost.oneconfig.libs.universal.*;
-import cc.polyfrost.oneconfig.renderer.*;
-import cc.polyfrost.oneconfig.utils.color.ColorUtils;
+import net.minecraft.client.Minecraft;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch;
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
+import org.polyfrost.oneconfig.api.event.v1.EventManager;
+import org.polyfrost.oneconfig.api.hud.v1.Hud;
+import org.polyfrost.oneconfig.api.hud.v1.TextHud;
+import org.polyfrost.oneconfig.hud.SingleTextHud;
+import org.polyfrost.oneconfig.renderer.*;
+import org.polyfrost.oneconfig.utils.v1.color.ColorUtils;
+import org.polyfrost.universal.*;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.HudConfig;
 import org.polyfrost.vanillahud.mixin.minecraft.GuiIngameAccessor;
 import org.polyfrost.vanillahud.mixin.minecraft.MinecraftAccessor;
 
-import java.awt.Color;
+import java.awt.*;
 
-public class ActionBar extends HudConfig {
+public class ActionBar extends TextHud {
 
     @HUD(
             name = "Action Bar"
@@ -24,6 +29,26 @@ public class ActionBar extends HudConfig {
     public ActionBar() {
         super("Action Bar", "actionbar.json");
         initialize();
+    }
+
+    @Override
+    protected @Nullable String getText() {
+        return "";
+    }
+
+    @Override
+    public @NotNull String title() {
+        return "Action Bar";
+    }
+
+    @Override
+    public @NotNull Category category() {
+        return Category.getINFO();
+    }
+
+    @Override
+    public boolean multipleInstancesAllowed() {
+        return false;
     }
 
     public static class ActionBarHUD extends SingleTextHud {
@@ -61,12 +86,12 @@ public class ActionBar extends HudConfig {
             if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
                 return false;
             }
-            GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
+            GuiIngameAccessor ingameGUI = (GuiIngameAccessor) Minecraft.getMinecraft().ingameGUI;
             if (ingameGUI.getRecordPlayingUpFor() <= 0 || ingameGUI.getRecordPlaying() == null || ingameGUI.getRecordPlaying().isEmpty()) {
                 return false;
             }
 
-            this.hue = (float) ingameGUI.getRecordPlayingUpFor() - ((MinecraftAccessor)UMinecraft.getMinecraft()).getTimer().renderPartialTicks;
+            this.hue = (float) ingameGUI.getRecordPlayingUpFor() - ((MinecraftAccessor) Minecraft.getMinecraft()).getTimer().renderPartialTicks;
             this.opacity = (int) (this.hue * 256.0f / 20.0f);
             if (this.opacity > 255) {
                 this.opacity = 255;
@@ -104,14 +129,6 @@ public class ActionBar extends HudConfig {
             }
 
             return ingameGUI.getRecordPlaying();
-        }
-
-        public void setTextType(int textType) {
-            this.textType = textType;
-        }
-
-        public void setBackground(boolean background) {
-            this.background = background;
         }
     }
 }

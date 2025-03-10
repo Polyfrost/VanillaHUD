@@ -1,8 +1,9 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
-import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
+import org.polyfrost.polyui.color.PolyColor;
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.oneconfig.renderer.TextRenderer;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;

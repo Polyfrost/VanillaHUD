@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.mixin.skyblock;
 
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
 import codes.biscuit.skyblockaddons.features.tablist.RenderColumn;
 import codes.biscuit.skyblockaddons.features.tablist.TabListParser;
 import org.spongepowered.asm.mixin.Dynamic;

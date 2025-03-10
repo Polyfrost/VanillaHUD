@@ -1,8 +1,8 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
-import cc.polyfrost.oneconfig.hud.*;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
+import org.polyfrost.oneconfig.hud.*;
+import org.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.universal.UResolution;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;

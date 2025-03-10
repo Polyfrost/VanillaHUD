@@ -1,8 +1,8 @@
 package org.polyfrost.vanillahud.config;
 
-import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.SubConfig;
-import cc.polyfrost.oneconfig.config.data.*;
+import org.polyfrost.oneconfig.api.config.v1.Config;
+import org.polyfrost.oneconfig.api.config.v1.annotations.SubConfig;
+import org.polyfrost.oneconfig.api.config.v1.data.*;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.*;
 

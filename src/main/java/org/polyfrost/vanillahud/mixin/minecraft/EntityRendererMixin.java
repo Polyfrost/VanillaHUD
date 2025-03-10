@@ -1,9 +1,8 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
+import dev.deftu.omnicore.client.render.OmniResolution;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
-import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,6 +17,6 @@ public class EntityRendererMixin {
 //            return;
 //        }
         TabList.isGuiIngame = false;
-        ((GuiIngameForgeAccessor) Minecraft.getMinecraft().ingameGUI).drawPlayerList(UResolution.getScaledWidth(), UResolution.getScaledHeight());
+        ((GuiIngameForgeAccessor) Minecraft.getMinecraft().ingameGUI).drawPlayerList(OmniResolution.getScaledWidth(), OmniResolution.getScaledHeight());
     }
 }

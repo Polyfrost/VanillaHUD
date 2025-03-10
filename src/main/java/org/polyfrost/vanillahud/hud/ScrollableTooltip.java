@@ -1,7 +1,7 @@
 package org.polyfrost.vanillahud.hud;
 
-import cc.polyfrost.oneconfig.config.annotations.Switch;
-import cc.polyfrost.oneconfig.config.data.*;
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch;
+import org.polyfrost.oneconfig.api.config.v1.data.*;
 import org.polyfrost.vanillahud.config.HudConfig;
 import org.polyfrost.vanillahud.hooks.TooltipHook;
 

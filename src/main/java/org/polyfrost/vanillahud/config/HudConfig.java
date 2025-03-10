@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.config;
 
-import cc.polyfrost.oneconfig.config.elements.SubConfig;
+import org.polyfrost.oneconfig.api.config.v1.elements.SubConfig;
 
 public class HudConfig extends SubConfig {
 

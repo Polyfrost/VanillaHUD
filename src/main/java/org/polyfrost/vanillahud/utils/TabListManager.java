@@ -1,7 +1,7 @@
 package org.polyfrost.vanillahud.utils;
 
-import cc.polyfrost.oneconfig.utils.Multithreading;
-import cc.polyfrost.oneconfig.utils.NetworkUtils;
+import org.polyfrost.oneconfig.utils.v1.Multithreading;
+import org.polyfrost.oneconfig.utils.v1.NetworkUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,7 +31,7 @@ public class TabListManager {
     public static List<NetworkPlayerInfo> devInfo = ImmutableList.of();
 
     public static void asyncFetchFallbackList() {
-        Multithreading.runAsync(() -> devInfo = fallbackDevUUIDs.stream()
+        Multithreading.submit(() -> devInfo = fallbackDevUUIDs.stream()
                 .map(UUID::fromString)
                 .map(TabListManager::getProfile)
                 .map(NetworkPlayerInfo::new)
@@ -42,7 +42,7 @@ public class TabListManager {
     }
 
     public static void asyncUpdateList() {
-        Multithreading.runAsync(TabListManager::updateList);
+        Multithreading.submit(TabListManager::updateList);
     }
     private static void updateList() {
         try {

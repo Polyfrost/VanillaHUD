@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
-import cc.polyfrost.oneconfig.libs.universal.UResolution;
+import dev.deftu.omnicore.client.render.OmniResolution;
+import org.polyfrost.universal.UResolution;
 import net.minecraft.client.gui.GuiSpectator;
 import net.minecraft.client.gui.spectator.ISpectatorMenuObject;
 import net.minecraft.client.renderer.GlStateManager;
@@ -23,7 +24,7 @@ public abstract class GuiSpectatorMixin {
             return f;
         }
         if (!Hotbar.hud.isEnabled()) return f;
-        return UResolution.getScaledHeight() - 22;
+        return OmniResolution.getScaledHeight() - 22;
     }
 
     @ModifyArgs(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;drawTexturedModalRect(FFIIII)V"))
@@ -32,8 +33,8 @@ public abstract class GuiSpectatorMixin {
             return;
         }
         if (!Hotbar.hud.isEnabled()) return;
-        int x = UResolution.getScaledWidth() / 2 - 91;
-        int y = UResolution.getScaledHeight() - 22;
+        int x = OmniResolution.getScaledWidth() / 2 - 91;
+        int y = OmniResolution.getScaledHeight() - 22;
         args.set(0, ((float) args.get(0)) - x);
         args.set(1, ((float) args.get(1)) - y);
     }

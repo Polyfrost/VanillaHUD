@@ -4,8 +4,10 @@ import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import at.hannibal2.skyhanni.SkyHanniMod;
 import at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader;
 import at.hannibal2.skyhanni.utils.LorenzUtils;
-import cc.polyfrost.oneconfig.events.EventManager;
-import cc.polyfrost.oneconfig.utils.Notifications;
+import net.hypixel.data.type.GameType;
+import org.polyfrost.oneconfig.api.event.v1.EventManager;
+import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils;
+import org.polyfrost.oneconfig.api.ui.v1.notifications.Notifications;
 import club.sk1er.patcher.config.OldPatcherConfig;
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import codes.biscuit.skyblockaddons.core.Feature;
@@ -341,7 +343,7 @@ public class VanillaHUD {
     private static boolean isSkyHanniCompactTab() {
         if (!isSkyHanni) return false;
         if (forceDisableCompactTab) {
-            return Utils.inSkyblock;
+            return GameType.SKYBLOCK == HypixelUtils.getLocation().getGameType().orElse(null);
         }
         if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
         if (skyHanniField) {
@@ -355,7 +357,7 @@ public class VanillaHUD {
     public static boolean isSkyHanniScoreboard() {
         if (!isSkyHanni) return false;
         if (forceDisableCompactTab) {
-            return Utils.inSkyblock;
+            return GameType.SKYBLOCK == HypixelUtils.getLocation().getGameType().orElse(null);
         }
         if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
         if (skyHanniField) {
