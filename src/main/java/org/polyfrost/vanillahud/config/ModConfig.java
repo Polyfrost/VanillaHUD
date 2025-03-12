@@ -3,13 +3,13 @@ package org.polyfrost.vanillahud.config;
 import org.polyfrost.oneconfig.api.config.v1.Config;
 import org.polyfrost.oneconfig.api.config.v1.annotations.SubConfig;
 import org.polyfrost.oneconfig.api.config.v1.data.*;
-import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.VanillaHUD2;
 import org.polyfrost.vanillahud.hud.*;
 
 public class ModConfig extends Config {
 
     public ModConfig() {
-        super(new Mod(VanillaHUD.NAME, ModType.HUD, "/vanillahud_dark.svg"), VanillaHUD.MODID + ".json");
+        super(new Mod(VanillaHUD2.NAME, ModType.HUD, "/vanillahud_dark.svg"), VanillaHUD2.MODID + ".json");
         initialize();
     }
 

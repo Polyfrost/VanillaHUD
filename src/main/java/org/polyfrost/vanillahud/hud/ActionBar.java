@@ -6,14 +6,12 @@ import org.jetbrains.annotations.Nullable;
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch;
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;
-import org.polyfrost.oneconfig.api.hud.v1.Hud;
 import org.polyfrost.oneconfig.api.hud.v1.TextHud;
 import org.polyfrost.oneconfig.hud.SingleTextHud;
 import org.polyfrost.oneconfig.renderer.*;
 import org.polyfrost.oneconfig.utils.v1.color.ColorUtils;
 import org.polyfrost.universal.*;
-import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.config.HudConfig;
+import org.polyfrost.vanillahud.VanillaHUD2;
 import org.polyfrost.vanillahud.mixin.minecraft.GuiIngameAccessor;
 import org.polyfrost.vanillahud.mixin.minecraft.MinecraftAccessor;
 
@@ -83,7 +81,7 @@ public class ActionBar extends TextHud {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
+            if (VanillaHUD2.isApec()) { // I love Apec Mod Minecraft
                 return false;
             }
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) Minecraft.getMinecraft().ingameGUI;

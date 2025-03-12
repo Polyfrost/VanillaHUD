@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-@net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
+@net.minecraftforge.fml.common.Mod(modid = VanillaHUD2.MODID, name = VanillaHUD2.NAME, version = VanillaHUD2.VERSION)
 public class VanillaHUD {
     public static final String MODID = "@ID@";
     public static final String NAME = "@NAME@";

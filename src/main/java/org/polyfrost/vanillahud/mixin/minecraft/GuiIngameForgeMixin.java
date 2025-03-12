@@ -3,7 +3,6 @@ package org.polyfrost.vanillahud.mixin.minecraft;
 import org.polyfrost.oneconfig.hud.*;
 import org.polyfrost.oneconfig.internal.hud.HudCore;
 import org.polyfrost.universal.UResolution;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
@@ -17,7 +16,7 @@ import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.opengl.GL11;
-import org.polyfrost.vanillahud.VanillaHUD;
+import org.polyfrost.vanillahud.VanillaHUD2;
 import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 import org.polyfrost.vanillahud.hooks.TabHook;
@@ -119,7 +118,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderArmor(II)V"))
     private void armor(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(0, 182);
@@ -130,7 +129,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"))
     private void armor(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         GlStateManager.pushMatrix();
@@ -157,7 +156,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/common/ForgeHooks;getTotalArmorValue(Lnet/minecraft/entity/player/EntityPlayer;)I"), remap = false)
     private int armorExample(EntityPlayer player) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return ForgeHooks.getTotalArmorValue(player);
         }
         int value = ForgeHooks.getTotalArmorValue(player);
@@ -166,7 +165,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
     private void armorFlip(GuiIngameForge instance, int x, int y, int textureX, int textureY, int width, int height) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
@@ -180,7 +179,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderExperience(II)V"))
     private void exp(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(0, 182);
@@ -191,7 +190,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;color(FFFF)V", ordinal = 0))
     private void experience(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         GlStateManager.pushMatrix();
@@ -218,7 +217,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyArgs(method = "renderExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawString(Ljava/lang/String;III)I"))
     private void expLevelHeight(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(2, (int) args.get(2) + 4 - (int) Experience.ExperienceHud.expHeight);
@@ -226,7 +225,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;gameIsSurvivalOrAdventure()Z"))
     private boolean expExample(PlayerControllerMP instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return instance.gameIsSurvivalOrAdventure();
         }
         return HudCore.editing || instance.gameIsSurvivalOrAdventure();
@@ -234,7 +233,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderHealth(II)V"))
     private void health(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(0, 182);
@@ -245,7 +244,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"))
     private void health(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         GlStateManager.pushMatrix();
@@ -272,7 +271,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
     private void healthFlip(GuiIngameForge instance, int x, int y, int textureX, int textureY, int width, int height) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
@@ -285,7 +284,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyVariable(method = "renderHealth", at = @At("STORE"), ordinal = 14, remap = false)
     private int healthAlignment(int x) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return x;
         }
         return Health.hud.alignment ? 72 - x : x;
@@ -293,7 +292,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyVariable(method = "renderHealth", at = @At("STORE"), ordinal = 15, remap = false)
     private int healthMode(int y) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return y;
         }
         if (HudCore.editing) return 0;
@@ -303,7 +302,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity healthEdit(Minecraft instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudCore.editing ? instance.thePlayer : instance.getRenderViewEntity();
@@ -322,7 +321,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderFood(II)V"))
     private void renderFood(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(0, -182);
@@ -338,7 +337,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderFood", at = @At("HEAD"), cancellable = true, remap = false)
     private void hungerCancel(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         if (!(renderFood || Hunger.mountHud.isEnabled())) {
@@ -354,7 +353,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyVariable(method = "renderFood", at = @At("STORE"), ordinal = 8, remap = false)
     private int hungerAlignment(int x) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return x;
         }
         return Hunger.hud.alignment ? 81 + x : -(x + 9);
@@ -362,7 +361,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity hungerEdit(Minecraft instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudCore.editing ? instance.thePlayer : instance.getRenderViewEntity();
@@ -375,7 +374,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderHealthMount", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/EntityPlayer;ridingEntity:Lnet/minecraft/entity/Entity;"))
     private Entity mountExample(EntityPlayer instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return instance.ridingEntity;
         }
         Entity entity = instance.ridingEntity;
@@ -386,7 +385,7 @@ public abstract class GuiIngameForgeMixin {
     @Dynamic
     @ModifyVariable(method = "renderHealthMount", at = @At("STORE"), ordinal = 13, remap = false)
     private int mountAlignment(int x) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return x;
         }
         boolean alignment = Hunger.mountHud.isEnabled() ? Hunger.mountHud.alignment : Hunger.hud.alignment;
@@ -395,7 +394,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
     private void mountFlip(GuiIngameForge instance, int x, int y, int textureX, int textureY, int width, int height) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
@@ -408,7 +407,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity mountEdit(Minecraft instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudCore.editing ? instance.thePlayer : instance.getRenderViewEntity();
@@ -416,7 +415,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyConstant(method = "renderHealthMount", constant = @Constant(intValue = 10, ordinal = 1), remap = false)
     private int mountMode(int constant) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return constant;
         }
         if (HudCore.editing) return 0;
@@ -425,18 +424,18 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;shouldDrawHUD()Z"))
     private boolean example(PlayerControllerMP instance) {
-        return instance.shouldDrawHUD() || (HudCore.editing && !VanillaHUD.isApec());
+        return instance.shouldDrawHUD() || (HudCore.editing && !VanillaHUD2.isApec());
     }
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity example(Minecraft instance) {
-        return (HudCore.editing && !VanillaHUD.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
+        return (HudCore.editing && !VanillaHUD2.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
     }
 
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderHealthMount(II)V"))
     private void mountHealth(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(0, -182);
@@ -447,7 +446,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V"), cancellable = true)
     private void mount(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         if (!(renderHealthMount || Hunger.mountHud.isEnabled())) {
@@ -481,7 +480,7 @@ public abstract class GuiIngameForgeMixin {
 
     @ModifyArgs(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderJumpBar(II)V"))
     private void jump(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         args.set(0, 182);
@@ -492,7 +491,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderJumpBar", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glColor4f(FFFF)V", ordinal = 0), remap = false)
     private void jump(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUD2.isApec()) {
             return;
         }
         GlStateManager.pushMatrix();
@@ -533,7 +532,7 @@ public abstract class GuiIngameForgeMixin {
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        boolean flag = !VanillaHUD.isCompactTab() || HudCore.editing;
+        boolean flag = !VanillaHUD2.isCompactTab() || HudCore.editing;
 
         if (flag) {
             if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
@@ -570,7 +569,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))
     private void enableScissor(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) return;
+        if (VanillaHUD2.isCompactTab()) return;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Position position = TabList.hud.position;
         int scale = (int) UResolution.getScaleFactor();
@@ -579,7 +578,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V", shift = At.Shift.AFTER))
     private void disable(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) return;
+        if (VanillaHUD2.isCompactTab()) return;
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
