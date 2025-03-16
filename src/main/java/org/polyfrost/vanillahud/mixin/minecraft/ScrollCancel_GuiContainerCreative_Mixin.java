@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiContainerCreative.class)
-public abstract class GuiContainerCreativeMixin {
+public abstract class ScrollCancel_GuiContainerCreative_Mixin {
 
     @Inject(method = "handleMouseInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/InventoryEffectRenderer;handleMouseInput()V", shift = At.Shift.AFTER), cancellable = true)
     private void cancelScrolling(CallbackInfo ci) {

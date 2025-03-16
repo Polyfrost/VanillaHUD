@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BossStatus.class)
-public class BossStatusMixin {
+public class BossStatusCallback_Mixin {
 
     @Inject(method = "setBossStatus", at = @At("TAIL"))
     private static void setBossStatus(IBossDisplayData displayData, boolean hasColorModifierIn, CallbackInfo ci) {

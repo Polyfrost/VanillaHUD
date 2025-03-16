@@ -29,7 +29,6 @@ public class VanillaHUD {
     public static final String NAME = "@NAME@";
     public static final String VERSION = "@VER@";
 
-    public static ModConfig modConfig;
     private static boolean apec = false;
     public static boolean isPatcher = false;
     public static boolean isHytils = false;
@@ -40,10 +39,8 @@ public class VanillaHUD {
 
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
-        modConfig = new ModConfig();
         TabListManager.asyncUpdateList();
         EventManager.INSTANCE.register(this);
-        EventManager.INSTANCE.register(new Utils());
     }
 
     @net.minecraftforge.fml.common.Mod.EventHandler
@@ -62,9 +59,7 @@ public class VanillaHUD {
         isSkyHanni = Loader.isModLoaded("skyhanni");
 
         checkForSkyHanni();
-        doDebugMigration();
         updateHeight();
-        doPatcherMigration();
     }
 
     private void checkForSkyHanni() {
@@ -177,153 +172,12 @@ public class VanillaHUD {
         }
     }
 
-    private void doDebugMigration() {
-        if (!ModConfig.doneDebugMigration) {
-            if (!ModConfig.actionBar.hud.showInDebug) {
-                ModConfig.actionBar.hud.showInDebug = true;
-                ModConfig.actionBar.save();
-            }
-            if (!Air.hud.showInDebug) {
-                ModConfig.air.hud.showInDebug = true;
-                ModConfig.air.save();
-            }
-            if (!Armor.hud.showInDebug) {
-                ModConfig.armor.hud.showInDebug = true;
-                ModConfig.armor.save();
-            }
-            if (!BossBar.hud.showInDebug) {
-                BossBar.hud.showInDebug = true;
-                ModConfig.bossBar.save();
-            }
-            if (!Experience.hud.showInDebug) {
-                Experience.hud.showInDebug = true;
-                ModConfig.experience.save();
-            }
-            if (!Health.hud.showInDebug) {
-                Health.hud.showInDebug = true;
-                ModConfig.health.save();
-            }
-            if (!Hotbar.hud.showInDebug) {
-                Hotbar.hud.showInDebug = true;
-                ModConfig.hotBar.save();
-            }
-            if (!Hunger.hud.showInDebug) {
-                Hunger.hud.showInDebug = true;
-                ModConfig.hunger.save();
-            }
-            if (!Hunger.mountHud.showInDebug) {
-                Hunger.mountHud.showInDebug = true;
-                ModConfig.hunger.save();
-            }
-            if (!ModConfig.itemTooltip.hud.showInDebug) {
-                ModConfig.itemTooltip.hud.showInDebug = true;
-                ModConfig.itemTooltip.save();
-            }
-            if (!ModConfig.scoreboard.hud.showInDebug) {
-                ModConfig.scoreboard.hud.showInDebug = true;
-                ModConfig.scoreboard.save();
-            }
-            if (!TabList.hud.showInDebug) {
-                TabList.hud.showInDebug = true;
-                ModConfig.tab.save();
-            }
-            if (TabList.TabHud.selfAtTop) {
-                TabList.TabHud.selfAtTop = false;
-                ModConfig.tab.save();
-            }
-            if (!ModConfig.title.titleHUD.showInDebug) {
-                ModConfig.title.titleHUD.showInDebug = true;
-                ModConfig.title.save();
-            }
-            if (!ModConfig.title.subtitleHUD.showInDebug) {
-                ModConfig.title.subtitleHUD.showInDebug = true;
-                ModConfig.title.save();
-            }
-            ModConfig.doneDebugMigration = true;
-            modConfig.save();
-        }
-    }
-
     private void updateHeight() {
         if (!TabList.TabHud.updatedHeight) {
             TabList.TabHud.updatedHeight = true;
             if (TabList.hud.position.getY() == 10) {
                 TabList.hud.position.setY(TabList.hud.position.getY() + 10);
                 ModConfig.tab.save();
-            }
-        }
-    }
-
-    private void doPatcherMigration() {
-        if (isPatcher) {
-            try {
-                if (ModConfig.hasMigratedPatcher) return;
-                Class.forName("club.sk1er.patcher.config.OldPatcherConfig");
-                boolean saveTitle = false;
-                boolean saveTab = false;
-                boolean saveActionBar = false;
-
-                if (OldPatcherConfig.disableTitles) {
-                    ModConfig.title.enabled = false;
-                    saveTitle = true;
-                }
-                if (OldPatcherConfig.titleScale != 1.0F) {
-                    ModConfig.title.titleHUD.setScale(ModConfig.title.titleHUD.getScale() * OldPatcherConfig.titleScale, true);
-                    ModConfig.title.subtitleHUD.setScale(ModConfig.title.subtitleHUD.getScale() * OldPatcherConfig.titleScale, true);
-                    saveTitle = true;
-                }
-                if (OldPatcherConfig.titleOpacity != 1.0F) {
-                    ModConfig.title.titleHUD.getColor().setAlpha((int) (OldPatcherConfig.titleOpacity * 255));
-                    ModConfig.title.subtitleHUD.getColor().setAlpha((int) (OldPatcherConfig.titleOpacity * 255));
-                    saveTitle = true;
-                }
-
-                if (OldPatcherConfig.toggleTab) {
-                    TabList.TabHud.displayMode = true;
-                    saveTab = true;
-                }
-                if (OldPatcherConfig.tabOpacity != 1.0F) {
-                    TabList.hud.getBackgroundColor().setAlpha((int) (TabList.hud.getBackgroundColor().getAlpha() * OldPatcherConfig.tabOpacity));
-                    TabList.TabHud.tabWidgetColor.setAlpha((int) (TabList.TabHud.tabWidgetColor.getAlpha() * OldPatcherConfig.tabOpacity));
-                    saveTab = true;
-                }
-                if (OldPatcherConfig.tabPlayerCount != 80) {
-                    TabList.TabHud.tabPlayerLimit = OldPatcherConfig.tabPlayerCount;
-                    saveTab = true;
-                }
-                if (!OldPatcherConfig.tabHeightAllow) {
-                    TabList.hud.position.setY(TabList.hud.position.getY() - 10);
-                    saveTab = true;
-                } else if (OldPatcherConfig.tabHeight != 10) {
-                    TabList.hud.position.setY(TabList.hud.position.getY() + (OldPatcherConfig.tabHeight - 10));
-                    saveTab = true;
-                }
-
-                if (OldPatcherConfig.shadowedActionbarText) {
-                    ModConfig.actionBar.hud.setTextType(1);
-                    saveActionBar = true;
-                }
-                if (OldPatcherConfig.actionbarBackground) {
-                    ModConfig.actionBar.hud.setBackground(true);
-                    saveActionBar = true;
-                }
-
-                if (saveTitle) {
-                    ModConfig.title.save();
-                }
-                if (saveTab) {
-                    ModConfig.tab.save();
-                }
-                if (saveActionBar) {
-                    ModConfig.actionBar.save();
-                }
-                ModConfig.hasMigratedPatcher = true;
-                modConfig.save();
-                if (saveTitle || saveTab || saveActionBar) {
-                    Notifications.INSTANCE.send("VanillaHUD", "Migrated Patcher settings replaced by VanillaHUD. Please check VanillaHUD's settings to make sure they are correct.");
-                }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             }
         }
     }
