@@ -3,6 +3,7 @@ package org.polyfrost.vanillahud.mixin.skyblock;
 import cc.polyfrost.oneconfig.internal.hud.HudCore;
 import codes.biscuit.skyblockaddons.features.tablist.RenderColumn;
 import codes.biscuit.skyblockaddons.features.tablist.TabListParser;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -18,7 +19,7 @@ public class RenderListenerMixin {
     @Dynamic
     @Redirect(method = "onRenderRemoveBars", at = @At(value = "INVOKE", target = "Lcodes/biscuit/skyblockaddons/features/tablist/TabListParser;getRenderColumns()Ljava/util/List;"), remap = false)
     private List<RenderColumn> editing() {
-        return HudCore.editing ? null : TabListParser.getRenderColumns();
+        return (HudCore.editing && !VanillaHUD.isForceDisableCompactTab()) ? null : TabListParser.getRenderColumns();
     }
 
 }

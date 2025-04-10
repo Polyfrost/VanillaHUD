@@ -10,6 +10,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.spongepowered.asm.mixin.Dynamic;
@@ -30,18 +31,27 @@ public class TabListRendererMixin_SkyHanni {
     @Dynamic
     @Inject(method = "onRenderOverlay*", at = @At("HEAD"), cancellable = true, remap = false)
     private void edit(CallbackInfo ci) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         if (HudCore.editing) ci.cancel();
     }
 
     @Dynamic
     @Redirect(method = "onRenderOverlay*", at = @At(value = "FIELD", target = "Lat/hannibal2/skyhanni/config/features/misc/compacttablist/CompactTabListConfig;toggleTab:Z"))
     private boolean toggleTab(CompactTabListConfig config) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return config.toggleTab;
+        }
         return false;
     }
 
     @Dynamic
     @ModifyArgs(method = "drawTabList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawRect(IIIII)V", ordinal = 0))
     private void captureSize(Args args) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         TabList.TabHud hud = TabList.hud;
         GlStateManager.pushMatrix();
         GlStateManager.translate((float) (-UResolution.getScaledWidth() / 2) * hud.getScale() + hud.position.getCenterX(), hud.position.getY() + hud.getPaddingY(), 0);
@@ -59,19 +69,25 @@ public class TabListRendererMixin_SkyHanni {
     @Dynamic
     @ModifyConstant(method = "drawTabList", constant = @Constant(intValue = 10), remap = false)
     private int modify(int constant) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return constant;
+        }
         return 3;
     }
 
     @Dynamic
     @Inject(method = "drawTabList", at = @At(value = "INVOKE", target = "Lat/hannibal2/skyhanni/features/misc/compacttablist/TabLine;getType()Lat/hannibal2/skyhanni/features/misc/compacttablist/TabStringType;", ordinal = 0), remap = false)
     private void reset(CallbackInfo ci) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         shouldMove = false;
     }
 
     @Dynamic
     @Redirect(method = "drawTabList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 0))
     private void playerHead(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (!TabList.TabHud.showHead) {
+        if (!TabList.TabHud.showHead && !VanillaHUD.isForceDisableCompactTab()) {
             shouldMove = true;
             return;
         }
@@ -81,7 +97,7 @@ public class TabListRendererMixin_SkyHanni {
     @Dynamic
     @Redirect(method = "drawTabList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 1))
     private void playerHat(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (!TabList.TabHud.showHead) return;
+        if (!TabList.TabHud.showHead && !VanillaHUD.isForceDisableCompactTab()) return;
         if (TabList.TabHud.betterHatLayer) {
             GlStateManager.translate(-0.5f, -0.5f, 0f);
             Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, 9, 9, tileWidth, tileHeight);
@@ -94,42 +110,71 @@ public class TabListRendererMixin_SkyHanni {
     @Dynamic
     @ModifyVariable(method = "drawTabList", at = @At(value = "LOAD", ordinal = 6), name = "middleX", remap = false)
     private int removeHeadWidth2(int value) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return value;
+        }
         return value - (shouldMove ? 10 : 0);
     }
 
     @Dynamic
     @ModifyConstant(method = "drawTabList", constant = @Constant(intValue = 0x20AAAAAA), remap = false)
     private int widgetColor(int color) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return color;
+        }
         return TabList.TabHud.tabWidgetColor.getRGB();
     }
 
     @Dynamic
     @Redirect(method = "drawTabList", at = @At(value = "INVOKE", target = "Lat/hannibal2/skyhanni/utils/TabListData;getHeader()Ljava/lang/String;"), remap = false)
     private String modifyHeader(TabListData instance) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return instance.getHeader();
+        }
         return TabList.TabHud.showHeader ? instance.getHeader() : "";
     }
 
     @Dynamic
     @Redirect(method = "drawTabList", at = @At(value = "INVOKE", target = "Lat/hannibal2/skyhanni/utils/TabListData;getFooter()Ljava/lang/String;"), remap = false)
     private String modifyFooter(TabListData instance) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return instance.getFooter();
+        }
         return TabList.TabHud.showFooter ? instance.getFooter() : "";
     }
 
     @Dynamic
     @Redirect(method = "drawTabList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private int redirectString(FontRenderer instance, String text, float x, float y, int color) {
-        GlStateManager.pushMatrix();
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return instance.drawStringWithShadow(text, x, y, color);
+        }
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         TextRenderer.drawScaledString(text, x, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
-        GlStateManager.popMatrix();
+        return 0;
+    }
+
+    @Dynamic
+    @Redirect(method = "drawColumms", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
+    private int redirectString2(FontRenderer instance, String text, float x, float y, int color) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return instance.drawStringWithShadow(text, x, y, color);
+        }
+        GlStateManager.enableBlend();
+        GlStateManager.enableAlpha();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        TextRenderer.drawScaledString(text, x, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
         return 0;
     }
 
     @Dynamic
     @Inject(method = "drawTabList", at = @At("TAIL"), remap = false)
     private void pop(CallbackInfo ci) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         GlStateManager.popMatrix();
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }

@@ -72,7 +72,7 @@ public class VanillaHUD {
         if (isSkyHanni) {
             try {
                 // make sure the classes are loaded
-                Class<?> guiConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.GUIConfig", false, getClass().getClassLoader());
+                Class<?> guiConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.GUIConfig");
                 try {
                     guiConfig.getDeclaredField("compactTabList");
                     guiConfig.getDeclaredField("customScoreboard");
@@ -81,10 +81,10 @@ public class VanillaHUD {
                     System.out.println("SkyHanni: compactTabList not found");
                     return;
                 }
-                Class<?> property = Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.Property", false, getClass().getClassLoader());
-                Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.GetSetter", false, getClass().getClassLoader());
-                Class<?> compactTabListConfig = Class.forName("at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig", false, getClass().getClassLoader());
-                Class<?> customScoreboardConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.customscoreboard.CustomScoreboardConfig", false, getClass().getClassLoader());
+                Class<?> property = Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.Property");
+                Class.forName("at.hannibal2.skyhanni.deps.moulconfig.observer.GetSetter");
+                Class<?> compactTabListConfig = Class.forName("at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig");
+                Class<?> customScoreboardConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.customscoreboard.CustomScoreboardConfig");
                 try {
                     Field enabledTab = compactTabListConfig.getDeclaredField("enabled");
                     if (enabledTab.getType() != property) {
@@ -103,7 +103,7 @@ public class VanillaHUD {
                     System.out.println("SkyHanni: enabled not found");
                     return;
                 }
-                Class<?> features = Class.forName("at.hannibal2.skyhanni.config.Features", false, getClass().getClassLoader());
+                Class<?> features = Class.forName("at.hannibal2.skyhanni.config.Features");
                 try {
                     features.getDeclaredField("gui");
                 } catch (NoSuchFieldException e) {
@@ -118,8 +118,8 @@ public class VanillaHUD {
                     //    return;
                     //}
                 }
-                Class<?> renderColumn = Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.RenderColumn", false, getClass().getClassLoader());
-                Class<?> tabListReader = Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader", false, getClass().getClassLoader());
+                Class<?> renderColumn = Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.RenderColumn");
+                Class<?> tabListReader = Class.forName("at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader");
                 try {
                     Method method = tabListReader.getDeclaredMethod("getRenderColumns"); // this is a list
                     // get the type parameter of the list
@@ -148,7 +148,7 @@ public class VanillaHUD {
                     System.out.println("SkyHanni: getRenderColumns not found");
                     return;
                 }
-                Class<?> lorenzUtils = Class.forName("at.hannibal2.skyhanni.utils.LorenzUtils", false, getClass().getClassLoader());
+                Class<?> lorenzUtils = Class.forName("at.hannibal2.skyhanni.utils.LorenzUtils");
                 try {
                     lorenzUtils.getDeclaredMethod("getInSkyBlock");
                 } catch (NoSuchMethodException e) {
@@ -172,8 +172,8 @@ public class VanillaHUD {
                 }
             } catch (ClassNotFoundException e) {
                 System.out.println("SkyHanni: class not found");
-                e.printStackTrace();
                 forceDisableCompactTab = true;
+                e.printStackTrace();
             }
         }
     }
@@ -335,6 +335,10 @@ public class VanillaHUD {
 
     public static boolean isCompactTab() {
         return isSBACompactTab() || isSkyHanniCompactTab();
+    }
+
+    public static boolean isForceDisableCompactTab() {
+        return isCompactTab();
     }
 
     private static boolean isSBACompactTab() {

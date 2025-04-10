@@ -527,7 +527,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/settings/KeyBinding;isKeyDown()Z"))
     private boolean tabExample(KeyBinding instance) {
-        if (!ModConfig.tab.enabled) {
+        if (!ModConfig.tab.enabled || VanillaHUD.isForceDisableCompactTab()) {
             return instance.isKeyDown();
         }
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);

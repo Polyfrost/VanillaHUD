@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.IChatComponent;
 import org.lwjgl.opengl.GL11;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.polyfrost.vanillahud.mixin.minecraft.GuiPlayerTabOverlayAccessor;
@@ -29,6 +30,9 @@ public class TabListRendererMixin_SBA {
     @Dynamic
     @ModifyArgs(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawRect(IIIII)V", ordinal = 0))
     private static void captureSize(Args args) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         TabList.TabHud hud = TabList.hud;
         GlStateManager.pushMatrix();
         GlStateManager.translate((float) (-UResolution.getScaledWidth() / 2) * hud.getScale() + hud.position.getCenterX(), hud.position.getY() + hud.getPaddingY(), 0);
@@ -46,19 +50,25 @@ public class TabListRendererMixin_SBA {
     @Dynamic
     @ModifyConstant(method = "render", constant = @Constant(intValue = 10), remap = false)
     private static int modify(int constant) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return constant;
+        }
         return 3;
     }
 
     @Dynamic
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcodes/biscuit/skyblockaddons/features/tablist/TabLine;getType()Lcodes/biscuit/skyblockaddons/features/tablist/TabStringType;", ordinal = 0), remap = false)
     private static void reset(CallbackInfo ci) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         shouldMove = false;
     }
 
     @Dynamic
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 0))
     private static void playerHead(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (!TabList.TabHud.showHead) {
+        if (!TabList.TabHud.showHead && !VanillaHUD.isForceDisableCompactTab()) {
             shouldMove = true;
             return;
         }
@@ -68,7 +78,7 @@ public class TabListRendererMixin_SBA {
     @Dynamic
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;drawScaledCustomSizeModalRect(IIFFIIIIFF)V", ordinal = 1))
     private static void playerHat(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight) {
-        if (!TabList.TabHud.showHead) return;
+        if (!TabList.TabHud.showHead && !VanillaHUD.isForceDisableCompactTab()) return;
         if (TabList.TabHud.betterHatLayer) {
             GlStateManager.translate(-0.5f, -0.5f, 0f);
             Gui.drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, 9, 9, tileWidth, tileHeight);
@@ -81,42 +91,58 @@ public class TabListRendererMixin_SBA {
     @Dynamic
     @ModifyVariable(method = "render", at = @At(value = "LOAD", ordinal = 6), name = "middleX", remap = false)
     private static int removeHeadWidth2(int value) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return value;
+        }
         return value - (shouldMove ? 10 : 0);
     }
 
     @Dynamic
     @ModifyConstant(method = "render", constant = @Constant(intValue = 548055722), remap = false)
     private static int widgetColor(int color) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return color;
+        }
         return TabList.TabHud.tabWidgetColor.getRGB();
     }
 
     @Dynamic
     @Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;header:Lnet/minecraft/util/IChatComponent;"))
     private static IChatComponent modifyHeader(GuiPlayerTabOverlay instance) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return ((GuiPlayerTabOverlayAccessor) instance).getHeader();
+        }
         return TabList.TabHud.showHeader ? ((GuiPlayerTabOverlayAccessor) instance).getHeader() : null;
     }
 
     @Dynamic
     @Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;footer:Lnet/minecraft/util/IChatComponent;"))
     private static IChatComponent modifyFooter(GuiPlayerTabOverlay instance) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return ((GuiPlayerTabOverlayAccessor) instance).getFooter();
+        }
         return TabList.TabHud.showFooter ? ((GuiPlayerTabOverlayAccessor) instance).getFooter() : null;
     }
 
     @Dynamic
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawStringWithShadow(Ljava/lang/String;FFI)I"))
     private static int redirectString(FontRenderer instance, String text, float x, float y, int color) {
-        GlStateManager.pushMatrix();
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return instance.drawStringWithShadow(text, x, y, color);
+        }
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         TextRenderer.drawScaledString(text, x, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
-        GlStateManager.popMatrix();
         return 0;
     }
 
     @Dynamic
     @Inject(method = "render", at = @At("TAIL"), remap = false)
     private static void pop(CallbackInfo ci) {
+        if (VanillaHUD.isForceDisableCompactTab()) {
+            return;
+        }
         GlStateManager.popMatrix();
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
