@@ -72,7 +72,7 @@ public class VanillaHUD {
         if (isSkyHanni) {
             try {
                 // make sure the classes are loaded
-                Class<?> guiConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.GUIConfig", false, getClass().getClassLoader());
+                Class<?> guiConfig = Class.forName("at.hannibal2.skyhanni.config.features.gui.GuiConfig", false, getClass().getClassLoader());
                 try {
                     guiConfig.getDeclaredField("compactTabList");
                     guiConfig.getDeclaredField("customScoreboard");
