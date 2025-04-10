@@ -2,6 +2,9 @@ package org.polyfrost.vanillahud;
 
 import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import at.hannibal2.skyhanni.SkyHanniMod;
+import at.hannibal2.skyhanni.config.Features;
+import at.hannibal2.skyhanni.config.features.gui.customscoreboard.CustomScoreboardConfig;
+import at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig;
 import at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader;
 import at.hannibal2.skyhanni.utils.LorenzUtils;
 import cc.polyfrost.oneconfig.events.EventManager;
@@ -351,6 +354,21 @@ public class VanillaHUD {
             return Utils.inSkyblock;
         }
         if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
+        try
+        {
+            Object gui = getSkyHanniGuiFeature();
+            Field compactTabListField = gui.getClass().getDeclaredField("compactTabList");
+            compactTabListField.setAccessible(true);
+            Object compactTabListObj = compactTabListField.get(gui);
+            if(compactTabListObj instanceof CompactTabListConfig) {
+                if (!((CompactTabListConfig)compactTabListObj).enabled.get()) return false;
+            }
+
+        }
+        catch (IllegalAccessException | NoSuchFieldException ignored)
+        {
+            //ignored, simply fall through and try the methods below
+        }
         if (skyHanniField) {
             if (!SkyHanniMod.feature.gui.compactTabList.enabled.get()) return false;
         } else {
@@ -365,11 +383,33 @@ public class VanillaHUD {
             return Utils.inSkyblock;
         }
         if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
+        try
+        {
+            Object gui = getSkyHanniGuiFeature();
+            Field customScoreboardField = gui.getClass().getDeclaredField("customScoreboard");
+            customScoreboardField.setAccessible(true);
+            Object customScoreboardObj = customScoreboardField.get(gui);
+            if(customScoreboardObj instanceof CustomScoreboardConfig) {
+                if (!((CustomScoreboardConfig)customScoreboardObj).enabled.get()) return false;
+            }
+
+        }
+        catch (IllegalAccessException | NoSuchFieldException ignored)
+        {
+            //ignored, simply fall through and try the methods below
+        }
         if (skyHanniField) {
             return SkyHanniMod.feature.gui.customScoreboard.enabled.get();
         } else {
             return SkyHanniMod.getFeature().gui.customScoreboard.enabled.get();
         }
+    }
+
+    private static Object getSkyHanniGuiFeature() throws IllegalAccessException, NoSuchFieldException {
+        Features features = SkyHanniMod.feature;
+        Field guiField = features.getClass().getDeclaredField("gui");
+        guiField.setAccessible(true);
+        return guiField.get(features);
     }
 
     public static boolean isLegacyTablist() {
