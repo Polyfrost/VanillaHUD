@@ -3,7 +3,6 @@ package org.polyfrost.vanillahud;
 import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import at.hannibal2.skyhanni.SkyHanniMod;
 import at.hannibal2.skyhanni.config.Features;
-import at.hannibal2.skyhanni.config.features.gui.GUIConfig;
 import at.hannibal2.skyhanni.config.features.gui.customscoreboard.CustomScoreboardConfig;
 import at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig;
 import at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader;
@@ -16,6 +15,7 @@ import codes.biscuit.skyblockaddons.core.Feature;
 import codes.biscuit.skyblockaddons.features.tablist.TabListParser;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Loader;
+import org.jetbrains.annotations.Nullable;
 import org.polyfrost.overflowanimations.config.OldAnimationsSettings;
 import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hud.*;
@@ -43,6 +43,15 @@ public class VanillaHUD {
     private static boolean isOAM = false;
     private static boolean forceDisableCompactTab = false;
     private static boolean skyHanniField = false;
+
+    // SkyHanni Method Handles
+    // They are set in the PostInit phase; if not found, these are null, so please do null checks
+    @Nullable
+    private static MethodHandle skyHanniGetGuiHandle;
+    @Nullable
+    private static MethodHandle skyHanniGetCompactTabListHandle;
+    @Nullable
+    private static MethodHandle skyHanniGetCustomScoreboardHandle;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
     public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
@@ -179,6 +188,29 @@ public class VanillaHUD {
             } catch (ClassNotFoundException e) {
                 System.out.println("SkyHanni: class not found");
                 forceDisableCompactTab = true;
+                e.printStackTrace();
+            }
+
+            try {
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
+
+                Features features = SkyHanniMod.feature;
+                Field guiField = features.getClass().getDeclaredField("gui");
+
+                Class<?> guiConfigClass = guiField.getType();
+
+                skyHanniGetGuiHandle = lookup.findGetter(Features.class, "gui", guiConfigClass);
+
+                Field compactTabListField = guiConfigClass.getDeclaredField("compactTabList");
+                compactTabListField.setAccessible(true);
+
+                skyHanniGetCompactTabListHandle = lookup.unreflectGetter(compactTabListField);
+
+                Field customScoreboardField = guiConfigClass.getDeclaredField("customScoreboard");
+                customScoreboardField.setAccessible(true);
+
+                skyHanniGetCustomScoreboardHandle = lookup.unreflectGetter(customScoreboardField);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -353,16 +385,16 @@ public class VanillaHUD {
 
     private static boolean isSkyHanniCompactTab() {
         if (!isSkyHanni) return false;
-        if (forceDisableCompactTab) {
-            return Utils.inSkyblock;
-        }
-        if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
         try {
             if (Boolean.FALSE.equals(isSkyHanniCompactTabList())) return false;
         }
         catch (Throwable ignored) {
             //ignored, simply fall through and try the methods below
         }
+        if (forceDisableCompactTab) {
+            return Utils.inSkyblock;
+        }
+        if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
         if (skyHanniField) {
             if (!SkyHanniMod.feature.gui.compactTabList.enabled.get()) return false;
         } else {
@@ -373,16 +405,16 @@ public class VanillaHUD {
 
     public static boolean isSkyHanniScoreboard() {
         if (!isSkyHanni) return false;
-        if (forceDisableCompactTab) {
-            return Utils.inSkyblock;
-        }
-        if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
         try {
-            if(Boolean.FALSE.equals(isSkyHanniCustomScoreboard())) return false;
+            if (Boolean.FALSE.equals(isSkyHanniCustomScoreboard())) return false;
         }
         catch (Throwable ignored) {
             //ignored, simply fall through and try the methods below
         }
+        if (forceDisableCompactTab) {
+            return Utils.inSkyblock;
+        }
+        if (!LorenzUtils.INSTANCE.getInSkyBlock()) return false;
         if (skyHanniField) {
             return SkyHanniMod.feature.gui.customScoreboard.enabled.get();
         } else {
@@ -390,14 +422,15 @@ public class VanillaHUD {
         }
     }
 
+    @Nullable
     private static Object getSkyHanniGuiFeature() throws Throwable {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-
         Features features = SkyHanniMod.feature;
 
-        MethodHandle getGuiHandle = lookup.findGetter(Features.class, "gui", Object.class);
+        if(skyHanniGetGuiHandle == null) {
+            return null;
+        }
 
-        return getGuiHandle.invoke(features);
+        return skyHanniGetGuiHandle.invoke(features);
     }
 
     /**
@@ -408,14 +441,15 @@ public class VanillaHUD {
      *
      * @return If the Compact Tab List is enabled in the SkyHanni config
      */
+    @Nullable
     private static Boolean isSkyHanniCompactTabList() throws Throwable {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-
         Object gui = getSkyHanniGuiFeature();
 
-        MethodHandle getCompactTabListHandle = lookup.findGetter(GUIConfig.class, "compactTabList", CompactTabListConfig.class);
+        if(gui == null || skyHanniGetCompactTabListHandle == null) {
+            return null;
+        }
 
-        Object compactTabListObj = getCompactTabListHandle.invoke(gui);
+        Object compactTabListObj = skyHanniGetCompactTabListHandle.invoke(gui);
 
         if(compactTabListObj instanceof CompactTabListConfig) {
             return ((CompactTabListConfig) compactTabListObj).enabled.get();
@@ -433,17 +467,18 @@ public class VanillaHUD {
      *
      * @return If the Custom Scoreboard is enabled in the SkyHanni config
      */
+    @Nullable
     private static Boolean isSkyHanniCustomScoreboard() throws Throwable {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-
         Object gui = getSkyHanniGuiFeature();
 
-        MethodHandle getCustomScoreboard = lookup.findGetter(GUIConfig.class, "customScoreboard", CustomScoreboardConfig.class);
+        if(gui == null || skyHanniGetCustomScoreboardHandle == null) {
+            return null;
+        }
 
-        Object customScoreboardObj = getCustomScoreboard.invoke(gui);
+        Object customScoreboardObj = skyHanniGetCustomScoreboardHandle.invoke(gui);
 
         if(customScoreboardObj instanceof CustomScoreboardConfig) {
-            return  ((CustomScoreboardConfig) customScoreboardObj).enabled.get();
+            return ((CustomScoreboardConfig) customScoreboardObj).enabled.get();
         }
 
         // If the method returns an invalid class, simply return null, the calling method should ignore this
