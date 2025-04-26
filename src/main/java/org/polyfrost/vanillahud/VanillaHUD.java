@@ -386,7 +386,7 @@ public class VanillaHUD {
     private static boolean isSkyHanniCompactTab() {
         if (!isSkyHanni) return false;
         try {
-            if (Boolean.FALSE.equals(isSkyHanniCompactTabList())) return false;
+            if (!isSkyHanniCompactTabList()) return false;
         }
         catch (Throwable ignored) {
             //ignored, simply fall through and try the methods below
@@ -406,7 +406,7 @@ public class VanillaHUD {
     public static boolean isSkyHanniScoreboard() {
         if (!isSkyHanni) return false;
         try {
-            if (Boolean.FALSE.equals(isSkyHanniCustomScoreboard())) return false;
+            if (!isSkyHanniCustomScoreboard()) return false;
         }
         catch (Throwable ignored) {
             //ignored, simply fall through and try the methods below
@@ -434,19 +434,17 @@ public class VanillaHUD {
     }
 
     /**
-     * This method has 3 possible return values: true, false, null
+     * Returns if the Compact Tab List is enabled in the SkyHanni config
      * True = Compact Tab List is enabled
      * False = Compact Tab List is disabled
-     * Null = Couldn't get the config through method handles
      *
      * @return If the Compact Tab List is enabled in the SkyHanni config
      */
-    @Nullable
-    private static Boolean isSkyHanniCompactTabList() throws Throwable {
+    private static boolean isSkyHanniCompactTabList() throws Throwable {
         Object gui = getSkyHanniGuiFeature();
 
         if(gui == null || skyHanniGetCompactTabListHandle == null) {
-            return null;
+            throw new RuntimeException("Can't use the method handle for the SkyHanni Compact Tab List config.");
         }
 
         Object compactTabListObj = skyHanniGetCompactTabListHandle.invoke(gui);
@@ -455,24 +453,22 @@ public class VanillaHUD {
             return ((CompactTabListConfig) compactTabListObj).enabled.get();
         }
 
-        // If the method returns an invalid class, simply return null, the calling method should ignore this
-        return null;
+        // If the method returns an invalid class, the calling method should ignore this
+        throw new RuntimeException("The Compact Tab List config is not of the expected type - Try alternate methods");
     }
 
     /**
-     * This method has 3 possible return values: true, false, null
+     * Returns if the Custom Scoreboard is enabled in the SkyHanni config
      * True = Custom Scoreboard is enabled
      * False = Custom Scoreboard is disabled
-     * Null = Couldn't get the config through method handles
      *
      * @return If the Custom Scoreboard is enabled in the SkyHanni config
      */
-    @Nullable
-    private static Boolean isSkyHanniCustomScoreboard() throws Throwable {
+    private static boolean isSkyHanniCustomScoreboard() throws Throwable {
         Object gui = getSkyHanniGuiFeature();
 
         if(gui == null || skyHanniGetCustomScoreboardHandle == null) {
-            return null;
+            throw new RuntimeException("Can't use the method handle for the SkyHanni Custom Scoreboard config.");
         }
 
         Object customScoreboardObj = skyHanniGetCustomScoreboardHandle.invoke(gui);
@@ -481,8 +477,8 @@ public class VanillaHUD {
             return ((CustomScoreboardConfig) customScoreboardObj).enabled.get();
         }
 
-        // If the method returns an invalid class, simply return null, the calling method should ignore this
-        return null;
+        // If the method returns an invalid class, the calling method should ignore this
+        throw new RuntimeException("The Custom Scoreboard config is not of the expected type - Try alternate methods");
     }
 
     public static boolean isLegacyTablist() {
