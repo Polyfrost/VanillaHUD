@@ -168,7 +168,7 @@ public class TabList extends HudConfig {
         public static OneColor tabWidgetColor = new OneColor(553648127);
 
         @Info(
-                text = "Tablist might goes over screen",
+                text = "Tablist might go over screen",
                 type = InfoType.WARNING
         )
         private static Runnable info = () -> { }; //runnable so it wont be saved
