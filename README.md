@@ -39,7 +39,7 @@ Adds in a load of customization to a few native UI elements such as the bossbar,
   - Some servers use the numbers for legitimate purposes, and it makes no sense to hide the numbers in those scenarios. VanillaHUD lets you keep the numbers if the numbers are not consecutive.
 - Whether to keep scoreboard title
 
-## Tablist specific customization:
+## Tablist specific cust bomization:
 - Whether to enable animations when opening / closing tab
 - How many players show in tab
 - Whether tab should be opened via toggle / key press

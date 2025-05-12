@@ -10,7 +10,7 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.scoreboard.*;
 import net.minecraft.util.*;
-import org.polyfrost.vanillahud.VanillaHUD2;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.TabList;
 import org.polyfrost.vanillahud.utils.TabListManager;
@@ -107,7 +107,7 @@ public abstract class GuiPlayerTabOverlayMixin {
     @Redirect(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Ordering;sortedCopy(Ljava/lang/Iterable;)Ljava/util/List;"))
     private List<NetworkPlayerInfo> list(Ordering<NetworkPlayerInfo> instance, Iterable<NetworkPlayerInfo> elements) {
         List<NetworkPlayerInfo> list = instance.sortedCopy(elements);
-        if (TabList.TabHud.selfAtTop && !VanillaHUD2.isCompactTab()) {
+        if (TabList.TabHud.selfAtTop && !VanillaHUD.isCompactTab()) {
             for (NetworkPlayerInfo info : list) {
                 if (info.getGameProfile().getId().equals(mc.thePlayer.getGameProfile().getId())) {
                     list.remove(info);

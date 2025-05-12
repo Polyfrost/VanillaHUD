@@ -1,8 +1,6 @@
 package org.polyfrost.vanillahud.hud;
 
-import org.polyfrost.oneconfig.api.config.v1.Config;
 import org.polyfrost.oneconfig.api.config.v1.annotations.*;
-import org.polyfrost.polyui.color.PolyColor;
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
 import org.polyfrost.oneconfig.api.config.v1.data.*;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;

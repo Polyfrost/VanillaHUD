@@ -8,8 +8,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.VanillaHUD2;
 import org.polyfrost.vanillahud.hud.hotbar.OxygenHUD;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,10 +29,10 @@ public abstract class Oxygen_GuiIngame_Mixin {
 
     @Inject(method = "renderAir", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"), cancellable = true)
     private void setupAirTranslationAndScale(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return;
         }
-        OxygenHUD hud = VanillaHUD2.getOxygen();
+        OxygenHUD hud = VanillaHUD.getOxygen();
         if (hud.getHidden()) {
             post(RenderGameOverlayEvent.ElementType.AIR);
             ci.cancel();
@@ -40,13 +40,13 @@ public abstract class Oxygen_GuiIngame_Mixin {
         }
         float scale = hud.getScale();
         GlStateManager.pushMatrix();
-        GlStateManager.translate((int) hud.getX() - width - 182, (int) hud.getY() - (hud.getHealthLink() ? VanillaHUD2.getHealthLinkAmount() : 0) - (hud.getMountLink() ? VanillaHUD2.getMountLinkAmount() : 0) - height + right_height, 0F);
+        GlStateManager.translate((int) hud.getX() - width - 182, (int) hud.getY() - (hud.getHealthLink() ? VanillaHUD.getHealthLinkAmount() : 0) - (hud.getMountLink() ? VanillaHUD.getMountLinkAmount() : 0) - height + right_height, 0F);
         GlStateManager.scale(scale, scale, 1f);
     }
 
     @Inject(method = "renderAir", at = @At("RETURN"))
     private void popAirMatrix(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return;
         }
         GlStateManager.popMatrix();
@@ -54,7 +54,7 @@ public abstract class Oxygen_GuiIngame_Mixin {
 
     @Redirect(method = "renderAir", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/EntityPlayer;isInsideOfMaterial(Lnet/minecraft/block/material/Material;)Z"))
     private boolean airExample(EntityPlayer player, Material material) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return player.isInsideOfMaterial(material);
         }
         return player.isInsideOfMaterial(material) || HudManager.INSTANCE.getPanelOpen();
@@ -62,15 +62,15 @@ public abstract class Oxygen_GuiIngame_Mixin {
 
     @ModifyArg(method = "renderAir", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V", ordinal = 0))
     private int airFixLeftParam(int left) {
-        if (VanillaHUD.isApec()) return left;
-        if (VanillaHUD2.getOxygen().getAlignment() == 1) {
+        if (VanillaHUDOld.isApec()) return left;
+        if (VanillaHUD.getOxygen().getAlignment() == 1) {
             return left + 81;
         } else return -(left + 9);
     }
 
     @Redirect(method = "renderAir", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity airFixRenderViewEntity(Minecraft instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudManager.INSTANCE.getPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();

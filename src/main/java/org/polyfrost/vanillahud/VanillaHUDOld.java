@@ -8,7 +8,6 @@ import net.hypixel.data.type.GameType;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils;
 import org.polyfrost.oneconfig.api.ui.v1.notifications.Notifications;
-import club.sk1er.patcher.config.OldPatcherConfig;
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import codes.biscuit.skyblockaddons.core.Feature;
 import codes.biscuit.skyblockaddons.features.tablist.TabListParser;
@@ -23,8 +22,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-@net.minecraftforge.fml.common.Mod(modid = VanillaHUD2.MODID, name = VanillaHUD2.NAME, version = VanillaHUD2.VERSION)
-public class VanillaHUD {
+@net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
+public class VanillaHUDOld {
     public static final String MODID = "@ID@";
     public static final String NAME = "@NAME@";
     public static final String VERSION = "@VER@";

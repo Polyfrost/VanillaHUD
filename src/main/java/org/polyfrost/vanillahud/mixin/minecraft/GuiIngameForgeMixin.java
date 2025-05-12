@@ -1,23 +1,18 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
+import dev.deftu.omnicore.client.render.OmniResolution;
 import org.polyfrost.oneconfig.hud.*;
 import org.polyfrost.oneconfig.internal.hud.HudCore;
-import org.polyfrost.universal.UResolution;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.*;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.GuiIngameForge;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.VanillaHUD2;
 import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 import org.polyfrost.vanillahud.hooks.TabHook;
@@ -25,12 +20,7 @@ import org.polyfrost.vanillahud.hud.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import java.util.Random;
-
-import static net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType.FOOD;
-import static net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType.HEALTHMOUNT;
 import static org.polyfrost.vanillahud.hud.Health.healthLink;
 import static org.polyfrost.vanillahud.hud.Hunger.*;
 
@@ -39,12 +29,12 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;shouldDrawHUD()Z"))
     private boolean example(PlayerControllerMP instance) {
-        return instance.shouldDrawHUD() || (HudCore.editing && !VanillaHUD2.isApec());
+        return instance.shouldDrawHUD() || (HudCore.editing && !VanillaHUD.isApec());
     }
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity example(Minecraft instance) {
-        return (HudCore.editing && !VanillaHUD2.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
+        return (HudCore.editing && !VanillaHUD.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
     }
 
 
@@ -66,14 +56,14 @@ public abstract class GuiIngameForgeMixin {
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        boolean flag = !VanillaHUD2.isCompactTab() || HudCore.editing;
+        boolean flag = !VanillaHUD.isCompactTab() || HudCore.editing;
 
         if (flag) {
             if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
                 TabHook.gettingSize = true;
                 GlStateManager.pushMatrix();
                 GlStateManager.scale(0f, 0f, 1f);
-                mc.ingameGUI.getTabList().renderPlayerlist(UResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
+                mc.ingameGUI.getTabList().renderPlayerlist(OmniResolution.getScaledWidth(), mc.theWorld.getScoreboard(), scoreobjective);
                 GlStateManager.popMatrix();
                 TabHook.gettingSize = false;
             } else {
@@ -103,16 +93,16 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))
     private void enableScissor(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD2.isCompactTab()) return;
+        if (VanillaHUD.isCompactTab()) return;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Position position = TabList.hud.position;
-        int scale = (int) UResolution.getScaleFactor();
-        GL11.glScissor((int) (position.getX() * scale), (int) ((UResolution.getScaledHeight() - position.getY() - TabList.animation.get()) * scale), (int) (position.getWidth() * scale), (int) (TabList.animation.get() * scale));
+        int scale = (int) OmniResolution.getScaleFactor();
+        GL11.glScissor((int) (position.getX() * scale), (int) ((OmniResolution.getScaledHeight() - position.getY() - TabList.animation.get()) * scale), (int) (position.getWidth() * scale), (int) (TabList.animation.get() * scale));
     }
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V", shift = At.Shift.AFTER))
     private void disable(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD2.isCompactTab()) return;
+        if (VanillaHUD.isCompactTab()) return;
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 

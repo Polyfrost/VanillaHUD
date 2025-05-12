@@ -3,7 +3,7 @@ package org.polyfrost.vanillahud
 import org.polyfrost.vanillahud.hud.ActionBarHud
 import org.polyfrost.vanillahud.hud.hotbar.*
 
-object VanillaHUD2 {
+object VanillaHUD {
     @JvmStatic
     val oxygen = OxygenHUD()
     @JvmStatic

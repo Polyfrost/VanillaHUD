@@ -6,8 +6,8 @@ import net.minecraft.entity.Entity;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.VanillaHUD2;
 import org.polyfrost.vanillahud.hud.hotbar.HungerHUD;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,10 +34,10 @@ public abstract class Hunger_GuiIngame_Mixin {
 
     @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderFood(II)V"), cancellable = true)
     private void setupHungerTranslateAndScale(float partialTicks, CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return;
         }
-        HungerHUD hud = VanillaHUD2.getHunger();
+        HungerHUD hud = VanillaHUD.getHunger();
         if (hud.getHidden()) {
             post(FOOD);
             ci.cancel();
@@ -45,13 +45,13 @@ public abstract class Hunger_GuiIngame_Mixin {
         }
         float scale = hud.getScale();
         GlStateManager.pushMatrix();
-        GlStateManager.translate((int) hud.getX() + 182, (int) hud.getY() - (hud.getHealthLink() ? VanillaHUD2.getHealthLinkAmount() : 0) - (hud.getMountLink() ? VanillaHUD2.getMountLinkAmount() : 0) - right_height, 0F);
+        GlStateManager.translate((int) hud.getX() + 182, (int) hud.getY() - (hud.getHealthLink() ? VanillaHUD.getHealthLinkAmount() : 0) - (hud.getMountLink() ? VanillaHUD.getMountLinkAmount() : 0) - right_height, 0F);
         GlStateManager.scale(scale, scale, 1F);
     }
 
     @Inject(method = "renderFood", at = @At("HEAD"), cancellable = true, remap = false)
     private void hungerCancel(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return;
         }
         if (!renderFood) {
@@ -62,7 +62,7 @@ public abstract class Hunger_GuiIngame_Mixin {
 
     @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderFood(II)V", shift = At.Shift.AFTER))
     private void hungerReturn(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return;
         }
         GlStateManager.popMatrix();
@@ -70,15 +70,15 @@ public abstract class Hunger_GuiIngame_Mixin {
 
     @ModifyVariable(method = "renderFood", at = @At("STORE"), ordinal = 8, remap = false)
     private int hungerAlignment(int x) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return x;
         }
-        return VanillaHUD2.getHunger().getAlignment() == 1 ? 81 + x : -(x + 9);
+        return VanillaHUD.getHunger().getAlignment() == 1 ? 81 + x : -(x + 9);
     }
 
     @Redirect(method = "renderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity hungerEdit(Minecraft instance) {
-        if (VanillaHUD.isApec()) {
+        if (VanillaHUDOld.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudManager.INSTANCE.getPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();
@@ -86,6 +86,6 @@ public abstract class Hunger_GuiIngame_Mixin {
 
     @Redirect(method = "renderFood", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I"), remap = false)
     private int hungerAnimation(Random instance, int i) {
-        return VanillaHUD2.getHunger().getAnimation() ? instance.nextInt(i) : 1;
+        return VanillaHUD.getHunger().getAnimation() ? instance.nextInt(i) : 1;
     }
 }

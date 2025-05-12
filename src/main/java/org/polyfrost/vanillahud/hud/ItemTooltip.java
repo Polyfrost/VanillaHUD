@@ -9,7 +9,7 @@ import org.polyfrost.oneconfig.renderer.*;
 import org.polyfrost.oneconfig.utils.v1.color.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.spectator.*;
-import org.polyfrost.vanillahud.VanillaHUD2;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.config.HudConfig;
 import net.minecraft.util.EnumChatFormatting;
 import org.polyfrost.vanillahud.mixin.minecraft.GuiIngameAccessor;
@@ -79,7 +79,7 @@ public class ItemTooltip extends HudConfig {
 
         @Override
         protected boolean shouldShow() {
-            if (VanillaHUD2.isApec()) { // I love Apec Mod Minecraft
+            if (VanillaHUD.isApec()) { // I love Apec Mod Minecraft
                 return false;
             }
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) mc.ingameGUI;

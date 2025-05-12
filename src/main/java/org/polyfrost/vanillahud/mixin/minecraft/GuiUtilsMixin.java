@@ -18,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-import static org.polyfrost.vanillahud.hooks.TooltipHook.*;
-
 @Mixin(value = GuiUtils.class, remap = false)
 public class GuiUtilsMixin {
 
