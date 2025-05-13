@@ -1,17 +1,19 @@
 package org.polyfrost.vanillahud.hud
 
-import dev.deftu.omnicore.client.render.OmniGameRendering
+import dev.deftu.omnicore.client.OmniClient
 import dev.deftu.omnicore.client.render.OmniMatrixStack
-import dev.deftu.textile.minecraft.MCTextFormat
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.scoreboard.Score
+import net.minecraft.scoreboard.ScoreObjective
 import net.minecraft.scoreboard.ScorePlayerTeam
+import net.minecraft.util.EnumChatFormatting
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
+import org.polyfrost.vanillahud.utils.drawScaledString
 import kotlin.math.max
 
 class ScoreboardHud(override var width: Float, override var height: Float) : LegacyHud() {
@@ -56,50 +58,55 @@ class ScoreboardHud(override var width: Float, override var height: Float) : Leg
         scaleY: Float
     ) {
         stack.push()
-        stack.scale(scaleX.toDouble(), scaleY.toDouble(), 1.0)
-        stack.translate((x / scaleX).toDouble(), (y / scaleY).toDouble(), 1.0)
+        stack.scale(scaleX, scaleY, 1f)
+        stack.translate(x / scaleX, y / scaleY, 1f)
 
         val objective = mc.theWorld.scoreboard.getObjectiveInDisplaySlot(1)
 
-        GlStateManager.enableBlend()
+        renderObjective(stack, objective)
+
+        stack.pop()
+    }
+
+    fun renderObjective(stack: OmniMatrixStack, objective: ScoreObjective) {
+        GlStateManager.enableBlend() // TODO: Probably use OmniCore, I just didn't feel like reading code for 3 hours
+
+        val fontRenderer = OmniClient.fontRenderer
 
         val scoreboard = objective.scoreboard
-        val scores = scoreboard.getSortedScores(objective)
-        val showPoints = (scorePoints == 2 || (scorePoints == 1 && isNonConsecutive(scores)))
+        val sortedScores = scoreboard.getSortedScores(objective)
+        val showScores = (this.scorePoints == 2 || (this.scorePoints == 1 && isNonConsecutive(sortedScores)))
+
         val displayName = objective.displayName
-        val width = mc.fontRendererObj.getStringWidth(displayName)
+        var displayNameWidth = OmniClient.fontRenderer.getStringWidth(displayName)
 
-        var totalWidth = width
-
-        for (score in scores) {
+        for (score in sortedScores) {
             val team = scoreboard.getPlayersTeam(score.playerName)
-            val totalString = ScorePlayerTeam.formatPlayerName(team, score.playerName) + if (showPoints) ": " + MCTextFormat.RED + score.scorePoints else ""
-            totalWidth = max(width, mc.fontRendererObj.getStringWidth(totalString))
+            val totalString = ScorePlayerTeam.formatPlayerName(team, score.playerName) + (if (showScores) ": " + EnumChatFormatting.RED + score.scorePoints else "")
+            displayNameWidth = max(displayNameWidth, OmniClient.fontRenderer.getStringWidth(totalString))
         }
 
         if (scoreboardTitle) {
-            OmniGameRendering.drawText(stack, displayName, width / 2.0f - totalWidth / 2.0f, 1f, -1)
+            stack.drawScaledString(displayName, width / 2f - displayNameWidth / 2f, 1f, -1, textShadow, 1f)
         }
 
-        stack.translate(0.0f, height, 0.0f)
-
-        var counter = 0
-
-        for (score in scores) {
+        GlStateManager.translate(0f, height, 0f)
+        var counter = 0f
+        for (score in sortedScores) {
             val team = scoreboard.getPlayersTeam(score.playerName)
-            val player = ScorePlayerTeam.formatPlayerName(team, score.playerName)
-            val yPos = -(++counter * mc.fontRendererObj.FONT_HEIGHT).toFloat()
-            OmniGameRendering.drawText(stack, player, 1f, yPos, -1, false)
+            val playerName = ScorePlayerTeam.formatPlayerName(team, score.playerName)
+            val yPos = -++counter * OmniClient.fontRenderer.FONT_HEIGHT
 
-            if (showPoints) {
-                OmniGameRendering.drawText(stack, "$scorePoints", width - mc.fontRendererObj.getStringWidth("$scorePoints") - 1f, yPos, scorePointsColor.rgba, false)
+            stack.drawScaledString(playerName, 1f, yPos, -1, textShadow, 1f)
+
+            if (showScores) {
+                val scorePoints = "${score.scorePoints}"
+                stack.drawScaledString(scorePoints, width / fontRenderer.getStringWidth(scorePoints) - 1, yPos, scorePointsColor.rgba, textShadow, 1f)
             }
         }
 
-        this.width = totalWidth + 2f
-        this.height = scores.size * mc.fontRendererObj.FONT_HEIGHT + (if (scoreboardTitle) 10f else 1f)
-
-        stack.pop()
+        width = displayNameWidth + 2f
+        this.height = sortedScores.size * fontRenderer.FONT_HEIGHT + (if (scoreboardTitle) 10f else 1f)
     }
 
     fun isNonConsecutive(scores: Collection<Score>): Boolean {
