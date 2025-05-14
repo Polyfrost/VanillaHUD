@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud
 
 import org.polyfrost.vanillahud.hud.ActionBarHud
+import org.polyfrost.vanillahud.hud.ScoreboardHud
 import org.polyfrost.vanillahud.hud.hotbar.*
 
 object VanillaHUD {
@@ -19,6 +20,9 @@ object VanillaHUD {
 
     @JvmStatic
     val actionBar = ActionBarHud()
+
+    @JvmStatic
+    val scoreboard = ScoreboardHud()
 
     @JvmStatic
     val healthLinkAmount

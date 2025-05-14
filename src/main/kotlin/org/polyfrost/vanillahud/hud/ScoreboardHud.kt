@@ -10,13 +10,16 @@ import net.minecraft.util.EnumChatFormatting
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
+import org.polyfrost.polyui.component.Drawable
+import org.polyfrost.polyui.unit.Vec2
 import org.polyfrost.vanillahud.utils.drawScaledString
 import kotlin.math.max
 
-class ScoreboardHud(override var width: Float, override var height: Float) : LegacyHud() {
+class ScoreboardHud() : Hud<Drawable>() {
     @Dropdown(
         title = "Show Score Points",
         category = "Score Points",
@@ -50,25 +53,8 @@ class ScoreboardHud(override var width: Float, override var height: Float) : Leg
     )
     var textShadow = 0
 
-    override fun render(
-        stack: OmniMatrixStack,
-        x: Float,
-        y: Float,
-        scaleX: Float,
-        scaleY: Float
-    ) {
-        stack.push()
-        stack.scale(scaleX, scaleY, 1f)
-        stack.translate(x / scaleX, y / scaleY, 1f)
-
-        val objective = mc.theWorld.scoreboard.getObjectiveInDisplaySlot(1)
-
-        renderObjective(stack, objective)
-
-        stack.pop()
-    }
-
-    fun renderObjective(stack: OmniMatrixStack, objective: ScoreObjective) {
+    fun renderObjective(objective: ScoreObjective, height: Float, width: Float): Vec2 {
+        GlStateManager.pushMatrix()
         GlStateManager.enableBlend() // TODO: Probably use OmniCore, I just didn't feel like reading code for 3 hours
 
         val fontRenderer = OmniClient.fontRenderer
@@ -87,7 +73,7 @@ class ScoreboardHud(override var width: Float, override var height: Float) : Leg
         }
 
         if (scoreboardTitle) {
-            stack.drawScaledString(displayName, width / 2f - displayNameWidth / 2f, 1f, -1, textShadow, 1f)
+            drawScaledString(displayName, width / 2f - displayNameWidth / 2f, 1f, -1, textShadow, 1f)
         }
 
         GlStateManager.translate(0f, height, 0f)
@@ -97,16 +83,19 @@ class ScoreboardHud(override var width: Float, override var height: Float) : Leg
             val playerName = ScorePlayerTeam.formatPlayerName(team, score.playerName)
             val yPos = -++counter * OmniClient.fontRenderer.FONT_HEIGHT
 
-            stack.drawScaledString(playerName, 1f, yPos, -1, textShadow, 1f)
+            drawScaledString(playerName, 1f, yPos, -1, textShadow, 1f)
 
             if (showScores) {
                 val scorePoints = "${score.scorePoints}"
-                stack.drawScaledString(scorePoints, width / fontRenderer.getStringWidth(scorePoints) - 1, yPos, scorePointsColor.rgba, textShadow, 1f)
+                drawScaledString(scorePoints, width / fontRenderer.getStringWidth(scorePoints) - 1, yPos, scorePointsColor.rgba, textShadow, 1f)
             }
         }
 
-        width = displayNameWidth + 2f
-        this.height = sortedScores.size * fontRenderer.FONT_HEIGHT + (if (scoreboardTitle) 10f else 1f)
+        GlStateManager.popMatrix()
+
+        val h = sortedScores.size * fontRenderer.FONT_HEIGHT + (if (scoreboardTitle) 10f else 1f)
+        val w = displayNameWidth + 2f
+        return Vec2(h, w)
     }
 
     fun isNonConsecutive(scores: Collection<Score>): Boolean {
@@ -125,8 +114,20 @@ class ScoreboardHud(override var width: Float, override var height: Float) : Leg
         return Category.INFO
     }
 
+    override fun create(): Drawable {
+        return object : Drawable() {
+            override fun render() {
+                val objective = mc.theWorld.scoreboard.getObjectiveInDisplaySlot(1)
+                val size = renderObjective(objective, height, width)
+                height = size.x
+                width = size.y
+            }
+
+        }
+    }
+
     override fun update(): Boolean {
+        // TODO: Properly implement
         return true
-        // TODO: Actually implement this
     }
 }
