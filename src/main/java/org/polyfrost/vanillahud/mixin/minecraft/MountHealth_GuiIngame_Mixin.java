@@ -11,7 +11,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.hud.hotbar.MountHealthHUD;
+import org.polyfrost.vanillahud.oldhuds.hotbar.MountHealthHUD;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

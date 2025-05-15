@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.hud.hotbar
+package org.polyfrost.vanillahud.oldhuds.hotbar
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch

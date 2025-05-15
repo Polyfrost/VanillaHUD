@@ -1,7 +1,7 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
-import org.polyfrost.oneconfig.internal.hud.HudCore;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.oneconfig.renderer.TextRenderer;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
@@ -80,14 +80,14 @@ public abstract class GuiPlayerTabOverlayMixin {
     @Redirect(method = "renderPlayerlist", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;header:Lnet/minecraft/util/IChatComponent;"))
     private IChatComponent modifyHeader(GuiPlayerTabOverlay instance) {
         if (!TabList.TabHud.showHeader) return null;
-        if (HudCore.editing) return tab$exampleHeader;
+        if (HudManager.isPanelOpen()) return tab$exampleHeader;
         return header;
     }
 
     @Redirect(method = "renderPlayerlist", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;footer:Lnet/minecraft/util/IChatComponent;"))
     private IChatComponent modifyFooter(GuiPlayerTabOverlay instance) {
         if (!TabList.TabHud.showFooter) return null;
-        if (HudCore.editing) return tab$exampleFooter;
+        if (HudManager.isPanelOpen()) return tab$exampleFooter;
         return footer;
     }
 
@@ -116,7 +116,7 @@ public abstract class GuiPlayerTabOverlayMixin {
                 }
             }
         }
-        return renderingList = HudCore.editing ? TabListManager.devInfo : list;
+        return renderingList = HudManager.isPanelOpen() ? TabListManager.devInfo : list;
     }
 
     @ModifyArgs(method = "renderPlayerlist", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;drawRect(IIIII)V", ordinal = 0))
@@ -144,7 +144,7 @@ public abstract class GuiPlayerTabOverlayMixin {
 
     @ModifyConstant(method = "renderPlayerlist", constant = @Constant(intValue = 20, ordinal = 0))
     private int limit(int constant) {
-        return (HudCore.editing ? 10 : constant);
+        return (HudManager.isPanelOpen() ? 10 : constant);
     }
 
     @Inject(method = "renderPlayerlist", at = @At(value = "INVOKE",

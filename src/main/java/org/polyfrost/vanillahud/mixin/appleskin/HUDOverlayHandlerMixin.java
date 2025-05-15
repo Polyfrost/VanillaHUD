@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.mixin.appleskin;
 
-import org.polyfrost.vanillahud.hud.Hunger;
+import org.polyfrost.vanillahud.VanillaHUD;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -40,22 +40,21 @@ public class HUDOverlayHandlerMixin {
     @Dynamic("Apple Skin")
     @ModifyVariable(method = "drawSaturationOverlay", at = @At("STORE"), ordinal = 6)
     private static int Saturation(int x) {
-        return Hunger.hud.alignment ? 81 + x : - (x + 9);
+        return VanillaHUD.getHunger().getAlignment() == 0 ? 81 + x : - (x + 9);
     }
 
     @Dynamic("Apple Skin")
     @ModifyVariable(method = "drawHungerOverlay", at = @At("STORE"), ordinal = 9)
     private static int overlay(int x) {
-        return Hunger.hud.alignment ? 81 + x : - (x + 9);
+        return VanillaHUD.getHunger().getAlignment() == 0 ? 81 + x : - (x + 9);
     }
 
     @Dynamic("Apple Skin")
     @ModifyArgs(method = "drawExhaustionOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiIngame;func_73729_b(IIIIII)V"))
     private static void modify(Args args) {
         int width = args.get(4);
-        int x = Hunger.hud.alignment ? 81 - width : 0;
+        int x = VanillaHUD.getHunger().getAlignment() == 0 ? 81 - width : 0;
         args.set(4, Math.min(width, 81));
         args.set(0, x);
     }
-
 }

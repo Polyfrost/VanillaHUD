@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.hud
+package org.polyfrost.vanillahud.oldhuds
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud

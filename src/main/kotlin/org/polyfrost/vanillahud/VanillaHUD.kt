@@ -1,34 +1,10 @@
 package org.polyfrost.vanillahud
 
-import org.polyfrost.vanillahud.hud.ActionBarHud
-import org.polyfrost.vanillahud.hud.ScoreboardHud
-import org.polyfrost.vanillahud.hud.hotbar.*
+import net.minecraftforge.fml.common.Mod
+import org.polyfrost.vanillahud.hud.bars.HungerHud
 
+@Mod(modid = Constants.ID, name = Constants.NAME, version = Constants.VERSION)
 object VanillaHUD {
     @JvmStatic
-    val oxygen = OxygenHUD()
-    @JvmStatic
-    val armor = ArmorHUD()
-    @JvmStatic
-    val experience = ExperienceHUD()
-    @JvmStatic
-    val health = HealthHUD()
-    @JvmStatic
-    val hunger = HungerHUD()
-    @JvmStatic
-    val mount = MountHealthHUD()
-
-    @JvmStatic
-    val actionBar = ActionBarHud()
-
-    @JvmStatic
-    val scoreboard = ScoreboardHud()
-
-    @JvmStatic
-    val healthLinkAmount
-        get() = health.healthLink
-
-    @JvmStatic
-    val mountLinkAmount
-        get() = mount.mountLink
+    val hunger = HungerHud()
 }

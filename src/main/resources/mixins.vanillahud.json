@@ -21,7 +21,7 @@
     "minecraft.GuiSpectatorMixin",
     "minecraft.GuiUtilsMixin",
     "minecraft.MinecraftAccessor",
-    "appleskin.HUDOverlayHandlerMixin",
+    "appleskin.HUDOverlayHandlerMixin"
   ],
   "mixins": [
     "skyblock.RenderListenerMixin",

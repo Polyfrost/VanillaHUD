@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.hud.hotbar
+package org.polyfrost.vanillahud.hud.bars
 
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.SharedMonsterAttributes
@@ -8,9 +8,10 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.polyui.unit.Vec2
+import org.polyfrost.vanillahud.oldhuds.hotbar.HotbarHUDWrapper
 import kotlin.math.max
 
-class HealthHUD : HotbarHUDWrapper(Vec2(180f, 18f)) {
+class HealthHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
     @RadioButton(title = "Mode", options = ["Down", "Up"])
     var mode: Int = 1
 

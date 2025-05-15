@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.hud
+package org.polyfrost.vanillahud.hud.wrapper
 
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.polyui.component.Drawable

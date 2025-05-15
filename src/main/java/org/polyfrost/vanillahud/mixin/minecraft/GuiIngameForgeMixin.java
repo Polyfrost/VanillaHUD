@@ -1,8 +1,8 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
 import dev.deftu.omnicore.client.render.OmniResolution;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.oneconfig.hud.*;
-import org.polyfrost.oneconfig.internal.hud.HudCore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -29,12 +29,12 @@ public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;shouldDrawHUD()Z"))
     private boolean example(PlayerControllerMP instance) {
-        return instance.shouldDrawHUD() || (HudCore.editing && !VanillaHUD.isApec());
+        return instance.shouldDrawHUD() || (HudManager.isPanelOpen() && !VanillaHUD.isApec());
     }
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity example(Minecraft instance) {
-        return (HudCore.editing && !VanillaHUD.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
+        return (HudManager.isPanelOpen() && !VanillaHUD.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
     }
 
 
@@ -56,10 +56,10 @@ public abstract class GuiIngameForgeMixin {
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        boolean flag = !VanillaHUD.isCompactTab() || HudCore.editing;
+        boolean flag = !VanillaHUD.isCompactTab() || HudManager.isPanelOpen();
 
         if (flag) {
-            if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudCore.editing) {
+            if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudManager.isPanelOpen()) {
                 TabHook.gettingSize = true;
                 GlStateManager.pushMatrix();
                 GlStateManager.scale(0f, 0f, 1f);
@@ -80,15 +80,15 @@ public abstract class GuiIngameForgeMixin {
             toggled = down;
         }
 
-        TabList.hud.doAnimation(toggled || HudCore.editing);
+        TabList.hud.doAnimation(toggled || HudManager.isPanelOpen());
         if (flag) TabList.hud.drawBG();
 
-        return (toggled || !TabList.animation.isFinished() || HudCore.editing) && TabList.hud.shouldRender();
+        return (toggled || !TabList.animation.isFinished() || HudManager.isPanelOpen()) && TabList.hud.shouldRender();
     }
 
     @Redirect(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))
     private boolean tabExample2(Minecraft instance) {
-        return instance.isIntegratedServerRunning() && !HudCore.editing;
+        return instance.isIntegratedServerRunning() && !HudManager.isPanelOpen();
     }
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))

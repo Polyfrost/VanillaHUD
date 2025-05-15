@@ -2,8 +2,8 @@ package org.polyfrost.vanillahud.mixin.skyblock;
 
 import at.hannibal2.skyhanni.config.features.misc.compacttablist.CompactTabListConfig;
 import at.hannibal2.skyhanni.utils.TabListData;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.oneconfig.hud.Position;
-import org.polyfrost.oneconfig.internal.hud.HudCore;
 import org.polyfrost.universal.UResolution;
 import org.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.gui.FontRenderer;
@@ -30,7 +30,7 @@ public class TabListRendererMixin_SkyHanni {
     @Dynamic
     @Inject(method = "onRenderOverlay*", at = @At("HEAD"), cancellable = true, remap = false)
     private void edit(CallbackInfo ci) {
-        if (HudCore.editing) ci.cancel();
+        if (HudManager.isPanelOpen()) ci.cancel();
     }
 
     @Dynamic

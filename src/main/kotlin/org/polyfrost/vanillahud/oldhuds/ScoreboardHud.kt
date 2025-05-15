@@ -1,7 +1,6 @@
-package org.polyfrost.vanillahud.hud
+package org.polyfrost.vanillahud.oldhuds
 
 import dev.deftu.omnicore.client.OmniClient
-import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.scoreboard.Score
 import net.minecraft.scoreboard.ScoreObjective
@@ -11,7 +10,6 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.Drawable

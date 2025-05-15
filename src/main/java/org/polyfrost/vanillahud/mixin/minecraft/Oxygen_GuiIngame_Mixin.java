@@ -10,7 +10,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.hud.hotbar.OxygenHUD;
+import org.polyfrost.vanillahud.oldhuds.hotbar.OxygenHUD;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

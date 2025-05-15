@@ -1,8 +1,8 @@
-package org.polyfrost.vanillahud.hud.hotbar
+package org.polyfrost.vanillahud.oldhuds.hotbar
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.polyui.unit.Vec2
-import org.polyfrost.vanillahud.hud.WrapperHUD
+import org.polyfrost.vanillahud.hud.wrapper.WrapperHUD
 
 abstract class HotbarHUDWrapper(size: Vec2) : WrapperHUD(size) {
     @RadioButton(
