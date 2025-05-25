@@ -9,7 +9,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.oldhuds.hotbar.HealthHUD;
+import org.polyfrost.vanillahud.hud.bars.HealthHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Random;
-
 
 @Mixin(GuiIngameForge.class)
 public abstract class Health_GuiIngame_Mixin {
@@ -34,7 +33,7 @@ public abstract class Health_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return;
         }
-        HealthHUD hud = VanillaHUD.getHealth();
+        HealthHud hud = VanillaHUD.getHealth();
         if (hud.getHidden()) {
             post(RenderGameOverlayEvent.ElementType.HEALTH);
             ci.cancel();
@@ -60,7 +59,7 @@ public abstract class Health_GuiIngame_Mixin {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
-        HealthHUD hud = VanillaHUD.getHealth();
+        HealthHud hud = VanillaHUD.getHealth();
         if (textureX < 61 || ((textureX - 16) / 9) % 2 == 0 || hud.getAlignment() == 0) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
         } else {
@@ -81,7 +80,7 @@ public abstract class Health_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return y;
         }
-        if (HudManager.INSTANCE.getPanelOpen()) return 0;
+        if (HudManager.isPanelOpen()) return 0;
         if (VanillaHUD.getHealth().getMode() == 1) return y;
         return -y;
     }
@@ -91,7 +90,7 @@ public abstract class Health_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return instance.getRenderViewEntity();
         }
-        return HudManager.INSTANCE.getPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();
+        return HudManager.isPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();
     }
 
 

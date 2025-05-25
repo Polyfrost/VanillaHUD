@@ -5,6 +5,7 @@ import org.polyfrost.universal.UResolution;
 import net.minecraft.client.gui.GuiSpectator;
 import net.minecraft.client.gui.spectator.ISpectatorMenuObject;
 import net.minecraft.client.renderer.GlStateManager;
+import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.Hotbar;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +21,7 @@ public abstract class GuiSpectatorMixin {
 
     @ModifyArg(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;func_175258_a(Lnet/minecraft/client/gui/ScaledResolution;FIFLnet/minecraft/client/gui/spectator/categories/SpectatorDetails;)V"), index = 3)
     private float y(float f) {
-        if (VanillaHUD.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return f;
         }
         if (!Hotbar.hud.isEnabled()) return f;
@@ -29,7 +30,7 @@ public abstract class GuiSpectatorMixin {
 
     @ModifyArgs(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;drawTexturedModalRect(FFIIII)V"))
     private void setPosition(Args args) {
-        if (VanillaHUD.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         if (!Hotbar.hud.isEnabled()) return;
@@ -41,7 +42,7 @@ public abstract class GuiSpectatorMixin {
 
     @Inject(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;drawTexturedModalRect(FFIIII)V", ordinal = 0))
     private void set(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         GlStateManager.pushMatrix();
@@ -51,7 +52,7 @@ public abstract class GuiSpectatorMixin {
 
     @Inject(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderHelper;disableStandardItemLighting()V"))
     private void pop(CallbackInfo ci) {
-        if (VanillaHUD.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         GlStateManager.popMatrix();
@@ -59,7 +60,7 @@ public abstract class GuiSpectatorMixin {
 
     @Redirect(method = "func_175258_a", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiSpectator;func_175266_a(IIFFLnet/minecraft/client/gui/spectator/ISpectatorMenuObject;)V"))
     private void icon(GuiSpectator instance, int i, int j, float f, float g, ISpectatorMenuObject iSpectatorMenuObject) {
-        if (VanillaHUD.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             func_175266_a(i, j, f, g, iSpectatorMenuObject);
             return;
         }

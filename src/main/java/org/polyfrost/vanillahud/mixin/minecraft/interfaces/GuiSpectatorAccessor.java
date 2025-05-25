@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin.minecraft;
+package org.polyfrost.vanillahud.mixin.minecraft.interfaces;
 
 import net.minecraft.client.gui.GuiSpectator;
 import net.minecraft.client.gui.spectator.SpectatorMenu;

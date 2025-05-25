@@ -2,7 +2,6 @@ package org.polyfrost.vanillahud.mixin.minecraft;
 
 import dev.deftu.omnicore.client.render.OmniResolution;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.oneconfig.hud.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -12,8 +11,8 @@ import net.minecraft.entity.*;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.GuiIngameForge;
 import org.lwjgl.opengl.GL11;
+import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.config.ModConfig;
 import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.*;
@@ -21,28 +20,24 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static org.polyfrost.vanillahud.hud.Health.healthLink;
-import static org.polyfrost.vanillahud.hud.Hunger.*;
+import static org.polyfrost.vanillahud.utils.TabListManager.mc;
 
 @Mixin(value = GuiIngameForge.class)
 public abstract class GuiIngameForgeMixin {
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;shouldDrawHUD()Z"))
     private boolean example(PlayerControllerMP instance) {
-        return instance.shouldDrawHUD() || (HudManager.isPanelOpen() && !VanillaHUD.isApec());
+        return instance.shouldDrawHUD() || (HudManager.isPanelOpen() && !Compatibility.INSTANCE.isApec());
     }
 
     @Redirect(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity example(Minecraft instance) {
-        return (HudManager.isPanelOpen() && !VanillaHUD.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
+        return (HudManager.isPanelOpen() && !Compatibility.INSTANCE.isApec()) ? instance.thePlayer : instance.getRenderViewEntity();
     }
-
-
-
 
     @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;renderPlayerList(II)V"))
     private void setCheck(float partialTicks, CallbackInfo ci) {
-        TabList.isGuiIngame = true;
+        VanillaHUD.getPlayerList().setGuiIngame(true);
     }
 
     @Unique

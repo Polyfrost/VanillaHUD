@@ -7,12 +7,48 @@ import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
+import org.polyfrost.vanillahud.hud.PlayerListHud
+import org.polyfrost.vanillahud.hud.bars.ArmorHud
+import org.polyfrost.vanillahud.hud.bars.ExperienceHud
+import org.polyfrost.vanillahud.hud.bars.HealthHud
+import org.polyfrost.vanillahud.hud.bars.HotbarHud
 import org.polyfrost.vanillahud.hud.bars.HungerHud
+import org.polyfrost.vanillahud.hud.bars.MountHealthHud
+import org.polyfrost.vanillahud.hud.bars.OxygenHud
 
 @Mod(modid = Constants.ID, name = Constants.NAME, version = Constants.VERSION)
 object VanillaHUD {
     @JvmStatic
+    val armor = ArmorHud()
+
+    @JvmStatic
+    val experience = ExperienceHud()
+
+    @JvmStatic
+    val health = HealthHud()
+
+    @JvmStatic
+    val hotbar = HotbarHud()
+
+    @JvmStatic
     val hunger = HungerHud()
+
+    @JvmStatic
+    val mount = MountHealthHud()
+
+    @JvmStatic
+    val oxygen = OxygenHud()
+
+    @JvmStatic
+    val healthLinkAmount
+        get() = health.healthLink
+
+    @JvmStatic
+    val mountLinkAmount
+        get() = mount.mountLink
+
+    @JvmStatic
+    val playerList = PlayerListHud()
 
     fun init(event: FMLInitializationEvent) {
 

@@ -11,7 +11,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.oldhuds.hotbar.MountHealthHUD;
+import org.polyfrost.vanillahud.hud.bars.MountHealthHud;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,7 +38,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
         }
         Entity entity = instance.ridingEntity;
 
-        return (entity instanceof EntityLivingBase) ? entity : HudManager.INSTANCE.getPanelOpen() ? instance : null;
+        return (entity instanceof EntityLivingBase) ? entity : HudManager.isPanelOpen() ? instance : null;
     }
 
     @Dynamic
@@ -68,7 +68,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return instance.getRenderViewEntity();
         }
-        return HudManager.INSTANCE.getPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();
+        return HudManager.isPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();
     }
 
     @ModifyConstant(method = "renderHealthMount", constant = @Constant(intValue = 10, ordinal = 1), remap = false)
@@ -76,7 +76,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return constant;
         }
-        if (HudManager.INSTANCE.getPanelOpen()) return 0;
+        if (HudManager.isPanelOpen()) return 0;
         return (VanillaHUD.getMount().getMode() == 1 ? 1 : -1) * 10;
     }
 
@@ -85,7 +85,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return;
         }
-        MountHealthHUD hud = VanillaHUD.getMount();
+        MountHealthHud hud = VanillaHUD.getMount();
         if (hud.getHidden()) {
             ci.cancel();
             post(HEALTHMOUNT);

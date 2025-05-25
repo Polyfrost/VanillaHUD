@@ -9,7 +9,7 @@ import net.minecraftforge.common.ForgeHooks;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.oldhuds.hotbar.ArmorHUD;
+import org.polyfrost.vanillahud.hud.bars.ArmorHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,7 +30,7 @@ public abstract class Armor_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return;
         }
-        ArmorHUD hud = VanillaHUD.getArmor();
+        ArmorHud hud = VanillaHUD.getArmor();
         if (hud.getHidden()) {
             post(RenderGameOverlayEvent.ElementType.ARMOR);
             ci.cancel();
@@ -56,7 +56,7 @@ public abstract class Armor_GuiIngame_Mixin {
             return ForgeHooks.getTotalArmorValue(player);
         }
         int value = ForgeHooks.getTotalArmorValue(player);
-        return HudManager.INSTANCE.getPanelOpen() ? (value > 0 ? value : 10) : value;
+        return HudManager.isPanelOpen() ? (value > 0 ? value : 10) : value;
     }
 
     @Redirect(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
@@ -65,7 +65,7 @@ public abstract class Armor_GuiIngame_Mixin {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
-        ArmorHUD hud = VanillaHUD.getArmor();
+        ArmorHud hud = VanillaHUD.getArmor();
         int left = hud.getAlignment() == 1 ? 72 - x : x;
         if (hud.getAlignment() == 1 && textureX == 25) {
             Gui.drawScaledCustomSizeModalRect(left, y, textureX + 9, textureY, -9, 9, 9, 9, 256, 256);

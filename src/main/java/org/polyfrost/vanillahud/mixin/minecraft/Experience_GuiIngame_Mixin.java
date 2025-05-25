@@ -7,7 +7,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.VanillaHUDOld;
 import org.polyfrost.vanillahud.VanillaHUD;
-import org.polyfrost.vanillahud.oldhuds.hotbar.ExperienceHUD;
+import org.polyfrost.vanillahud.hud.bars.ExperienceHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,7 +26,7 @@ public abstract class Experience_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return;
         }
-        ExperienceHUD hud = VanillaHUD.getExperience();
+        ExperienceHud hud = VanillaHUD.getExperience();
         if (hud.getHidden()) {
             post(RenderGameOverlayEvent.ElementType.EXPERIENCE);
             ci.cancel();
@@ -59,6 +59,6 @@ public abstract class Experience_GuiIngame_Mixin {
         if (VanillaHUDOld.isApec()) {
             return instance.gameIsSurvivalOrAdventure();
         }
-        return HudManager.INSTANCE.getPanelOpen() || instance.gameIsSurvivalOrAdventure();
+        return HudManager.isPanelOpen() || instance.gameIsSurvivalOrAdventure();
     }
 }

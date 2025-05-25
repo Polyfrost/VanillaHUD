@@ -1,8 +1,6 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
-import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.oneconfig.renderer.TextRenderer;
 import com.google.common.collect.Ordering;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -10,9 +8,10 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.scoreboard.*;
 import net.minecraft.util.*;
+import org.polyfrost.polyui.color.PolyColor;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.TabHook;
-import org.polyfrost.vanillahud.hud.TabList;
+import org.polyfrost.vanillahud.mixin.minecraft.interfaces.GuiPlayerTabOverlayAccessor;
 import org.polyfrost.vanillahud.utils.TabListManager;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -20,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
+
+import static org.polyfrost.vanillahud.utils.TempUtilsKt.drawScaledString;
 
 // 1100 priority to load before Patcher
 @Mixin(value = GuiPlayerTabOverlay.class, priority = 1100)
@@ -166,7 +167,7 @@ public abstract class GuiPlayerTabOverlayMixin {
             GlStateManager.enableBlend();
             GlStateManager.enableAlpha();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-            TextRenderer.drawScaledString(text, x, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1);
+            drawScaledString(text, x, y, color, TabList.TabHud.textType, 1);
             GlStateManager.disableAlpha();
             GlStateManager.disableBlend();
             GlStateManager.popMatrix();
@@ -232,7 +233,7 @@ public abstract class GuiPlayerTabOverlayMixin {
             boolean offset = TabList.TabHud.numberPing && TabList.TabHud.hideFalsePing && (ping <= 1 || ping >= 999) || !TabList.TabHud.showPing;
             float textWidth = mc.fontRendererObj.getStringWidth(text);
             float textX = offset ? entryX + entryWidth - textWidth - 1 : x;
-            TextRenderer.drawScaledString(text, textX, y, color, TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
+            drawScaledString(text, textX, y, color, TabList.TabHud.textType, 1F);
         }
         return 0;
     }
@@ -244,15 +245,15 @@ public abstract class GuiPlayerTabOverlayMixin {
         if (TabList.TabHud.numberPing) {
             int ping = networkPlayerInfoIn.getResponseTime();
             if (TabList.TabHud.hideFalsePing && (ping <= 1 || ping >= 999)) return;
-            OneColor color = tab$getColor(ping);
+            PolyColor color = tab$getColor(ping);
             String pingString = String.valueOf(ping);
             int textWidth = mc.fontRendererObj.getStringWidth(String.valueOf(ping));
             if (!TabList.TabHud.pingType) {
                 GlStateManager.scale(0.5F, 0.5F, 0.5F);
-                TextRenderer.drawScaledString(pingString, 2 * (x + width) - textWidth - 4, 2 * y + 4, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
+                drawScaledString(pingString, 2 * (x + width) - textWidth - 4, 2 * y + 4, color.getRgba(), TabList.TabHud.textType, 1F);
                 GlStateManager.scale(2F, 2F, 2F);
             } else
-                TextRenderer.drawScaledString(pingString, x + width - textWidth - 1, y, color.getRGB(), TextRenderer.TextType.toType(TabList.TabHud.textType), 1F);
+                drawScaledString(pingString, x + width - textWidth - 1, y, color.getRgba(), TabList.TabHud.textType, 1F);
         } else {
             GlStateManager.pushMatrix();
             GlStateManager.enableBlend();
@@ -266,7 +267,7 @@ public abstract class GuiPlayerTabOverlayMixin {
     }
 
     @Unique
-    private static OneColor tab$getColor(int ping) {
+    private static PolyColor tab$getColor(int ping) {
         return ping >= 400 ? TabList.TabHud.pingLevelSix
                 : ping >= 300 ? TabList.TabHud.pingLevelFive
                 : ping >= 200 ? TabList.TabHud.pingLevelFour

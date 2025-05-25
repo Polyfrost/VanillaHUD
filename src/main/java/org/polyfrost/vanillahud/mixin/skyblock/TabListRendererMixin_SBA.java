@@ -11,7 +11,7 @@ import net.minecraft.util.IChatComponent;
 import org.lwjgl.opengl.GL11;
 import org.polyfrost.vanillahud.hooks.TabHook;
 import org.polyfrost.vanillahud.hud.TabList;
-import org.polyfrost.vanillahud.mixin.minecraft.GuiPlayerTabOverlayAccessor;
+import org.polyfrost.vanillahud.mixin.minecraft.interfaces.GuiPlayerTabOverlayAccessor;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;

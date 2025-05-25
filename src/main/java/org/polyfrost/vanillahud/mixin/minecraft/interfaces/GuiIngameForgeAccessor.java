@@ -1,4 +1,4 @@
-package org.polyfrost.vanillahud.mixin.minecraft;
+package org.polyfrost.vanillahud.mixin.minecraft.interfaces;
 
 import net.minecraftforge.client.GuiIngameForge;
 import org.spongepowered.asm.mixin.Mixin;
