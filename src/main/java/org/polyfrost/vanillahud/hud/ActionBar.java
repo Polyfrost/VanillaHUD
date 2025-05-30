@@ -98,7 +98,7 @@ public class ActionBar extends HudConfig {
         protected String getText(boolean example) {
             GuiIngameAccessor ingameGUI = (GuiIngameAccessor) UMinecraft.getMinecraft().ingameGUI;
 
-            if (ingameGUI == null || ingameGUI.getRecordPlaying() == null || ingameGUI.getRecordPlaying().isEmpty() || !this.shouldShow() && example) {
+            if (example && (ingameGUI == null || ingameGUI.getRecordPlaying() == null || ingameGUI.getRecordPlaying().isEmpty() || !this.shouldShow())) {
                 this.opacity = 255;
                 return EXAMPLE_TEXT;
             }
