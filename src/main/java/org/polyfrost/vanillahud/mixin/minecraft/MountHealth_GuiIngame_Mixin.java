@@ -9,7 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.vanillahud.VanillaHUDOld;
+import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.bars.MountHealthHud;
 import org.spongepowered.asm.mixin.Dynamic;
@@ -33,7 +33,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
 
     @Redirect(method = "renderHealthMount", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/EntityPlayer;ridingEntity:Lnet/minecraft/entity/Entity;"))
     private Entity mountExample(EntityPlayer instance) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return instance.ridingEntity;
         }
         Entity entity = instance.ridingEntity;
@@ -44,7 +44,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
     @Dynamic
     @ModifyVariable(method = "renderHealthMount", at = @At("STORE"), ordinal = 13, remap = false)
     private int mountAlignment(int x) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return x;
         }
         return VanillaHUD.getMount().getAlignment() == 1 ? 81 + x : -(x + 9);
@@ -52,7 +52,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
 
     @Redirect(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
     private void mountFlip(GuiIngameForge instance, int x, int y, int textureX, int textureY, int width, int height) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
@@ -65,7 +65,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
 
     @Redirect(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity mountEdit(Minecraft instance) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudManager.isPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();
@@ -73,7 +73,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
 
     @ModifyConstant(method = "renderHealthMount", constant = @Constant(intValue = 10, ordinal = 1), remap = false)
     private int mountMode(int constant) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return constant;
         }
         if (HudManager.isPanelOpen()) return 0;
@@ -82,7 +82,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
 
     @Inject(method = "renderHealthMount", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V"), cancellable = true)
     private void mount(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         MountHealthHud hud = VanillaHUD.getMount();
@@ -99,7 +99,7 @@ public abstract class MountHealth_GuiIngame_Mixin {
 
     @Inject(method = "renderHealthMount", at = @At("RETURN"), remap = false)
     private void mountReturn(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         GlStateManager.popMatrix();

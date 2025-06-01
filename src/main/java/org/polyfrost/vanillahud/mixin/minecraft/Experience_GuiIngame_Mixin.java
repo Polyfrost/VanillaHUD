@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.vanillahud.VanillaHUDOld;
+import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.bars.ExperienceHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +23,7 @@ public abstract class Experience_GuiIngame_Mixin {
 
     @Inject(method = {"renderExperience", "renderJumpBar"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;color(FFFF)V", ordinal = 0), cancellable = true)
     private void setupExpTranslationAndScale(int width, int height, CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         ExperienceHud hud = VanillaHUD.getExperience();
@@ -40,7 +40,7 @@ public abstract class Experience_GuiIngame_Mixin {
 
     @Inject(method = {"renderExperience", "renderJumpBar"}, at = @At("RETURN"), remap = false)
     private void popExpMatrix(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         GlStateManager.popMatrix();
@@ -48,7 +48,7 @@ public abstract class Experience_GuiIngame_Mixin {
 
     @ModifyArg(method = "renderExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;drawString(Ljava/lang/String;III)I"), index = 1)
     private int expLevelHeight(int yIn) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return yIn;
         }
         return yIn + 4 - (int) VanillaHUD.getExperience().getExpHeight();
@@ -56,7 +56,7 @@ public abstract class Experience_GuiIngame_Mixin {
 
     @Redirect(method = "renderExperience", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;gameIsSurvivalOrAdventure()Z"))
     private boolean expExample(PlayerControllerMP instance) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return instance.gameIsSurvivalOrAdventure();
         }
         return HudManager.isPanelOpen() || instance.gameIsSurvivalOrAdventure();

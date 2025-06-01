@@ -7,7 +7,7 @@ import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.ForgeHooks;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.vanillahud.VanillaHUDOld;
+import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.bars.ArmorHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +27,7 @@ public abstract class Armor_GuiIngame_Mixin {
 
     @Inject(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"), cancellable = true)
     private void setupArmorTranslationAndScale(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         ArmorHud hud = VanillaHUD.getArmor();
@@ -44,7 +44,7 @@ public abstract class Armor_GuiIngame_Mixin {
 
     @Inject(method = "renderArmor", at = @At("RETURN"), remap = false)
     private void popArmorMatrix(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         GlStateManager.popMatrix();
@@ -52,7 +52,7 @@ public abstract class Armor_GuiIngame_Mixin {
 
     @Redirect(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/common/ForgeHooks;getTotalArmorValue(Lnet/minecraft/entity/player/EntityPlayer;)I"), remap = false)
     private int armorExample(EntityPlayer player) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return ForgeHooks.getTotalArmorValue(player);
         }
         int value = ForgeHooks.getTotalArmorValue(player);
@@ -61,7 +61,7 @@ public abstract class Armor_GuiIngame_Mixin {
 
     @Redirect(method = "renderArmor", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
     private void armorFlip(GuiIngameForge instance, int x, int y, int textureX, int textureY, int width, int height) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }

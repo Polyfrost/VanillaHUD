@@ -8,13 +8,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import org.polyfrost.oneconfig.api.ui.v1.Notifications
 import org.polyfrost.vanillahud.hud.PlayerListHud
-import org.polyfrost.vanillahud.hud.bars.ArmorHud
-import org.polyfrost.vanillahud.hud.bars.ExperienceHud
-import org.polyfrost.vanillahud.hud.bars.HealthHud
-import org.polyfrost.vanillahud.hud.bars.HotbarHud
-import org.polyfrost.vanillahud.hud.bars.HungerHud
-import org.polyfrost.vanillahud.hud.bars.MountHealthHud
-import org.polyfrost.vanillahud.hud.bars.OxygenHud
+import org.polyfrost.vanillahud.hud.bars.*
+import org.polyfrost.vanillahud.utils.TabListManager
 
 @Mod(modid = Constants.ID, name = Constants.NAME, version = Constants.VERSION)
 object VanillaHUD {
@@ -50,10 +45,12 @@ object VanillaHUD {
     @JvmStatic
     val playerList = PlayerListHud()
 
+    @Mod.EventHandler
     fun init(event: FMLInitializationEvent) {
-
+        TabListManager.asyncUpdateList()
     }
 
+    @Mod.EventHandler
     fun postInit(event: FMLPostInitializationEvent) {
         if (Loader.isModLoaded("bossbar_customizer")) {
             Notifications.enqueue(
@@ -70,6 +67,8 @@ object VanillaHUD {
                 "Sidebar Mod has been replaced by VanillaHUD! (They will NOT work together)"
             )
         }
+
+        Compatibility
     }
 }
 

@@ -16,20 +16,16 @@
     "minecraft.GuiIngameMixin",
     "minecraft.GuiPlayerTabOverlayMixin",
     "minecraft.GuiSpectatorMixin",
-    "minecraft.GuiUtilsMixin",
     "minecraft.Health_GuiIngame_Mixin",
     "minecraft.Hunger_GuiIngame_Mixin",
     "minecraft.MountHealth_GuiIngame_Mixin",
     "minecraft.Oxygen_GuiIngame_Mixin",
-    "minecraft.ScrollCancel_GuiContainerCreative_Mixin",
     "minecraft.interfaces.GuiIngameAccessor",
     "minecraft.interfaces.GuiIngameForgeAccessor",
     "minecraft.interfaces.GuiPlayerTabOverlayAccessor",
     "minecraft.interfaces.GuiSpectatorAccessor",
     "minecraft.interfaces.MinecraftAccessor",
-    "minecraft.interfaces.ZLevelAccessor_Mixin"
-  ],
-  "mixins": [
+    "minecraft.interfaces.ZLevelAccessor_Mixin",
     "skyblock.RenderListenerMixin",
     "skyblock.TabListRendererMixin_SBA",
     "skyblock.TabListRendererMixin_SkyHanni"

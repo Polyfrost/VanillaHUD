@@ -16,7 +16,7 @@ public class EntityRendererMixin {
     private void draw(float partialTicks, long nanoTime, CallbackInfo ci) {
 //        if (VanillaHUD.isCompactTab()) {
 //            return;
-//        }
+//        } todo
         VanillaHUD.getPlayerList().setGuiIngame(false);
         ((GuiIngameForgeAccessor) Minecraft.getMinecraft().ingameGUI).drawPlayerList(OmniResolution.getScaledWidth(), OmniResolution.getScaledHeight());
     }

@@ -8,7 +8,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.polyui.unit.Vec2
-import org.polyfrost.vanillahud.oldhuds.hotbar.HotbarHUDWrapper
+import org.polyfrost.vanillahud.hud.bars.wrapper.HotbarHUDWrapper
 import kotlin.math.max
 
 class HealthHud : HotbarHUDWrapper(Vec2(180f, 18f)) {

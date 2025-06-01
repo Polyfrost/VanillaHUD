@@ -7,7 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.vanillahud.VanillaHUDOld;
+import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hud.bars.HealthHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +30,7 @@ public abstract class Health_GuiIngame_Mixin {
 
     @Inject(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;startSection(Ljava/lang/String;)V"), cancellable = true)
     private void setupHealthTranslationAndScale(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         HealthHud hud = VanillaHUD.getHealth();
@@ -47,7 +47,7 @@ public abstract class Health_GuiIngame_Mixin {
 
     @Inject(method = "renderHealth", at = @At("RETURN"), remap = false)
     private void popHealthMatrix(CallbackInfo ci) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return;
         }
         GlStateManager.popMatrix();
@@ -55,7 +55,7 @@ public abstract class Health_GuiIngame_Mixin {
 
     @Redirect(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/GuiIngameForge;drawTexturedModalRect(IIIIII)V"))
     private void healthFlip(GuiIngameForge instance, int x, int y, int textureX, int textureY, int width, int height) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             instance.drawTexturedModalRect(x, y, textureX, textureY, width, height);
             return;
         }
@@ -69,7 +69,7 @@ public abstract class Health_GuiIngame_Mixin {
 
     @ModifyVariable(method = "renderHealth", at = @At("STORE"), ordinal = 14, remap = false)
     private int healthAlignment(int x) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return x;
         }
         return VanillaHUD.getHealth().getAlignment() == 1 ? 72 - x : x;
@@ -77,7 +77,7 @@ public abstract class Health_GuiIngame_Mixin {
 
     @ModifyVariable(method = "renderHealth", at = @At("STORE"), ordinal = 15, remap = false)
     private int healthMode(int y) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return y;
         }
         if (HudManager.isPanelOpen()) return 0;
@@ -87,7 +87,7 @@ public abstract class Health_GuiIngame_Mixin {
 
     @Redirect(method = "renderHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getRenderViewEntity()Lnet/minecraft/entity/Entity;"))
     private Entity healthEdit(Minecraft instance) {
-        if (VanillaHUDOld.isApec()) {
+        if (Compatibility.INSTANCE.isApec()) {
             return instance.getRenderViewEntity();
         }
         return HudManager.isPanelOpen() ? instance.thePlayer : instance.getRenderViewEntity();

@@ -20,8 +20,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static org.polyfrost.vanillahud.utils.TabListManager.mc;
-
 @Mixin(value = GuiIngameForge.class)
 public abstract class GuiIngameForgeMixin {
 
@@ -48,6 +46,7 @@ public abstract class GuiIngameForgeMixin {
         if (!ModConfig.tab.enabled) {
             return instance.isKeyDown();
         }
+        final Minecraft mc = Minecraft.getMinecraft();
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 

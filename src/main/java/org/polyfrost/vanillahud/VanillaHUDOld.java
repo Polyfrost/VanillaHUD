@@ -1,64 +1,27 @@
 package org.polyfrost.vanillahud;
 
-import Apec.Components.Gui.GuiIngame.ApecGuiIngameForge;
 import at.hannibal2.skyhanni.SkyHanniMod;
 import at.hannibal2.skyhanni.features.misc.compacttablist.TabListReader;
 import at.hannibal2.skyhanni.utils.LorenzUtils;
 import net.hypixel.data.type.GameType;
-import org.polyfrost.oneconfig.api.event.v1.EventManager;
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils;
-import org.polyfrost.oneconfig.api.ui.v1.notifications.Notifications;
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import codes.biscuit.skyblockaddons.core.Feature;
 import codes.biscuit.skyblockaddons.features.tablist.TabListParser;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.Loader;
-import org.polyfrost.vanillahud.config.ModConfig;
-import org.polyfrost.vanillahud.hud.*;
-import org.polyfrost.vanillahud.utils.TabListManager;
-import org.polyfrost.vanillahud.utils.Utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-@net.minecraftforge.fml.common.Mod(modid = VanillaHUD.MODID, name = VanillaHUD.NAME, version = VanillaHUD.VERSION)
 public class VanillaHUDOld {
-    public static final String MODID = "@ID@";
-    public static final String NAME = "@NAME@";
-    public static final String VERSION = "@VER@";
-
-    private static boolean apec = false;
-    public static boolean isPatcher = false;
-    public static boolean isHytils = false;
     private static boolean isSBA = false;
     private static boolean isSkyHanni = false;
     private static boolean forceDisableCompactTab = false;
     private static boolean skyHanniField = false;
 
     @net.minecraftforge.fml.common.Mod.EventHandler
-    public void onFMLInitialization(net.minecraftforge.fml.common.event.FMLInitializationEvent event) {
-        TabListManager.asyncUpdateList();
-        EventManager.INSTANCE.register(this);
-    }
-
-    @net.minecraftforge.fml.common.Mod.EventHandler
     public void onPostInit(net.minecraftforge.fml.common.event.FMLPostInitializationEvent event) {
-        if (Loader.isModLoaded("bossbar_customizer")) {
-            Notifications.INSTANCE.send("VanillaHUD", "Bossbar Customizer has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).");
-        }
-
-        if (Loader.isModLoaded("sidebarmod")) {
-            Notifications.INSTANCE.send("VanillaHUD", "Sidebar Mod Revamp has been replaced by VanillaHUD and thus can be removed (they will also not work with each other).");
-        }
-        apec = Loader.isModLoaded("apec");
-        isPatcher = Loader.isModLoaded("patcher");
-        isHytils = Loader.isModLoaded("hytils-reborn");
-        isSBA = Loader.isModLoaded("skyblockaddons") || Loader.isModLoaded("sbaunofficial");
-        isSkyHanni = Loader.isModLoaded("skyhanni");
-
         checkForSkyHanni();
-        updateHeight();
     }
 
     private void checkForSkyHanni() {
@@ -169,20 +132,6 @@ public class VanillaHUDOld {
                 forceDisableCompactTab = true;
             }
         }
-    }
-
-    private void updateHeight() {
-        if (!TabList.TabHud.updatedHeight) {
-            TabList.TabHud.updatedHeight = true;
-            if (TabList.hud.position.getY() == 10) {
-                TabList.hud.position.setY(TabList.hud.position.getY() + 10);
-                ModConfig.tab.save();
-            }
-        }
-    }
-
-    public static boolean isApec() {
-        return apec && Minecraft.getMinecraft().ingameGUI instanceof ApecGuiIngameForge;
     }
 
     public static boolean isCompactTab() {

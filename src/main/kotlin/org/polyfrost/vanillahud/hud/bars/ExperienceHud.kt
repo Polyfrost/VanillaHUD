@@ -2,7 +2,7 @@ package org.polyfrost.vanillahud.hud.bars
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.polyui.unit.Vec2
-import org.polyfrost.vanillahud.oldhuds.hotbar.HotbarHUDWrapper
+import org.polyfrost.vanillahud.hud.bars.wrapper.HotbarHUDWrapper
 
 class ExperienceHud : HotbarHUDWrapper(Vec2(182f, 5f)) {
     @Slider(title = "Level Text Height", min = -10f, max = 10f)

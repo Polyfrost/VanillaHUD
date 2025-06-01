@@ -3,7 +3,7 @@ package org.polyfrost.vanillahud.hud.bars
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.polyui.unit.Vec2
-import org.polyfrost.vanillahud.oldhuds.hotbar.HotbarHUDWrapper
+import org.polyfrost.vanillahud.hud.bars.wrapper.HotbarHUDWrapper
 
 class HungerHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
     @Checkbox(title = "Link with health")
