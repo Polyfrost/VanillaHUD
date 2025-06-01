@@ -50,7 +50,7 @@ public abstract class GuiIngameForgeMixin {
         ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
         NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
 
-        boolean flag = !VanillaHUD.isCompactTab() || HudManager.isPanelOpen();
+        boolean flag = !Compatibility.INSTANCE.isCompactTab() || HudManager.isPanelOpen();
 
         if (flag) {
             if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null || HudManager.isPanelOpen()) {
@@ -87,7 +87,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V"))
     private void enableScissor(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) return;
+        if (Compatibility.INSTANCE.isCompactTab()) return;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Position position = TabList.hud.position;
         int scale = (int) OmniResolution.getScaleFactor();
@@ -96,7 +96,7 @@ public abstract class GuiIngameForgeMixin {
 
     @Inject(method = "renderPlayerList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiPlayerTabOverlay;renderPlayerlist(ILnet/minecraft/scoreboard/Scoreboard;Lnet/minecraft/scoreboard/ScoreObjective;)V", shift = At.Shift.AFTER))
     private void disable(int width, int height, CallbackInfo ci) {
-        if (VanillaHUD.isCompactTab()) return;
+        if (Compatibility.INSTANCE.isCompactTab()) return;
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 

@@ -1,13 +1,11 @@
 package org.polyfrost.vanillahud.mixin.minecraft;
 
 import net.minecraft.client.Minecraft;
-import org.polyfrost.universal.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.scoreboard.ScoreObjective;
 import org.polyfrost.vanillahud.Compatibility;
-import org.polyfrost.vanillahud.VanillaHUD;
 import org.polyfrost.vanillahud.hooks.ScoreboardHook;
 import org.polyfrost.vanillahud.hud.Hotbar;
 import org.spongepowered.asm.mixin.*;
@@ -29,7 +27,7 @@ public abstract class GuiIngameMixin {
 
     @Inject(method = "renderScoreboard", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/ScoreObjective;getScoreboard()Lnet/minecraft/scoreboard/Scoreboard;", shift = At.Shift.AFTER), cancellable = true)
     private void cancelScoreboard(ScoreObjective s, ScaledResolution sr, CallbackInfo ci) {
-        if (VanillaHUD.isSkyHanniScoreboard()) {
+        if (Compatibility.INSTANCE.isSkyHanniScoreboard()) {
             return;
         }
         ScoreboardHook.canDraw = true;
