@@ -1,7 +1,7 @@
 package org.polyfrost.vanillahud.hooks
 
 import net.minecraft.entity.boss.BossStatus
-import org.polyfrost.vanillahud.hud.BossBar
+import org.polyfrost.vanillahud.hud.commands.BossbarHud
 
 object BossStatusHook {
     private var lerpedBossHealth = 0f
@@ -18,7 +18,7 @@ object BossStatusHook {
         get() {
             val l = System.currentTimeMillis() - percentSetTime
 
-            val f = (l / BossBar.hud.lerpSpeed).coerceIn(0f, 1f)
+            val f = (l / BossbarHud.lerpSpeed).coerceIn(0f, 1f)
             return lerp(f, lerpedBossHealth, BossStatus.healthScale)
         }
 

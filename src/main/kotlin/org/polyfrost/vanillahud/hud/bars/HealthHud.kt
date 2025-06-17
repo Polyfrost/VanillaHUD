@@ -11,7 +11,7 @@ import org.polyfrost.polyui.unit.Vec2
 import org.polyfrost.vanillahud.hud.bars.wrapper.HotbarHUDWrapper
 import kotlin.math.max
 
-class HealthHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
+object HealthHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
     @RadioButton(title = "Mode", options = ["Down", "Up"])
     var mode: Int = 1
 

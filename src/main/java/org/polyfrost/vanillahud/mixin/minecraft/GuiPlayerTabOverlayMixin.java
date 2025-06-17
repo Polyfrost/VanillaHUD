@@ -11,6 +11,7 @@ import net.minecraft.util.*;
 import org.polyfrost.polyui.color.PolyColor;
 import org.polyfrost.vanillahud.Compatibility;
 import org.polyfrost.vanillahud.hooks.TabHook;
+import org.polyfrost.vanillahud.hud.PlayerListHud;
 import org.polyfrost.vanillahud.mixin.minecraft.interfaces.GuiPlayerTabOverlayAccessor;
 import org.polyfrost.vanillahud.utils.TabListManager;
 import org.spongepowered.asm.mixin.*;

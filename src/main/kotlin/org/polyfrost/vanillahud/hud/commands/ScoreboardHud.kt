@@ -14,7 +14,7 @@ import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.polyui.color.rgba
 import org.polyfrost.vanillahud.utils.drawScaledString
 
-class ScoreboardHud() : LegacyHud() {
+object ScoreboardHud() : LegacyHud() {
     @Dropdown(
         title = "Show Score Points",
         category = "Score Points",

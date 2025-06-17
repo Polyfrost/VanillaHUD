@@ -10,7 +10,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.polyui.unit.Vec2
 import org.polyfrost.vanillahud.hud.bars.wrapper.HotbarHUDWrapper
 
-class MountHealthHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
+object MountHealthHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
     @Checkbox(title = "Link with health")
     var healthLink: Boolean = false
 

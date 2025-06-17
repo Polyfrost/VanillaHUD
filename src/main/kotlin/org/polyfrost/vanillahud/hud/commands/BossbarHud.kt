@@ -9,7 +9,7 @@ import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import kotlin.math.max
 
 
-class BossbarHud : LegacyHud() {
+object BossbarHud : LegacyHud() {
     override fun title() = "Scoreboard"
     override fun category() = Category.INFO
 
