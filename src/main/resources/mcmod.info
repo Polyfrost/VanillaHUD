@@ -1,9 +1,9 @@
 [
   {
-    "modid": "${id}",
-    "name": "${name}",
+    "modid": "${mod_id}",
+    "name": "${mod_name}",
     "description": "Adds in a load of customization to a few native UI elements such as the bossbar, scoreboard, etc.",
-    "version": "${version}",
+    "version": "${mc_version}",
     "mcversion": "1.8.9",
     "url": "",
     "updateUrl": "",

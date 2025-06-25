@@ -4,7 +4,7 @@ import dev.deftu.omnicore.client.render.OmniMatrixStack
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.vanillahud.utils.drawScaledString
 
-class PlayerListHud : LegacyHud() {
+object PlayerListHud : LegacyHud() {
     var isGuiIngame: Boolean = false
 
     override var width: Float = 0f

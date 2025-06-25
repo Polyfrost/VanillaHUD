@@ -4,7 +4,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.polyui.unit.Vec2
 import org.polyfrost.vanillahud.hud.bars.wrapper.HotbarHUDWrapper
 
-class ArmorHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
+object ArmorHud : HotbarHUDWrapper(Vec2(180f, 18f)) {
     @Checkbox(title = "Link with Health Position")
     var healthLink: Boolean = false
 

@@ -3,7 +3,7 @@ package org.polyfrost.vanillahud.hud.commands
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-open class TitleHud : TextHud("") {
+object TitleHud : TextHud("") {
     @Switch(title = "Instant Fade")
     private val instantFade: Boolean = false
 
@@ -22,7 +22,10 @@ open class TitleHud : TextHud("") {
     }
 }
 
-class SubTitleHud : TitleHud() {
+object SubTitleHud : TextHud("") {
+    @Switch(title = "Instant Fade")
+    private val instantFade: Boolean = false
+
     override fun getText(): String {
         if (!isReal) return "Subtitle"
 
@@ -32,9 +35,13 @@ class SubTitleHud : TitleHud() {
     override fun title(): String {
         return "Subtitle"
     }
+
+    override fun category(): Category {
+        return Category.INFO
+    }
 }
 
-class ActionBarHud : TextHud("") {
+object ActionBarHud : TextHud("") {
     var hue: Float = 0f
     var opacity: Int = 0
 
