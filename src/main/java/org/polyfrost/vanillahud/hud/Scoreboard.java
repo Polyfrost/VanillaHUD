@@ -58,6 +58,11 @@ public class Scoreboard extends HudConfig {
         )
         public boolean persistentTitle = false;
 
+        @Slider(name = "Max. ScoreBoard Height", min = 0, max = 50, step = 1)
+        public int maxScoreHeight = 15;
+        @Info(text = "Hides the ScoreBoard if it exceeds the limit", type = InfoType.INFO)
+        public boolean a;
+
         @Color(
                 name = "Title Background Color"
         )
@@ -116,7 +121,7 @@ public class Scoreboard extends HudConfig {
             boolean showRealScoreboard = objective != null;
             if (showRealScoreboard) {
                 Collection<Score> sortedScores = objective.getScoreboard().getSortedScores(objective);
-                showRealScoreboard = sortedScores.size() <= 15 && (sortedScores.size() > 0 || (this.persistentTitle && this.scoreboardTitle));
+                showRealScoreboard = sortedScores.size() <= this.maxScoreHeight && (sortedScores.size() > 0 || (this.persistentTitle && this.scoreboardTitle));
             }
             return showRealScoreboard && super.shouldShow();
         }
