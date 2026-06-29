@@ -30,7 +30,7 @@ abstract class VanillaHud(
         val t = exampleText ?: return naturalWidth
         return try {
             mc.font.width(t).toFloat()
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             naturalWidth
         }
         //?} else {
@@ -41,10 +41,10 @@ abstract class VanillaHud(
     override fun update() = false
     override fun hasBackground() = false
 
-    override fun defaultPosition(): kotlin.Pair<Float, Float> {
+    override fun defaultPosition(): Pair<Float, Float> {
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
-        return kotlin.Pair(vanillaOriginX(w, h), vanillaOriginY(w, h))
+        return Pair(vanillaOriginX(w, h), vanillaOriginY(w, h))
     }
 
     override fun render(graphics: GuiGraphics) {}

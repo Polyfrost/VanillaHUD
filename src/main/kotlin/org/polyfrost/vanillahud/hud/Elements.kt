@@ -14,6 +14,7 @@ class HotbarHud : VanillaHud("vanilla-hud/hotbar.json", "Hotbar", Category.PLAYE
 }
 
 class HealthHud : VanillaHud("vanilla-hud/health.json", "Health", Category.PLAYER) {
+    // TODO: Implement animation
     @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
     var animation = true
 
@@ -31,6 +32,7 @@ class ArmorHud : VanillaHud("vanilla-hud/armor.json", "Armor", Category.PLAYER) 
 }
 
 class HungerHud : VanillaHud("vanilla-hud/hunger.json", "Hunger", Category.PLAYER) {
+    // TODO: Implement animation
     @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
 
@@ -94,7 +96,7 @@ class TitleHud : VanillaHud("vanilla-hud/title.json", "Title & Subtitle", Catego
         //? if <26 {
         return try {
             maxOf(mc.font.width("Title") * 4, mc.font.width("Subtitle") * 2).toFloat()
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             naturalWidth
         }
         //?} else {
@@ -111,6 +113,7 @@ class ScoreboardHud : VanillaHud("vanilla-hud/scoreboard.json", "Scoreboard", Ca
 }
 
 class TabListHud : VanillaHud("vanilla-hud/tab.json", "Tab List", Category.INFO) {
+    // TODO: Implement player limit
     @Slider(title = "Tab Player Limit", description = "How many players can display on the tab list.", min = 10f, max = 120f)
     var playerLimit = 80
 

@@ -26,6 +26,8 @@ public final class HudTransform {
         return fallback;
     }
 
+
+
     //? if >=26 {
     /*public static void begin(GuiGraphicsExtractor graphics, VanillaHud provider) {}
 
@@ -62,15 +64,23 @@ public final class HudTransform {
         float gx = placed ? hud.getX() : ox;
         float gy = placed ? hud.getY() : oy;
         float s = placed ? hud.getEffectiveScale() : 1f;
-        PoseStack pose = graphics.pose();
+        var pose = graphics.pose();
+        //? if >= 1.21.6 {
+        // pose.pushMatrix();
+        //? } else {
         pose.pushPose();
+        //? }
         pose.translate(gx, gy, 0f);
         pose.scale(s, s, 1f);
         pose.translate(-ox, -oy, 0f);
     }
 
     public static void end(GuiGraphics graphics) {
+        //? if >= 1.21.6 {
+        // graphics.pose().popMatrix();
+        //? } else {
         graphics.pose().popPose();
+        //? }
     }
     //?}
 }
