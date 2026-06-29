@@ -1,0 +1,136 @@
+package org.polyfrost.vanillahud.mixin;
+
+//? if <26 {
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.player.Player;
+import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.render.HudTransform;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(Gui.class)
+public class GuiMixin {
+
+    @WrapMethod(method = "renderItemHotbar")
+    private void vanillahud$hotbar(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderOverlayMessage")
+    private void vanillahud$actionBar(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getActionBar());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderSelectedItemName")
+    private void vanillahud$itemName(GuiGraphics graphics, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getHeldItemTooltip());
+        original.call(graphics);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderTitle")
+    private void vanillahud$title(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getTitle());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderScoreboardSidebar")
+    private void vanillahud$scoreboard(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getScoreboard());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderTabList")
+    private void vanillahud$tabList(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getTabList());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderVehicleHealth")
+    private void vanillahud$mount(GuiGraphics graphics, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getMountHealth());
+        original.call(graphics);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderHearts")
+    private void vanillahud$health(
+            GuiGraphics graphics, Player player, int x, int y, int height,
+            int offsetHeartIndex, float maxHealth, int currentHealth, int displayHealth,
+            int absorptionAmount, boolean renderHighlight, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
+        original.call(graphics, player, x, y, height, offsetHeartIndex, maxHealth,
+                currentHealth, displayHealth, absorptionAmount, renderHighlight);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderArmor")
+    private static void vanillahud$armor(
+            GuiGraphics graphics, Player player, int a, int b, int c, int d, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getArmor());
+        original.call(graphics, player, a, b, c, d);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderFood")
+    private void vanillahud$hunger(
+            GuiGraphics graphics, Player player, int a, int b, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getHunger());
+        original.call(graphics, player, a, b);
+        HudTransform.end(graphics);
+    }
+
+    //? if <=1.21.5 {
+    @WrapMethod(method = "renderExperienceBar")
+    private void vanillahud$xpBar(GuiGraphics graphics, int xpBarX, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar());
+        original.call(graphics, xpBarX);
+        HudTransform.end(graphics);
+    }
+
+    @WrapMethod(method = "renderExperienceLevel")
+    private void vanillahud$xpLevel(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getExperienceLevel());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }
+    //?}
+
+    //? if >=1.21.4 {
+    /*@WrapMethod(method = "renderAirBubbles")
+    private void vanillahud$air(GuiGraphics graphics, Player player, int a, int b, int c, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getAir());
+        original.call(graphics, player, a, b, c);
+        HudTransform.end(graphics);
+    }*/
+    //?}
+
+    //? if >=1.21.8 {
+    /*@WrapMethod(method = "renderBossOverlay")
+    private void vanillahud$boss(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        HudTransform.begin(graphics, Huds.INSTANCE.getBossBar());
+        original.call(graphics, delta);
+        HudTransform.end(graphics);
+    }*/
+    //?}
+}
+//?}
+
+//? if >=26 {
+/*import net.minecraft.client.gui.Gui;
+import org.spongepowered.asm.mixin.Mixin;
+
+    @Mixin(Gui.class)
+    public class GuiMixin {
+}*/
+//?}
