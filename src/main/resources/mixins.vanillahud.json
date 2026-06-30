@@ -3,14 +3,13 @@
     "minVersion": "0.8",
     "package": "org.polyfrost.vanillahud.mixin",
     "compatibilityLevel": "JAVA_21",
-    "refmap": "mixins.vanillahud.refmap.json",
     "plugin": "org.polyfrost.vanillahud.mixin.VanillaHUDMixinPlugin",
     "injectors": {
         "defaultRequire": 1,
         "maxShiftBy": 5
     },
     "client": [
-        "GuiMixin",
-        "GuiEditorMixin"
+        "GuiEditorMixin",
+        "GuiMixin"
     ]
 }

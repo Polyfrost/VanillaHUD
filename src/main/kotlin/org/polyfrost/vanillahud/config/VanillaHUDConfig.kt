@@ -5,7 +5,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 
 object VanillaHUDConfig : Config(
     "vanillahud.json",
-    "/vanillahud_dark.svg",
+    "/assets/vanillahud/vanillahud_dark.svg",
     "VanillaHUD",
     Category.QOL,
 ) {

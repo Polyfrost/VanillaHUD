@@ -16,6 +16,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderItemHotbar")
     private void vanillahud$hotbar(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getHotbar().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics, delta);
         HudTransform.end(graphics);
@@ -23,6 +25,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderOverlayMessage")
     private void vanillahud$actionBar(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getActionBar().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getActionBar());
         original.call(graphics, delta);
         HudTransform.end(graphics);
@@ -30,6 +34,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderSelectedItemName")
     private void vanillahud$itemName(GuiGraphics graphics, Operation<Void> original) {
+        if (!Huds.INSTANCE.getHeldItemTooltip().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getHeldItemTooltip());
         original.call(graphics);
         HudTransform.end(graphics);
@@ -37,6 +43,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderTitle")
     private void vanillahud$title(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getTitle().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getTitle());
         original.call(graphics, delta);
         HudTransform.end(graphics);
@@ -44,6 +52,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderScoreboardSidebar")
     private void vanillahud$scoreboard(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getScoreboard().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getScoreboard());
         original.call(graphics, delta);
         HudTransform.end(graphics);
@@ -51,6 +61,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderTabList")
     private void vanillahud$tabList(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getTabList().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getTabList());
         original.call(graphics, delta);
         HudTransform.end(graphics);
@@ -58,6 +70,8 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderVehicleHealth")
     private void vanillahud$mount(GuiGraphics graphics, Operation<Void> original) {
+        if (!Huds.INSTANCE.getMountHealth().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getMountHealth());
         original.call(graphics);
         HudTransform.end(graphics);
@@ -68,6 +82,8 @@ public class GuiMixin {
             GuiGraphics graphics, Player player, int x, int y, int height,
             int offsetHeartIndex, float maxHealth, int currentHealth, int displayHealth,
             int absorptionAmount, boolean renderHighlight, Operation<Void> original) {
+        if (!Huds.INSTANCE.getHealth().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
         original.call(graphics, player, x, y, height, offsetHeartIndex, maxHealth,
                 currentHealth, displayHealth, absorptionAmount, renderHighlight);
@@ -77,6 +93,8 @@ public class GuiMixin {
     @WrapMethod(method = "renderArmor")
     private static void vanillahud$armor(
             GuiGraphics graphics, Player player, int a, int b, int c, int d, Operation<Void> original) {
+        if (!Huds.INSTANCE.getArmor().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getArmor());
         original.call(graphics, player, a, b, c, d);
         HudTransform.end(graphics);
@@ -85,6 +103,8 @@ public class GuiMixin {
     @WrapMethod(method = "renderFood")
     private void vanillahud$hunger(
             GuiGraphics graphics, Player player, int a, int b, Operation<Void> original) {
+        if (!Huds.INSTANCE.getHunger().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getHunger());
         original.call(graphics, player, a, b);
         HudTransform.end(graphics);
@@ -93,6 +113,8 @@ public class GuiMixin {
     //? if <=1.21.5 {
     @WrapMethod(method = "renderExperienceBar")
     private void vanillahud$xpBar(GuiGraphics graphics, int xpBarX, Operation<Void> original) {
+        if (!Huds.INSTANCE.getExperienceBar().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar());
         original.call(graphics, xpBarX);
         HudTransform.end(graphics);
@@ -100,24 +122,32 @@ public class GuiMixin {
 
     @WrapMethod(method = "renderExperienceLevel")
     private void vanillahud$xpLevel(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getExperienceLevel().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getExperienceLevel());
         original.call(graphics, delta);
         HudTransform.end(graphics);
     }
     //?}
 
+    // TODO: Air for 1.21.1
     //? if >=1.21.4 {
     /*@WrapMethod(method = "renderAirBubbles")
     private void vanillahud$air(GuiGraphics graphics, Player player, int a, int b, int c, Operation<Void> original) {
+        if (!Huds.INSTANCE.getAir().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getAir());
         original.call(graphics, player, a, b, c);
         HudTransform.end(graphics);
     }*/
     //?}
 
+    // TODO: Boss overlay for 1.21.1, 1.21.4
     //? if >=1.21.8 {
     /*@WrapMethod(method = "renderBossOverlay")
     private void vanillahud$boss(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!Huds.INSTANCE.getBossBar().shouldRender()) return;
+
         HudTransform.begin(graphics, Huds.INSTANCE.getBossBar());
         original.call(graphics, delta);
         HudTransform.end(graphics);

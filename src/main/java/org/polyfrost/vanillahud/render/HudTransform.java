@@ -1,6 +1,5 @@
 package org.polyfrost.vanillahud.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 //? if >=26 {
 /*import net.minecraft.client.gui.GuiGraphicsExtractor;*/
 //?} else {
@@ -26,33 +25,10 @@ public final class HudTransform {
         return fallback;
     }
 
-
-
     //? if >=26 {
     /*public static void begin(GuiGraphicsExtractor graphics, VanillaHud provider) {}
 
     public static void end(GuiGraphicsExtractor graphics) {}*/
-    //?} elif >=1.21.6 {
-    /*public static void begin(GuiGraphics graphics, VanillaHud provider) {
-        VanillaHud hud = resolve(provider);
-        boolean placed = hud != provider;
-        int w = graphics.guiWidth();
-        int h = graphics.guiHeight();
-        float ox = provider.vanillaOriginX(w, h);
-        float oy = provider.vanillaOriginY(w, h);
-        float gx = placed ? hud.getX() : ox;
-        float gy = placed ? hud.getY() : oy;
-        float s = placed ? hud.getEffectiveScale() : 1f;
-        var pose = graphics.pose();
-        pose.pushMatrix();
-        pose.translate(gx, gy);
-        pose.scale(s, s);
-        pose.translate(-ox, -oy);
-    }
-
-    public static void end(GuiGraphics graphics) {
-        graphics.pose().popMatrix();
-    }*/
     //?} else {
     public static void begin(GuiGraphics graphics, VanillaHud provider) {
         VanillaHud hud = resolve(provider);
@@ -65,22 +41,14 @@ public final class HudTransform {
         float gy = placed ? hud.getY() : oy;
         float s = placed ? hud.getEffectiveScale() : 1f;
         var pose = graphics.pose();
-        //? if >= 1.21.6 {
-        // pose.pushMatrix();
-        //? } else {
         pose.pushPose();
-        //? }
         pose.translate(gx, gy, 0f);
         pose.scale(s, s, 1f);
         pose.translate(-ox, -oy, 0f);
     }
 
     public static void end(GuiGraphics graphics) {
-        //? if >= 1.21.6 {
-        // graphics.pose().popMatrix();
-        //? } else {
         graphics.pose().popPose();
-        //? }
     }
     //?}
 }

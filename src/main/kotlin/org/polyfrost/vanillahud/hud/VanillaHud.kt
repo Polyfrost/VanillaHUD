@@ -20,6 +20,11 @@ abstract class VanillaHud(
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
 
+    // TODO: Implement render restraint options. (e.g. showInF3)
+    fun shouldRender(): Boolean {
+        return true
+    }
+
     protected open val exampleText: String? get() = null
 
     override val width: Float get() = measuredWidth()
@@ -47,5 +52,5 @@ abstract class VanillaHud(
         return Pair(vanillaOriginX(w, h), vanillaOriginY(w, h))
     }
 
-    override fun render(graphics: GuiGraphics) {}
+    override fun render(mcCtx: GuiGraphics) {}
 }
