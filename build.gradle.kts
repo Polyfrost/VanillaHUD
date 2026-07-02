@@ -63,8 +63,8 @@ loom {
     }
 
     runConfigs.all {
-        ideConfigGenerated(stonecutter.current.isActive)
-        runDir = "../../run"
+        generateRunConfig = stonecutter.current.isActive
+        runDirectory = rootProject.file("run")
     }
 
     runConfigs.remove(runConfigs["server"])

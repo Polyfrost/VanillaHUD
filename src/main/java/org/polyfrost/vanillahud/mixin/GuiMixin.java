@@ -110,6 +110,7 @@ public class GuiMixin {
         HudTransform.end(graphics);
     }
 
+    // TODO: XP level and bar for 1.21.8+
     //? if <=1.21.5 {
     @WrapMethod(method = "renderExperienceBar")
     private void vanillahud$xpBar(GuiGraphics graphics, int xpBarX, Operation<Void> original) {

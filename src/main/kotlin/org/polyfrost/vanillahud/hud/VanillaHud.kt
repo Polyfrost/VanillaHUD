@@ -20,8 +20,13 @@ abstract class VanillaHud(
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
 
-    // TODO: Implement render restraint options. (e.g. showInF3)
     fun shouldRender(): Boolean {
+        if (HudManager.isEditing) return true
+
+        if (HudManager.isDebugScreenVisible && showInF3) return false
+        if (HudManager.isTabListVisible && showInTab) return false
+        if (HudManager.isGuiScreenOpen && showInScreens) return false
+
         return true
     }
 
