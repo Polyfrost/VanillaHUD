@@ -16,8 +16,7 @@ val mcversion = stonecutter.current.version
 val oneconfigversion = property("oneconfig_version") as String
 val loaderversion = property("loader_version") as String
 
-val hasOfficialMappings = mcversion != "26.1"
-val javaVersion = if (mcversion == "26.1") 25 else 21
+val javaVersion = if (mcversion >= "26.1") 25 else 21
 
 base {
     archivesName.set("$modid-$modversion+$mcversion")
@@ -32,6 +31,11 @@ repositories {
     maven("https://repo.polyfrost.org/releases")
     maven("https://repo.polyfrost.org/snapshots")
     maven("https://maven.gegy.dev/releases")
+
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots/") {
+        name = "central-snapshots"
+        mavenContent { snapshotsOnly() }
+    }
 
     maven("https://maven.logix.dev/snapshots")
     maven("https://nexus.prsm.wtf/repository/maven-public/maven-repo/releases/")
@@ -52,34 +56,31 @@ repositories {
 }
 
 loom {
+    fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json")
+
+    decompilerOptions.named("vineflower") {
+        options.put("mark-corresponding-synthetics", "1")
+    }
+
     runConfigs.all {
-        ideConfigGenerated(stonecutter.current.isActive)
-        runDir = "../../run"
+        generateRunConfig = stonecutter.current.isActive
+        runDirectory = rootProject.file("run")
     }
 
     runConfigs.remove(runConfigs["server"])
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:$mcversion")
-    if (hasOfficialMappings) {
-        @Suppress("UnstableApiUsage")
-        mappings(loom.layered {
-            officialMojangMappings()
-        })
+    minecraft("com.mojang:minecraft:${sc.current.version}")
+    loomx.applyMojangMappings()
+
+    fun ocfg(vararg modules: String) {
+        for (it in modules) modImplementation("org.polyfrost.oneconfig:${it}:$oneconfigversion")
     }
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
 
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:commands:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:config:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:config-impl:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:events:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:internal:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:ui:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:utils:$oneconfigversion")
-    modImplementation("org.polyfrost.oneconfig:hud:$oneconfigversion")
+    ocfg("${sc.current.version}-fabric", "commands", "config", "config-impl", "events", "internal", "ui", "utils", "hud")
 }
 
 bloom {
@@ -140,7 +141,8 @@ tasks.jar {
 }
 
 val modrinthMinecraftVersionOverride = mapOf(
-    "26.1" to listOf("26.1", "26.1.1", "26.1.2")
+    "26.1" to listOf("26.1", "26.1.1", "26.1.2"),
+    "26.2" to listOf("26.2")
 )
 
 val modrinthId = listOf("oneconfig.publish.modrinth", "publish.modrinth").firstNotNullOfOrNull { findProperty(it) }?.toString()?.takeIf { it.isNotBlank() }

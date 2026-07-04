@@ -6,9 +6,8 @@ import org.polyfrost.vanillahud.config.VanillaHUDConfig
 import org.polyfrost.vanillahud.hud.Huds
 
 object VanillaHUDClient : ClientModInitializer {
-
     override fun onInitializeClient() {
-        VanillaHUDConfig.tooltipStartAtTop
+        VanillaHUDConfig.preload()
 
         HudManager.register(*Huds.all)
     }

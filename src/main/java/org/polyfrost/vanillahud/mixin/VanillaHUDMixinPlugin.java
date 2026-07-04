@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+// TODO: Uhh why is this here
 public class VanillaHUDMixinPlugin implements IMixinConfigPlugin {
 
     @Override

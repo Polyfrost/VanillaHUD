@@ -6,14 +6,15 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 
-class HotbarHud : VanillaHud("vanilla-hud/hotbar.json", "Hotbar", Category.PLAYER) {
+class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 22f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 22f
 }
 
-class HealthHud : VanillaHud("vanilla-hud/health.json", "Health", Category.PLAYER) {
+class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER) {
+    // TODO: Implement animation, Ask Wyvest
     @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
     var animation = true
 
@@ -23,14 +24,15 @@ class HealthHud : VanillaHud("vanilla-hud/health.json", "Health", Category.PLAYE
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
 }
 
-class ArmorHud : VanillaHud("vanilla-hud/armor.json", "Armor", Category.PLAYER) {
+class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
 }
 
-class HungerHud : VanillaHud("vanilla-hud/hunger.json", "Hunger", Category.PLAYER) {
+class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER) {
+    // TODO: Implement animation, Ask Wyvest
     @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
 
@@ -40,35 +42,35 @@ class HungerHud : VanillaHud("vanilla-hud/hunger.json", "Hunger", Category.PLAYE
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
 }
 
-class AirHud : VanillaHud("vanilla-hud/air.json", "Air", Category.PLAYER) {
+class AirHud : VanillaHud("vanillahud/air.json", "Air", Category.PLAYER) {
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
 }
 
-class MountHealthHud : VanillaHud("vanilla-hud/mount.json", "Mount Health", Category.PLAYER) {
+class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Category.PLAYER) {
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
 }
 
-class ExperienceBarHud : VanillaHud("vanilla-hud/experience.json", "Experience Bar", Category.PLAYER) {
+class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Bar", Category.PLAYER) {
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 5f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
 }
 
-class ExperienceLevelHud : VanillaHud("vanilla-hud/experience-level.json", "Experience Level", Category.PLAYER) {
+class ExperienceLevelHud : VanillaHud("vanillahud/experience-level.json", "Experience Level", Category.PLAYER) {
     override val naturalWidth get() = 16f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 8f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
 }
 
-class ActionBarHud : VanillaHud("vanilla-hud/actionbar.json", "Action Bar", Category.INFO) {
+class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Category.INFO) {
     override val exampleText get() = "Action Bar"
     override val naturalWidth get() = 60f
     override val naturalHeight get() = 11f
@@ -76,7 +78,7 @@ class ActionBarHud : VanillaHud("vanilla-hud/actionbar.json", "Action Bar", Cate
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 72f
 }
 
-class HeldItemTooltipHud : VanillaHud("vanilla-hud/itemtooltip.json", "Held Item Tooltip", Category.INFO) {
+class HeldItemTooltipHud : VanillaHud("vanillahud/itemtooltip.json", "Held Item Tooltip", Category.INFO) {
     override val exampleText get() = "Diamond Sword"
     override val naturalWidth get() = 70f
     override val naturalHeight get() = 11f
@@ -84,7 +86,7 @@ class HeldItemTooltipHud : VanillaHud("vanilla-hud/itemtooltip.json", "Held Item
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f
 }
 
-class TitleHud : VanillaHud("vanilla-hud/title.json", "Title & Subtitle", Category.INFO) {
+class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
     override val naturalWidth get() = 120f
     override val naturalHeight get() = 68f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
@@ -94,23 +96,24 @@ class TitleHud : VanillaHud("vanilla-hud/title.json", "Title & Subtitle", Catego
         //? if <26 {
         return try {
             maxOf(mc.font.width("Title") * 4, mc.font.width("Subtitle") * 2).toFloat()
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             naturalWidth
         }
         //?} else {
-        /*return naturalWidth*/
-        //?}
+        /*return naturalWidth
+        *///?}
     }
 }
 
-class ScoreboardHud : VanillaHud("vanilla-hud/scoreboard.json", "Scoreboard", Category.INFO) {
+class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Category.INFO) {
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - naturalWidth - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - naturalHeight / 2f
 }
 
-class TabListHud : VanillaHud("vanilla-hud/tab.json", "Tab List", Category.INFO) {
+class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) {
+    // TODO: Implement player limit
     @Slider(title = "Tab Player Limit", description = "How many players can display on the tab list.", min = 10f, max = 120f)
     var playerLimit = 80
 
@@ -120,7 +123,7 @@ class TabListHud : VanillaHud("vanilla-hud/tab.json", "Tab List", Category.INFO)
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
 }
 
-class BossBarHud : VanillaHud("vanilla-hud/bossbar.json", "Boss Bar", Category.COMBAT) {
+class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.COMBAT) {
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 30f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
