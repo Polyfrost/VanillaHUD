@@ -1,10 +1,6 @@
 package org.polyfrost.vanillahud.hud
 
-//? if >=26 {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
-//?} else {
 import net.minecraft.client.gui.GuiGraphics
-//?}
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -44,8 +40,8 @@ abstract class VanillaHud(
             naturalWidth
         }
         //?} else {
-        /*return naturalWidth*/
-        //?}
+        /*return naturalWidth
+        *///?}
     }
 
     override fun update() = false

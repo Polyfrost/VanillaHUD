@@ -100,8 +100,8 @@ class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Categor
             naturalWidth
         }
         //?} else {
-        /*return naturalWidth*/
-        //?}
+        /*return naturalWidth
+        *///?}
     }
 }
 

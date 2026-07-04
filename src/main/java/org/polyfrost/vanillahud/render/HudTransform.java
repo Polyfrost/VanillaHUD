@@ -1,10 +1,6 @@
 package org.polyfrost.vanillahud.render;
 
-//? if >=26 {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor;*/
-//?} else {
 import net.minecraft.client.gui.GuiGraphics;
-//?}
 import org.polyfrost.oneconfig.api.hud.v1.Hud;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.VanillaHud;
@@ -25,11 +21,6 @@ public final class HudTransform {
         return fallback;
     }
 
-    //? if >=26 {
-    /*public static void begin(GuiGraphicsExtractor graphics, VanillaHud provider) {}
-
-    public static void end(GuiGraphicsExtractor graphics) {}*/
-    //?} else {
     public static void begin(GuiGraphics graphics, VanillaHud provider) {
         VanillaHud hud = resolve(provider);
         boolean placed = hud != provider;
@@ -56,5 +47,4 @@ public final class HudTransform {
     public static void end(GuiGraphics graphics) {
         graphics.pose().popMatrix();
     }
-    //?}
 }
