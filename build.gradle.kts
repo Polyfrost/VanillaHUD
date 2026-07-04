@@ -9,6 +9,8 @@ val minecraftVersion = property("minecraft_version").toString()
 val minecraftVersionRange = property("minecraft_version_range").toString()
 val loaderVersion = property("loader_version").toString()
 val oneConfigVersion = property("oneconfig_version").toString()
+val fabricLanguageKotlinVersion = property("fabric_language_kotlin_version").toString()
+val skikoVersion = property("skiko_version").toString()
 
 group = property("mod.group").toString()
 version = "$modVersion+$minecraftVersion"
@@ -25,11 +27,23 @@ repositories {
     maven("https://maven.parchmentmc.org")
     maven("https://maven.fabricmc.net")
     maven("https://maven.gegy.dev/releases")
+    maven("https://maven.terraformersmc.com/releases") {
+        content { includeGroup("com.terraformersmc") }
+    }
     maven("https://repo.polyfrost.org/releases")
     maven("https://repo.polyfrost.org/snapshots")
     maven("https://maven.deftu.dev/releases")
     maven("https://jitpack.io") {
         content { includeGroupAndSubgroups("com.github") }
+    }
+}
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "net.kyori" && requested.name == "adventure-platform-fabric" && requested.version == "7.0.0-SNAPSHOT") {
+            useVersion("7.0.0")
+            because("OneConfig references an unpublished Kyori snapshot; use the released 7.0.0 artifact instead")
+        }
     }
 }
 
@@ -64,15 +78,33 @@ dependencies {
     }
 
     modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
+    modLocalRuntime("org.polyfrost.oneconfig:$minecraftVersion-fabric:$oneConfigVersion")
+    modLocalRuntime("net.fabricmc:fabric-language-kotlin:$fabricLanguageKotlinVersion")
 
     implementation("org.polyfrost.oneconfig:commands:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:config:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:config-impl:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:events:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:hud:$oneConfigVersion")
+    implementation("org.polyfrost.oneconfig:internal:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:notifications:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:ui:$oneConfigVersion")
     implementation("org.polyfrost.oneconfig:utils:$oneConfigVersion")
+
+    listOf("windows-x64", "linux-x64", "macos-x64", "macos-arm64").forEach { platform ->
+        runtimeOnly("org.jetbrains.skiko:skiko-awt-runtime-$platform:$skikoVersion")
+    }
+
+    fabricApiRuntimeModule("fabric-api-base", "fabric_api_base_version")
+    fabricApiRuntimeModule("fabric-lifecycle-events-v1", "fabric_lifecycle_events_v1_version")
+    fabricApiRuntimeModule("fabric-rendering-v1", "fabric_rendering_v1_version")
+    fabricApiRuntimeModule("fabric-screen-api-v1", "fabric_screen_api_v1_version")
+    fabricApiRuntimeModule("fabric-transitive-access-wideners-v1", "fabric_transitive_access_wideners_v1_version")
+    fabricApiRuntimeModule("fabric-command-api-v2", "fabric_command_api_v2_version")
+    fabricApiRuntimeModule("fabric-key-binding-api-v1", "fabric_key_binding_api_v1_version")
+    fabricApiRuntimeModule("fabric-key-mapping-api-v1", "fabric_key_mapping_api_v1_version")
+    fabricApiRuntimeModule("fabric-resource-loader-v0", "fabric_resource_loader_v0_version")
+    fabricApiRuntimeModule("fabric-resource-loader-v1", "fabric_resource_loader_v1_version")
 }
 
 tasks.processResources {
@@ -126,4 +158,10 @@ fun optionalProp(name: String, block: (String) -> Unit) {
         ?.toString()
         ?.takeUnless { it.isBlank() || it == "[VERSIONED]" }
         ?.let(block)
+}
+
+fun DependencyHandlerScope.fabricApiRuntimeModule(artifact: String, propertyName: String) {
+    optionalProp(propertyName) {
+        add("modLocalRuntime", "net.fabricmc.fabric-api:$artifact:$it")
+    }
 }
