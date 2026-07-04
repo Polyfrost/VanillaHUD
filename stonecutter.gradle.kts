@@ -2,11 +2,11 @@ plugins {
     id("dev.kikugie.stonecutter")
 }
 
-stonecutter active "1.21.1" /* [SC] DO NOT EDIT */
+stonecutter active "1.21.4" /* [SC] DO NOT EDIT */
 
 stonecutter parameters {
     replacements {
-        string(current.parsed >= "1.21.6") {
+        string(current.parsed >= "1.21.4") {
             replace("pushMatrix", "pushPose")
             replace("popMatrix", "popPose")
         }

@@ -9,6 +9,7 @@
         "maxShiftBy": 5
     },
     "client": [
+        "BossHealthOverlayMixin",
         "GuiEditorMixin",
         "GuiMixin"
     ]

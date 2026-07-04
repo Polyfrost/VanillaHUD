@@ -135,7 +135,7 @@ public class GuiMixin {
     //?}
 
     //? if 1.21.1 {
-    @Inject(
+    /*@Inject(
             method = "renderPlayerHealth",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getMaxAirSupply()I"),
             cancellable = true
@@ -153,15 +153,15 @@ public class GuiMixin {
     private void vanillahud$airEnd(GuiGraphics guiGraphics, CallbackInfo ci) {
         HudTransform.end(guiGraphics);
     }
-    //?} elif >=1.21.4 {
-    /*@WrapMethod(method = "renderAirBubbles")
+    *///?} elif >=1.21.4 {
+    @WrapMethod(method = "renderAirBubbles")
     private void vanillahud$air(GuiGraphics graphics, Player player, int a, int b, int c, Operation<Void> original) {
         if (!Huds.INSTANCE.getAir().shouldRender()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getAir());
         original.call(graphics, player, a, b, c);
         HudTransform.end(graphics);
-    }*/
+    }
     //?}
 
     // TODO: Boss overlay for 1.21.1, 1.21.4
