@@ -10,6 +10,9 @@ import net.minecraft.world.entity.player.Player;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public class GuiMixin {
@@ -131,8 +134,26 @@ public class GuiMixin {
     }
     //?}
 
-    // TODO: Air for 1.21.1
-    //? if >=1.21.4 {
+    //? if 1.21.1 {
+    @Inject(
+            method = "renderPlayerHealth",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getMaxAirSupply()I"),
+            cancellable = true
+    )
+    private void vanillahud$air(GuiGraphics guiGraphics, CallbackInfo ci) {
+        if (!Huds.INSTANCE.getAir().shouldRender()) ci.cancel();
+
+        HudTransform.begin(guiGraphics, Huds.INSTANCE.getAir());
+    }
+
+    @Inject(
+            method = "renderPlayerHealth",
+            at = @At("TAIL")
+    )
+    private void vanillahud$airEnd(GuiGraphics guiGraphics, CallbackInfo ci) {
+        HudTransform.end(guiGraphics);
+    }
+    //?} elif >=1.21.4 {
     /*@WrapMethod(method = "renderAirBubbles")
     private void vanillahud$air(GuiGraphics graphics, Player player, int a, int b, int c, Operation<Void> original) {
         if (!Huds.INSTANCE.getAir().shouldRender()) return;
