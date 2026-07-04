@@ -14,7 +14,7 @@ class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER
 }
 
 class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER) {
-    // TODO: Implement animation
+    // TODO: Implement animation, Ask Wyvest
     @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
     var animation = true
 
@@ -32,7 +32,7 @@ class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
 }
 
 class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER) {
-    // TODO: Implement animation
+    // TODO: Implement animation, Ask Wyvest
     @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
 

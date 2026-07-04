@@ -41,14 +41,20 @@ public final class HudTransform {
         float gy = placed ? hud.getY() : oy;
         float s = placed ? hud.getEffectiveScale() : 1f;
         var pose = graphics.pose();
-        pose.pushPose();
-        pose.translate(gx, gy, 0f);
-        pose.scale(s, s, 1f);
-        pose.translate(-ox, -oy, 0f);
+        pose.pushMatrix();
+        //? if <= 1.21.4 {
+        // pose.translate(gx, gy, 0f);
+        // pose.scale(s, s, 1f);
+        // pose.translate(-ox, -oy, 0f);
+        //?} else {
+        pose.translate(gx, gy);
+        pose.scale(s, s);
+        pose.translate(-ox, -oy);
+        //?}
     }
 
     public static void end(GuiGraphics graphics) {
-        graphics.pose().popPose();
+        graphics.pose().popMatrix();
     }
     //?}
 }

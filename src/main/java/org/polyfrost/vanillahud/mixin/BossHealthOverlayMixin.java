@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(BossHealthOverlay.class)
 public class BossHealthOverlayMixin {
-    //? if <1.21.8 {
     @WrapMethod(
             method = "render"
     )
@@ -21,5 +20,4 @@ public class BossHealthOverlayMixin {
         original.call(guiGraphics);
         HudTransform.end(guiGraphics);
     }
-    //?}
 }

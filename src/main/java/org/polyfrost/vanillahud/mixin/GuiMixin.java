@@ -1,12 +1,12 @@
 package org.polyfrost.vanillahud.mixin;
 
 //? if <26 {
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.Gui;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.Font;import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;import net.minecraft.world.entity.player.Player;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
@@ -115,7 +115,7 @@ public class GuiMixin {
 
     // TODO: XP level and bar for 1.21.8+
     //? if <=1.21.5 {
-    @WrapMethod(method = "renderExperienceBar")
+    /*@WrapMethod(method = "renderExperienceBar")
     private void vanillahud$xpBar(GuiGraphics graphics, int xpBarX, Operation<Void> original) {
         if (!Huds.INSTANCE.getExperienceBar().shouldRender()) return;
 
@@ -131,6 +131,45 @@ public class GuiMixin {
         HudTransform.begin(graphics, Huds.INSTANCE.getExperienceLevel());
         original.call(graphics, delta);
         HudTransform.end(graphics);
+    }
+    *///?}
+
+    //? if >=1.21.6 {
+    @WrapOperation(
+            method = "renderHotbarAndDecorations",
+            at = {
+                    @At(
+                            value = "INVOKE",
+                            // these method signatures are getting out of hand... I really gotta buy an ultrawide monitor.
+                            target = "Lnet/minecraft/client/gui/contextualbar/ContextualBarRenderer;renderBackground(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"
+                    ),
+                    @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/gui/contextualbar/ContextualBarRenderer;render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"
+                    )
+            }
+    )
+    private void vanillahud$xpBar(ContextualBarRenderer instance, GuiGraphics guiGraphics, DeltaTracker deltaTracker,
+                                  Operation<Void> original) {
+        if (!Huds.INSTANCE.getExperienceBar().shouldRender()) return;
+
+        HudTransform.begin(guiGraphics, Huds.INSTANCE.getExperienceBar());
+        original.call(instance, guiGraphics, deltaTracker);
+        HudTransform.end(guiGraphics);
+    }
+
+    @WrapOperation(
+            method = "renderHotbarAndDecorations",
+            at = @At(
+                    value = "INVOKE", target = "Lnet/minecraft/client/gui/contextualbar/ContextualBarRenderer;renderExperienceLevel(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;I)V"
+            )
+    )
+    private void vanillahud$xpLevel(GuiGraphics guiGraphics, Font font, int i, Operation<Void> original) {
+        if (!Huds.INSTANCE.getExperienceLevel().shouldRender()) return;
+
+        HudTransform.begin(guiGraphics, Huds.INSTANCE.getExperienceLevel());
+        original.call(guiGraphics, font, i);
+        HudTransform.end(guiGraphics);
     }
     //?}
 
@@ -162,18 +201,6 @@ public class GuiMixin {
         original.call(graphics, player, a, b, c);
         HudTransform.end(graphics);
     }
-    //?}
-
-    // TODO: Boss overlay for 1.21.1, 1.21.4
-    //? if >=1.21.8 {
-    /*@WrapMethod(method = "renderBossOverlay")
-    private void vanillahud$boss(GuiGraphics graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!Huds.INSTANCE.getBossBar().shouldRender()) return;
-
-        HudTransform.begin(graphics, Huds.INSTANCE.getBossBar());
-        original.call(graphics, delta);
-        HudTransform.end(graphics);
-    }*/
     //?}
 }
 //?}

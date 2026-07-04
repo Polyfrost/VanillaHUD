@@ -20,6 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Gui.class)
 public abstract class GuiEditorMixin {
 
+    // TODO: "Demos" for the rest of the gui options.
+    // Health, Hunger, Armor, Air, Experience, Scoreboard (What else?)
+
     @Shadow
     private Component overlayMessageString;
     @Shadow
