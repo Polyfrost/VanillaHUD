@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "name": "${mod_name}",
+  "version": "${mod_version}",
+  "description": "Customizable placement and visibility for native Minecraft HUD elements.",
+  "authors": [
+    "Polyfrost"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Polyfrost/VanillaHUD",
+    "sources": "https://github.com/Polyfrost/VanillaHUD",
+    "issues": "https://github.com/Polyfrost/VanillaHUD/issues"
+  },
+  "entrypoints": {
+    "client": [
+      "org.polyfrost.vanillahud.VanillaHUD"
+    ]
+  },
+  "mixins": [
+    "mixins.vanillahud.json"
+  ],
+  "license": "LGPL-3.0",
+  "environment": "client",
+  "depends": {
+    "minecraft": "${minecraft_version_range}",
+    "fabricloader": ">=${loader_version}",
+    "oneconfigv1": ">=1.0.0-beta.6"
+  }
+}
