@@ -11,6 +11,9 @@
     "client": [
         "BossHealthOverlayMixin",
         "GuiEditorMixin",
-        "GuiMixin"
+        "GuiMixin",
+        "PlayerTabOverlayMixin",
+        "access.IGui",
+        "elements.GuiMixinScoreboard"
     ]
 }

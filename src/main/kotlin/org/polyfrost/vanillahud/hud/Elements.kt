@@ -1,10 +1,15 @@
 package org.polyfrost.vanillahud.hud
 
 //? if <26 {
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-//?}
+/*import org.polyfrost.oneconfig.utils.v1.dsl.mc
+*///?}
+import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.mixin.access.IGui
 
 class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
     override val naturalWidth get() = 182f
@@ -92,20 +97,33 @@ class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Categor
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
 
+    // I suck at kotlin, someone please save me
     override fun measuredWidth(): Float {
-        //? if <26 {
+        //?if >=26.2 {
+        val hud = mc.gui.hud
+        //?} else {
+        //val hud = mc.gui
+        //?}
+        val gui = hud as? IGui
+
+        val title: String =
+            if (!isEditing && gui != null) gui.title?.string ?: "Title" else "Title"
+
+        val subtitle: String =
+            if (!isEditing && gui != null) gui.subtitle?.string ?: "Title" else "Title"
+
         return try {
-            maxOf(mc.font.width("Title") * 4, mc.font.width("Subtitle") * 2).toFloat()
+            maxOf(mc.font.width(title) * 4, mc.font.width(subtitle) * 2).toFloat()
         } catch (_: Throwable) {
             naturalWidth
         }
-        //?} else {
-        /*return naturalWidth
-        *///?}
     }
 }
 
 class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Category.INFO) {
+    @Color(title = "Score Points Color")
+    var scorePointsColor = PolyColor(0xFFFF5555.toInt())
+
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - naturalWidth - 1f

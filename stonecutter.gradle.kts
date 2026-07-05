@@ -2,7 +2,7 @@ plugins {
     id("dev.kikugie.stonecutter")
 }
 
-stonecutter active "1.21.11" /* [SC] DO NOT EDIT */
+stonecutter active "26.2" /* [SC] DO NOT EDIT */
 
 stonecutter parameters {
     replacements {
@@ -21,10 +21,6 @@ stonecutter parameters {
         }
 
         string(current.parsed >= "26.2") {
-            // TODO: Possibly just use stonecutter for Gui -> Hud?
-            // It's only two mixins.
-            replace("client.gui.Gui", "client.gui.Hud")
-            replace("Gui.class", "Hud.class")
             replace("ContextualBarRenderer", "ContextualBar")
         }
     }

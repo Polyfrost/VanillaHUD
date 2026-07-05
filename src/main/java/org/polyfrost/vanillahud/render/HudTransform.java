@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.render;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.oneconfig.api.hud.v1.Hud;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.VanillaHud;
@@ -21,7 +21,7 @@ public final class HudTransform {
         return fallback;
     }
 
-    public static void begin(GuiGraphics graphics, VanillaHud provider) {
+    public static void begin(GuiGraphicsExtractor graphics, VanillaHud provider) {
         VanillaHud hud = resolve(provider);
         boolean placed = hud != provider;
         int w = graphics.guiWidth();
@@ -44,7 +44,7 @@ public final class HudTransform {
         //?}
     }
 
-    public static void end(GuiGraphics graphics) {
+    public static void end(GuiGraphicsExtractor graphics) {
         graphics.pose().popMatrix();
     }
 }

@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.hud
 
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -32,16 +32,12 @@ abstract class VanillaHud(
     override val height: Float get() = naturalHeight
 
     protected open fun measuredWidth(): Float {
-        //? if <26 {
         val t = exampleText ?: return naturalWidth
         return try {
             mc.font.width(t).toFloat()
         } catch (_: Throwable) {
             naturalWidth
         }
-        //?} else {
-        /*return naturalWidth
-        *///?}
     }
 
     override fun update() = false
@@ -53,5 +49,5 @@ abstract class VanillaHud(
         return Pair(vanillaOriginX(w, h), vanillaOriginY(w, h))
     }
 
-    override fun render(mcCtx: GuiGraphics) {}
+    override fun render(mcCtx: GuiGraphicsExtractor) {}
 }

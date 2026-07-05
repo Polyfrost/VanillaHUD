@@ -1,14 +1,17 @@
 package org.polyfrost.vanillahud.mixin;
 
-//? if <26 {
-
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+//? if >=26.2 {
+import net.minecraft.client.gui.Hud;
+//?} else {
+//import net.minecraft.client.gui.Gui;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.objectweb.asm.Opcodes;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,11 +20,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(Gui.class)
+//? if >=26.2 {
+@Mixin(Hud.class)
+//?} else {
+//@Mixin(Gui.class)
+//?}
 public abstract class GuiEditorMixin {
 
-    // TODO: "Demos" for the rest of the gui options.
-    // Health, Hunger, Armor, Air, Experience, Scoreboard (What else?)
+    // TODO: "Demos" for the Scoreboard (needs fabricating a fake Objective + scores).
+    // Done: Armor, Action Bar, Item Name, Title, Health, Hunger, Air, Experience (bar + level), Player List.
 
     @Shadow
     private Component overlayMessageString;
@@ -52,14 +59,24 @@ public abstract class GuiEditorMixin {
     }
 
     @ModifyExpressionValue(
-            method = "renderArmor",
+            //? if <26 {
+            /*method = "renderArmor",
+            *///?} else {
+             method = "extractArmor",
+            //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getArmorValue()I"))
     private static int vanillahud$forceArmor(int original) {
         return vanillahud$editing() && original <= 0 ? 20 : original;
     }
 
-    @Inject(method = "renderOverlayMessage", at = @At("HEAD"))
-    private void vanillahud$forceActionBar(GuiGraphics graphics, DeltaTracker delta, CallbackInfo ci) {
+    @Inject(
+            //? if <26 {
+            /*method = "renderOverlayMessage",
+            *///?} else {
+             method = "extractOverlayMessage",
+            //?}
+            at = @At("HEAD"))
+    private void vanillahud$forceActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
         if (vanillahud$editing() && (overlayMessageString == null || overlayMessageTime <= 0)) {
             overlayMessageString = Component.literal("Action Bar");
             overlayMessageTime = 60;
@@ -67,16 +84,28 @@ public abstract class GuiEditorMixin {
         }
     }
 
-    @Inject(method = "renderSelectedItemName", at = @At("HEAD"))
-    private void vanillahud$forceItemName(GuiGraphics graphics, CallbackInfo ci) {
+    @Inject(
+            //? if <26 {
+            /*method = "renderSelectedItemName",
+            *///?} else {
+             method = "extractSelectedItemName",
+            //?}
+            at = @At("HEAD"))
+    private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, CallbackInfo ci) {
         if (vanillahud$editing() && (toolHighlightTimer <= 0 || lastToolHighlight.isEmpty())) {
             lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
             toolHighlightTimer = 10;
         }
     }
 
-    @Inject(method = "renderTitle", at = @At("HEAD"))
-    private void vanillahud$forceTitle(GuiGraphics graphics, DeltaTracker delta, CallbackInfo ci) {
+    @Inject(
+            //? if <26 {
+            /*method = "renderTitle",
+            *///?} else {
+             method = "extractTitle",
+            //?}
+            at = @At("HEAD"))
+    private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
         if (vanillahud$editing() && (title == null || titleTime <= 0)) {
             title = Component.literal("Title");
             subtitle = Component.literal("Subtitle");
@@ -86,14 +115,96 @@ public abstract class GuiEditorMixin {
             titleTime = 90;
         }
     }
-}
-//?}
 
-//? if >=26 {
-/*import net.minecraft.client.gui.Gui;
-import org.spongepowered.asm.mixin.Mixin;
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderHotbarAndDecorations",
+            *///?} else {
+             method = "extractHotbarAndDecorations",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;canHurtPlayer()Z"))
+    private boolean vanillahud$forceHealthHungerAir(boolean original) {
+        return vanillahud$editing() || original;
+    }
 
-    @Mixin(Gui.class)
-    public abstract class GuiEditorMixin {
+    @ModifyExpressionValue(
+            //? if 1.21.1 {
+            /*method = "renderPlayerHealth",
+            *///?} elif <26 {
+            /*method = "renderAirBubbles",
+            *///?} else {
+             method = "extractAirBubbles",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAirSupply()I"))
+    private int vanillahud$forceAir(int original) {
+        return vanillahud$editing() ? 200 : original;
+    }
+
+    //? if <=1.21.5 {
+    /*@ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
+    private boolean vanillahud$forceXpLevelVisible(boolean original) {
+        return vanillahud$editing() || original;
+    }
+
+    @ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;experienceLevel:I", opcode = Opcodes.GETFIELD))
+    private int vanillahud$forceXpLevel(int original) {
+        return vanillahud$editing() && original <= 0 ? 30 : original;
+    }
+    *///?} else {
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderHotbarAndDecorations",
+            *///?} else {
+             method = "extractHotbarAndDecorations",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
+    private boolean vanillahud$forceXpHasExperience(boolean original) {
+        return vanillahud$editing() || original;
+    }
+
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderHotbarAndDecorations",
+            *///?} else {
+             method = "extractHotbarAndDecorations",
+            //?}
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
+    private int vanillahud$forceXpLevel(int original) {
+        return vanillahud$editing() && original <= 0 ? 30 : original;
+    }
+    //?}
+
+    //? if <=1.21.5 {
+    /*@ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
+    private boolean vanillahud$forceXpBar(boolean original) {
+        return vanillahud$editing() || original;
+    }
+    *///?} else {
+    @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
+    private boolean vanillahud$forceXpBar(boolean original) {
+        return vanillahud$editing() || original;
+    }
+    //?}
+
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderTabList",
+            *///?} else {
+             method = "extractTabList",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
+    private boolean vanillahud$forceTabKey(boolean original) {
+        return vanillahud$editing() || original;
+    }
+
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderTabList",
+            *///?} else {
+             method = "extractTabList",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"))
+    private boolean vanillahud$forceTabList(boolean original) {
+        return !vanillahud$editing() && original;
+    }
 }
-*///?}
