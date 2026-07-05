@@ -9,11 +9,22 @@
         "maxShiftBy": 5
     },
     "client": [
-        "BossHealthOverlayMixin",
+        "elements.BossHealthOverlayMixin",
         "GuiEditorMixin",
-        "GuiMixin",
-        "PlayerTabOverlayMixin",
+        "editor.PlayerTabOverlayMixin",
         "access.IGui",
-        "elements.GuiMixinScoreboard"
+        "elements.GuiMixinActionBar",
+        "elements.GuiMixinAir",
+        "elements.GuiMixinArmor",
+        "elements.GuiMixinExperienceBar",
+        "elements.GuiMixinExperienceLevel",
+        "elements.GuiMixinHealth",
+        "elements.GuiMixinHeldItemTooltip",
+        "elements.GuiMixinHotbar",
+        "elements.GuiMixinHunger",
+        "elements.GuiMixinMountHealth",
+        "elements.GuiMixinScoreboard",
+        "elements.GuiMixinTabList",
+        "elements.GuiMixinTitle"
     ]
 }

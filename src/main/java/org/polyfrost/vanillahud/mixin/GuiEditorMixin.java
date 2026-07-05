@@ -8,11 +8,13 @@ import net.minecraft.client.gui.Hud;
 //?} else {
 //import net.minecraft.client.gui.Gui;
 //?}
+import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,7 +30,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GuiEditorMixin {
 
     // TODO: "Demos" for the Scoreboard (needs fabricating a fake Objective + scores).
-    // Done: Armor, Action Bar, Item Name, Title, Health, Hunger, Air, Experience (bar + level), Player List.
 
     @Shadow
     private Component overlayMessageString;
@@ -52,6 +53,10 @@ public abstract class GuiEditorMixin {
     private int titleStayTime;
     @Shadow
     private int titleFadeOutTime;
+
+    @Shadow
+    @Final
+    private PlayerTabOverlay tabList;
 
     @Unique
     private static boolean vanillahud$editing() {
@@ -186,25 +191,15 @@ public abstract class GuiEditorMixin {
     }
     //?}
 
-    @ModifyExpressionValue(
+    @Inject(
             //? if <26 {
             /*method = "renderTabList",
             *///?} else {
-             method = "extractTabList",
+            method = "extractTabList",
             //?}
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
-    private boolean vanillahud$forceTabKey(boolean original) {
-        return vanillahud$editing() || original;
-    }
-
-    @ModifyExpressionValue(
-            //? if <26 {
-            /*method = "renderTabList",
-            *///?} else {
-             method = "extractTabList",
-            //?}
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"))
-    private boolean vanillahud$forceTabList(boolean original) {
-        return !vanillahud$editing() && original;
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;nextStratum()V")
+    )
+    private void vanillahud$forceTabList(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (vanillahud$editing()) tabList.setVisible(true);
     }
 }

@@ -10,8 +10,11 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IGui
+import org.polyfrost.vanillahud.util.TabListManager
 
 class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 22f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
@@ -23,6 +26,8 @@ class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER
     @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
     var animation = true
 
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
@@ -30,6 +35,8 @@ class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER
 }
 
 class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
@@ -41,6 +48,8 @@ class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER
     @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
 
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
@@ -48,6 +57,8 @@ class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER
 }
 
 class AirHud : VanillaHud("vanillahud/air.json", "Air", Category.PLAYER) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
@@ -55,6 +66,8 @@ class AirHud : VanillaHud("vanillahud/air.json", "Air", Category.PLAYER) {
 }
 
 class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Category.PLAYER) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
@@ -62,6 +75,8 @@ class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Categ
 }
 
 class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Bar", Category.PLAYER) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 5f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
@@ -69,6 +84,8 @@ class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Ba
 }
 
 class ExperienceLevelHud : VanillaHud("vanillahud/experience-level.json", "Experience Level", Category.PLAYER) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 16f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 8f
@@ -76,6 +93,8 @@ class ExperienceLevelHud : VanillaHud("vanillahud/experience-level.json", "Exper
 }
 
 class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Category.INFO) {
+    override fun multipleInstancesAllowed() = false
+
     override val exampleText get() = "Action Bar"
     override val naturalWidth get() = 60f
     override val naturalHeight get() = 11f
@@ -84,6 +103,8 @@ class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Categ
 }
 
 class HeldItemTooltipHud : VanillaHud("vanillahud/itemtooltip.json", "Held Item Tooltip", Category.INFO) {
+    override fun multipleInstancesAllowed() = false
+
     override val exampleText get() = "Diamond Sword"
     override val naturalWidth get() = 70f
     override val naturalHeight get() = 11f
@@ -92,6 +113,8 @@ class HeldItemTooltipHud : VanillaHud("vanillahud/itemtooltip.json", "Held Item 
 }
 
 class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 120f
     override val naturalHeight get() = 68f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
@@ -124,6 +147,8 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     @Color(title = "Score Points Color")
     var scorePointsColor = PolyColor(0xFFFF5555.toInt())
 
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - naturalWidth - 1f
@@ -131,9 +156,15 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
 }
 
 class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) {
+    init {
+        TabListManager.ensureLoaded()
+    }
+
     // TODO: Implement player limit
     @Slider(title = "Tab Player Limit", description = "How many players can display on the tab list.", min = 10f, max = 120f)
     var playerLimit = 80
+
+    override fun multipleInstancesAllowed() = false
 
     override val naturalWidth get() = 200f
     override val naturalHeight get() = 100f
@@ -142,6 +173,8 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
 }
 
 class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.COMBAT) {
+    override fun multipleInstancesAllowed() = false
+
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 30f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
