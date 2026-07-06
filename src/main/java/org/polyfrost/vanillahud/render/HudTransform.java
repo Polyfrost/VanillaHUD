@@ -9,21 +9,17 @@ public final class HudTransform {
     private HudTransform() {}
 
     private static VanillaHud resolve(VanillaHud provider) {
-        VanillaHud fallback = provider;
         for (Hud h : HudManager.INSTANCE.getActiveInstances()) {
             if (provider.getClass().isInstance(h)) {
-                if (h != provider) {
-                    return (VanillaHud) h;
-                }
-                fallback = (VanillaHud) h;
+                return (VanillaHud) h;
             }
         }
-        return fallback;
+        return null;
     }
 
     public static void begin(GuiGraphicsExtractor graphics, VanillaHud provider) {
         VanillaHud hud = resolve(provider);
-        boolean placed = hud != provider;
+        boolean placed = hud != null;
         int w = graphics.guiWidth();
         int h = graphics.guiHeight();
         float ox = provider.vanillaOriginX(w, h);
