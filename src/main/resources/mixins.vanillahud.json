@@ -10,7 +10,7 @@
     },
     "client": [
         "elements.BossHealthOverlayMixin",
-        "GuiEditorMixin",
+        "editor.GuiEditorMixin",
         "editor.PlayerTabOverlayMixin",
         "access.IGui",
         "elements.GuiMixinActionBar",

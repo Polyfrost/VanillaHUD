@@ -37,7 +37,9 @@ repositories {
         mavenContent { snapshotsOnly() }
     }
 
-    maven("https://maven.logix.dev/snapshots")
+    maven("https://maven.logix.dev/snapshots") {
+        content { excludeGroup("com.terraformersmc") }
+    }
     maven("https://nexus.prsm.wtf/repository/maven-public/maven-repo/releases/")
     maven("https://repo.hypixel.net/repository/Hypixel/")
     maven("https://maven.deftu.dev/releases")
@@ -52,9 +54,7 @@ repositories {
     maven("https://maven.azureaaron.net/releases") {
         content { includeGroup("net.azureaaron") }
     }
-    maven("https://maven.terraformersmc.com/releases") {
-        content { includeGroup("com.terraformersmc") }
-    }
+    maven("https://maven.terraformersmc.com/releases")
     maven("https://redirector.kotlinlang.org/maven/compose-dev")
 }
 

@@ -1,6 +1,7 @@
-package org.polyfrost.vanillahud.mixin;
+package org.polyfrost.vanillahud.mixin.editor;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >=26.2 {
@@ -8,13 +9,16 @@ import net.minecraft.client.gui.Hud;
 //?} else {
 //import net.minecraft.client.gui.Gui;
 //?}
-import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -29,7 +33,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //?}
 public abstract class GuiEditorMixin {
 
-    // TODO: "Demos" for the Scoreboard (needs fabricating a fake Objective + scores).
+    @Unique
+    private static Objective vanillahud$demoObjective;
 
     @Shadow
     private Component overlayMessageString;
@@ -53,10 +58,6 @@ public abstract class GuiEditorMixin {
     private int titleStayTime;
     @Shadow
     private int titleFadeOutTime;
-
-    @Shadow
-    @Final
-    private PlayerTabOverlay tabList;
 
     @Unique
     private static boolean vanillahud$editing() {
@@ -191,15 +192,62 @@ public abstract class GuiEditorMixin {
     }
     //?}
 
-    @Inject(
+    @ModifyExpressionValue(
             //? if <26 {
             /*method = "renderTabList",
             *///?} else {
             method = "extractTabList",
             //?}
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;nextStratum()V")
-    )
-    private void vanillahud$forceTabList(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (vanillahud$editing()) tabList.setVisible(true);
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
+    private boolean vanillahud$forceTabListKey(boolean original) {
+        return vanillahud$editing() || original;
+    }
+
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderTabList",
+            *///?} else {
+            method = "extractTabList",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"))
+    private boolean vanillahud$forceTabListLocal(boolean original) {
+        return !vanillahud$editing() && original;
+    }
+
+    //? if >=26 {
+    @ModifyExpressionValue(method = "extractScoreboardSidebar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;getDisplayObjective(Lnet/minecraft/world/scores/DisplaySlot;)Lnet/minecraft/world/scores/Objective;", ordinal = 1))
+    private Objective vanillahud$forceScoreboard(Objective original) {
+        return vanillahud$editing() && original == null ? vanillahud$demoObjective() : original;
+    }
+    //?}
+
+    @Unique
+    private static Objective vanillahud$demoObjective() {
+        if (vanillahud$demoObjective == null) {
+            Scoreboard scoreboard = new Scoreboard();
+            Objective objective = scoreboard.addObjective(
+                    "vanillahud_demo",
+                    ObjectiveCriteria.DUMMY,
+                    Component.literal("VanillaHUD").withStyle(ChatFormatting.YELLOW),
+                    ObjectiveCriteria.RenderType.INTEGER,
+                    false,
+                    null
+            );
+            vanillahud$putScore(scoreboard, objective, Component.literal("Kills").withStyle(ChatFormatting.GREEN), 7);
+            vanillahud$putScore(scoreboard, objective, Component.literal("Deaths").withStyle(ChatFormatting.RED), 2);
+            vanillahud$putScore(scoreboard, objective, Component.literal("K/D").withStyle(ChatFormatting.AQUA), 3);
+            vanillahud$putScore(scoreboard, objective, Component.literal("Coins").withStyle(ChatFormatting.GOLD), 1337);
+            vanillahud$putScore(scoreboard, objective, Component.literal("Rank").withStyle(ChatFormatting.LIGHT_PURPLE), 1);
+            vanillahud$demoObjective = objective;
+        }
+        return vanillahud$demoObjective;
+    }
+
+    @Unique
+    private static void vanillahud$putScore(Scoreboard scoreboard, Objective objective, Component name, int value) {
+        ScoreHolder holder = ScoreHolder.forNameOnly(name.getString());
+        ScoreAccess score = scoreboard.getOrCreatePlayerScore(holder, objective);
+        score.set(value);
+        score.display(name);
     }
 }
