@@ -214,31 +214,39 @@ public abstract class GuiEditorMixin {
         return !vanillahud$editing() && original;
     }
 
-    //? if >=26 {
-    @ModifyExpressionValue(method = "extractScoreboardSidebar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;getDisplayObjective(Lnet/minecraft/world/scores/DisplaySlot;)Lnet/minecraft/world/scores/Objective;", ordinal = 1))
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderScoreboardSidebar",
+            *///?} else {
+            method = "extractScoreboardSidebar",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;getDisplayObjective(Lnet/minecraft/world/scores/DisplaySlot;)Lnet/minecraft/world/scores/Objective;", ordinal = 1))
     private Objective vanillahud$forceScoreboard(Objective original) {
         return vanillahud$editing() && original == null ? vanillahud$demoObjective() : original;
     }
-    //?}
 
     @Unique
     private static Objective vanillahud$demoObjective() {
         if (vanillahud$demoObjective == null) {
-            Scoreboard scoreboard = new Scoreboard();
-            Objective objective = scoreboard.addObjective(
-                    "vanillahud_demo",
-                    ObjectiveCriteria.DUMMY,
-                    Component.literal("VanillaHUD").withStyle(ChatFormatting.YELLOW),
-                    ObjectiveCriteria.RenderType.INTEGER,
-                    false,
-                    null
-            );
-            vanillahud$putScore(scoreboard, objective, Component.literal("Kills").withStyle(ChatFormatting.GREEN), 7);
-            vanillahud$putScore(scoreboard, objective, Component.literal("Deaths").withStyle(ChatFormatting.RED), 2);
-            vanillahud$putScore(scoreboard, objective, Component.literal("K/D").withStyle(ChatFormatting.AQUA), 3);
-            vanillahud$putScore(scoreboard, objective, Component.literal("Coins").withStyle(ChatFormatting.GOLD), 1337);
-            vanillahud$putScore(scoreboard, objective, Component.literal("Rank").withStyle(ChatFormatting.LIGHT_PURPLE), 1);
-            vanillahud$demoObjective = objective;
+            try {
+                Scoreboard scoreboard = new Scoreboard();
+                Objective objective = scoreboard.addObjective(
+                        "vanillahud_demo",
+                        ObjectiveCriteria.DUMMY,
+                        Component.literal("VanillaHUD").withStyle(ChatFormatting.YELLOW),
+                        ObjectiveCriteria.RenderType.INTEGER,
+                        false,
+                        null
+                );
+                vanillahud$putScore(scoreboard, objective, Component.literal("Kills").withStyle(ChatFormatting.GREEN), 7);
+                vanillahud$putScore(scoreboard, objective, Component.literal("Deaths").withStyle(ChatFormatting.RED), 2);
+                vanillahud$putScore(scoreboard, objective, Component.literal("K/D").withStyle(ChatFormatting.AQUA), 3);
+                vanillahud$putScore(scoreboard, objective, Component.literal("Coins").withStyle(ChatFormatting.GOLD), 1337);
+                vanillahud$putScore(scoreboard, objective, Component.literal("Rank").withStyle(ChatFormatting.LIGHT_PURPLE), 1);
+                vanillahud$demoObjective = objective;
+            } catch (Throwable t) {
+                return null;
+            }
         }
         return vanillahud$demoObjective;
     }

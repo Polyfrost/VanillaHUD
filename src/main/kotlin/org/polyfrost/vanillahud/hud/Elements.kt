@@ -3,80 +3,84 @@ package org.polyfrost.vanillahud.hud
 //? if <26 {
 /*import org.polyfrost.oneconfig.utils.v1.dsl.mc
 *///?}
+import net.minecraft.world.scores.PlayerScoreEntry
 import org.polyfrost.compose.render.PolyColor
-import org.polyfrost.oneconfig.api.config.v1.annotations.Color
-import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
-import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.vanillahud.mixin.access.IGui
 import org.polyfrost.vanillahud.util.TabListManager
 
-class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
-    override fun multipleInstancesAllowed() = false
+class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Category.INFO) {
+    @Switch(
+        title = "Use Jukebox Rainbow Timer Color",
+        description = "Use the rainbow timer color when a jukebox begins playing."
+    )
+    var rainbowTimer = true
 
-    override val naturalWidth get() = 182f
-    override val naturalHeight get() = 22f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 22f
-}
+    override val exampleText get() = "Action Bar"
+    override val naturalWidth get() = 60f
+    override val naturalHeight get() = 11f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 72f
 
-class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER) {
-    // TODO: Implement animation, Ask Wyvest
-    @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
-    var animation = true
-
-    override fun multipleInstancesAllowed() = false
-
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
-}
-
-class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
-    override fun multipleInstancesAllowed() = false
-
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
-}
-
-class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER) {
-    // TODO: Implement animation, Ask Wyvest
-    @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
-    var animation = true
-
-    override fun multipleInstancesAllowed() = false
-
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+    override fun measuredWidth(): Float {
+        if (isEditing) return super.measuredWidth()
+        return textWidth { hudAccessor?.overlay?.string }
+    }
 }
 
 class AirHud : VanillaHud("vanillahud/air.json", "Air", Category.PLAYER) {
-    override fun multipleInstancesAllowed() = false
+    @Checkbox(title = "Link with health")
+    var healthLink = false
+
+    @Checkbox(title = "Link with mount health")
+    var mountLink = true
 
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
+
+    override fun linkTarget() = when {
+        mountLink -> Huds.mountHealth
+        healthLink -> Huds.health
+        else -> null
+    }
 }
 
-class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Category.PLAYER) {
-    override fun multipleInstancesAllowed() = false
+class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
+    @Checkbox(title = "Link with health")
+    var healthLink = true
+
+    @Checkbox(title = "Link with mount health")
+    var mountLink = false
 
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
+
+    override fun linkTarget() = when {
+        mountLink -> Huds.mountHealth
+        healthLink -> Huds.health
+        else -> null
+    }
+}
+
+class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.COMBAT) {
+    @Switch(title = "Render Text")
+    var renderText = true
+
+    @Switch(title = "Render Health")
+    var renderHealth = true
+
+    override val naturalWidth get() = 182f
+    override val naturalHeight get() = 30f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 12f
 }
 
 class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Bar", Category.PLAYER) {
-    override fun multipleInstancesAllowed() = false
-
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 5f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
@@ -84,70 +88,153 @@ class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Ba
 }
 
 class ExperienceLevelHud : VanillaHud("vanillahud/experience-level.json", "Experience Level", Category.PLAYER) {
-    override fun multipleInstancesAllowed() = false
-
     override val naturalWidth get() = 16f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 8f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
 }
 
-class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Category.INFO) {
-    override fun multipleInstancesAllowed() = false
+class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER) {
+    @Checkbox(title = "Link with mount health")
+    var mountLink = false
 
-    override val exampleText get() = "Action Bar"
-    override val naturalWidth get() = 60f
-    override val naturalHeight get() = 11f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 72f
+    @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
+    var animation = true
+
+    override val naturalWidth get() = 81f
+    override val naturalHeight get() = 9f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+
+    override fun linkTarget() = if (mountLink) Huds.mountHealth else null
+}
+
+class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
+    @Dropdown(title = "Mode", options = ["Horizontal", "Vertical"])
+    var hotbarMode = 0
+
+    @Switch(
+        title = "Animation",
+        description = "Slide the selected-slot highlight between positions instead of snapping."
+    )
+    var animation = false
+
+    val vertical get() = hotbarMode == 1
+
+    override val naturalWidth get() = if (vertical) 22f else 182f
+    override val naturalHeight get() = if (vertical) 182f else 22f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
+        if (vertical) 4f else screenWidth / 2f - 91f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
+        if (vertical) screenHeight / 2f - 91f else screenHeight - 22f
+}
+
+class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER) {
+    @Checkbox(title = "Link with health")
+    var healthLink: Boolean = false
+
+    @Checkbox(title = "Link with mount health")
+    var mountLink: Boolean = false
+
+    @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
+    var animation = true
+
+    override val naturalWidth get() = 81f
+    override val naturalHeight get() = 9f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+
+    override fun linkTarget() = when {
+        mountLink -> Huds.mountHealth
+        healthLink -> Huds.health
+        else -> null
+    }
+}
+
+class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Category.PLAYER) {
+    @Checkbox(title = "Link with health")
+    var healthLink: Boolean = false
+
+    override val naturalWidth get() = 81f
+    override val naturalHeight get() = 9f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+
+    override fun linkTarget() = if (healthLink) Huds.health else null
 }
 
 class HeldItemTooltipHud : VanillaHud("vanillahud/itemtooltip.json", "Held Item Tooltip", Category.INFO) {
-    override fun multipleInstancesAllowed() = false
+    @Switch(title = "Fade Out")
+    var fadeOut: Boolean = true
+
+    @Switch(title = "Instant Fade")
+    var instantFade: Boolean = false
 
     override val exampleText get() = "Diamond Sword"
     override val naturalWidth get() = 70f
     override val naturalHeight get() = 11f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f
-}
 
-class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
-    override fun multipleInstancesAllowed() = false
-
-    override val naturalWidth get() = 120f
-    override val naturalHeight get() = 68f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
-
-    // I suck at kotlin, someone please save me
     override fun measuredWidth(): Float {
-        //?if >=26.2 {
-        val hud = mc.gui.hud
-        //?} else {
-        //val hud = mc.gui
-        //?}
-        val gui = hud as? IGui
-
-        val title: String =
-            if (!isEditing && gui != null) gui.title?.string ?: "Title" else "Title"
-
-        val subtitle: String =
-            if (!isEditing && gui != null) gui.subtitle?.string ?: "Title" else "Title"
-
-        return try {
-            maxOf(mc.font.width(title) * 4, mc.font.width(subtitle) * 2).toFloat()
-        } catch (_: Throwable) {
-            naturalWidth
-        }
+        if (isEditing) return super.measuredWidth()
+        return textWidth { hudAccessor?.lastToolHighlight?.takeUnless { s -> s.isEmpty }?.hoverName?.string }
     }
 }
 
 class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Category.INFO) {
-    @Color(title = "Score Points Color")
+    @Dropdown(
+        title = "Show Score Points",
+        category = "Score Points",
+        options = ["Hide", "Hide Only if Consecutive", "Show Always"]
+    )
+    var scoreboardPoints: Int = 1
+
+    @Color(title = "Score Points Color", category = "Score Points")
     var scorePointsColor = PolyColor(0xFFFF5555.toInt())
 
-    override fun multipleInstancesAllowed() = false
+    @Switch(title = "Scoreboard Title")
+    var scoreboardTitle: Boolean = true
+
+    @Switch(
+        title = "Persistent Scoreboard Title",
+        description = "Keep rendering the scoreboard title even when there are no score lines."
+    )
+    var persistentTitle: Boolean = false
+
+    @Color(title = "Title Background Color")
+    var titleColor = PolyColor(0x66000000)
+
+    @Color(title = "Background Color")
+    var backgroundColor = PolyColor(0x4C000000)
+
+    @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
+    var textType: Int = 0
+
+    val titleBgColor: Int get() = titleColor.argb
+
+    val bodyBgColor: Int get() = backgroundColor.argb
+
+    val textShadow: Boolean get() = textType == 1
+
+    fun showScorePoints(nonConsecutive: Boolean): Boolean =
+        scoreboardPoints == 2 || (scoreboardPoints == 1 && nonConsecutive)
+
+    fun areScoresConsecutive(scores: Collection<PlayerScoreEntry>): Boolean {
+        val values = scores
+            .filter { !it.isHidden }
+            .map { it.value }
+            .sorted()
+
+        if (values.isEmpty()) return false
+
+        for (i in 0 until values.size - 1) {
+            if (values[i] + 1 != values[i + 1]) {
+                return false
+            }
+        }
+        return true
+    }
 
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
@@ -160,11 +247,82 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         TabListManager.ensureLoaded()
     }
 
-    // TODO: Implement player limit
-    @Slider(title = "Tab Player Limit", description = "How many players can display on the tab list.", min = 10f, max = 120f)
+    @Slider(
+        title = "Tab Player Limit",
+        description = "How many players can display on the tab list.",
+        min = 10f,
+        max = 120f
+    )
     var playerLimit = 80
 
-    override fun multipleInstancesAllowed() = false
+    @Dropdown(title = "Mode", options = ["Held", "Toggle"])
+    var displayMode = 1
+
+    @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
+    var textType: Int = 1
+
+    @Switch(title = "Show Header")
+    var showHeader: Boolean = true
+
+    @Switch(title = "Show Footer")
+    var showFooter: Boolean = true
+
+    @Switch(title = "Show Self At Top")
+    var selfAtTop: Boolean = false
+
+    @Switch(title = "Show Player's Head")
+    var showHead: Boolean = true
+
+    // TODO:
+    @Switch(title = "Better Hat Layer")
+    var betterHatLayer: Boolean = false
+
+    @Switch(title = "Show Player's Ping")
+    var showPing: Boolean = true
+
+    @Switch(title = "Use Number Ping")
+    var numberPing: Boolean = true
+
+    @Dropdown(title = "Ping Text", options = ["Small", "Full"])
+    var pingType = 1
+
+    @Switch(
+        title = "Hide False Ping",
+        description = "Hides falsified ping numbers such as a ping of 0 or 1 when on Hypixel"
+    )
+    var hideFalsePing: Boolean = true
+
+    @Color(title = "Ping Between 0 and 75")
+    var pingLevelOne = PolyColor(0xFF55FF55.toInt())
+
+    @Color(title = "Ping Between 75 and 145")
+    var pingLevelTwo = PolyColor(0xFF00AA00.toInt())
+
+    @Color(title = "Ping Between 145 and 200")
+    var pingLevelThree = PolyColor(0xFFFF55FF.toInt())
+
+    @Color(title = "Ping Between 200 and 300")
+    var pingLevelFour = PolyColor(0xFFAA00FF.toInt())
+
+    @Color(title = "Ping Between 300 and 400")
+    var pingLevelFive = PolyColor(0xFF5555FF.toInt())
+
+    @Color(title = "Ping Above 400")
+    var pingLevelSix = PolyColor(0xFFAA0000.toInt())
+
+    @Color(title = "Tab Widget Color")
+    var tabWidgetColor = PolyColor(0x275536481.toInt())
+
+    val tabWidgetArgb: Int get() = tabWidgetColor.argb
+
+    fun pingColor(ping: Int): Int = when {
+        ping >= 400 -> pingLevelSix
+        ping >= 300 -> pingLevelFive
+        ping >= 200 -> pingLevelFour
+        ping >= 145 -> pingLevelThree
+        ping >= 75 -> pingLevelTwo
+        else -> pingLevelOne
+    }.argb
 
     override val naturalWidth get() = 200f
     override val naturalHeight get() = 100f
@@ -172,13 +330,22 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
 }
 
-class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.COMBAT) {
-    override fun multipleInstancesAllowed() = false
+class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
+    override val naturalWidth get() = 120f
+    override val naturalHeight get() = 68f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
 
-    override val naturalWidth get() = 182f
-    override val naturalHeight get() = 30f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 12f
+    override fun measuredWidth(): Float {
+        val gui = if (isEditing) null else hudAccessor
+        val title = gui?.title?.string ?: "Title"
+        val subtitle = gui?.subtitle?.string ?: "Subtitle"
+        return try {
+            maxOf(mc.font.width(title) * 4, mc.font.width(subtitle) * 2).toFloat()
+        } catch (_: Throwable) {
+            naturalWidth
+        }
+    }
 }
 
 object Huds {

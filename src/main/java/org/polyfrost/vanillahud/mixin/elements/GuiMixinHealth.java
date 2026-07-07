@@ -33,9 +33,11 @@ public class GuiMixinHealth {
             int absorption, boolean blink, Operation<Void> original) {
         if (!Huds.INSTANCE.getHealth().shouldRender()) return;
 
+        boolean animatedBlink = blink && Huds.INSTANCE.getHealth().getAnimation();
+
         HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
         original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
-                currentHealth, oldHealth, absorption, blink);
+                currentHealth, oldHealth, absorption, animatedBlink);
         HudTransform.end(graphics);
     }
 }

@@ -32,10 +32,6 @@ object TabListManager {
     @Volatile
     private var requested = false
 
-    /**
-     * Populate the editor demo list once: fallback first (guaranteed rows even offline),
-     * then refresh from the network. Safe to call every frame.
-     */
     fun ensureLoaded() {
         if (requested) return
         requested = true
@@ -59,11 +55,14 @@ object TabListManager {
     private fun List<UUID>.toPlayerInfoList(): List<PlayerInfo> =
         map { PlayerInfo(getProfile(it), false) }
 
-    // Degrade to a bare profile so one failed fetch can't empty the whole list.
     private fun getProfile(uuid: UUID): GameProfile =
         try {
+            //? if >=1.21.9 {
             mc.services().sessionService.fetchProfile(uuid, true)?.profile() ?: GameProfile(uuid, null)
-        } catch (e: Exception) {
+            //?} else {
+            /*mc.minecraftSessionService.fetchProfile(uuid, true)?.profile() ?: GameProfile(uuid, null)
+            *///?}
+        } catch (_: Exception) {
             GameProfile(uuid, null)
         }
 }

@@ -9,6 +9,7 @@ object VanillaHUDConfig : Config(
     "VanillaHUD",
     Category.QOL,
 ) {
+    // TODO:
     @Switch(
         title = "Start at the Top of Tooltips",
         category = "Tooltips",

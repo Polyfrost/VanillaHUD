@@ -84,6 +84,11 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
 
     ocfg("${sc.current.version}-fabric", "commands", "config", "config-impl", "events", "internal", "ui", "utils", "hud")
+
+    if (mcversion >= "26.2") {
+        modCompileOnly("net.fabricmc.fabric-api:fabric-api-base:2.0.4+ece063239c")
+        modCompileOnly("net.fabricmc.fabric-api:fabric-lifecycle-events-v1:4.1.3+4575b05f9c")
+    }
 }
 
 bloom {

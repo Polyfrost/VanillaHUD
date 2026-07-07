@@ -3,21 +3,30 @@ package org.polyfrost.vanillahud.mixin.elements;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >=26.2 {
 import net.minecraft.client.gui.Hud;
 //?} else {
 //import net.minecraft.client.gui.Gui;
 //?}
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
+import net.minecraft.world.scores.Objective;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
 @Mixin(Hud.class)
@@ -40,36 +49,95 @@ public class GuiMixinScoreboard {
         HudTransform.end(graphics);
     }
 
+    @Inject(method = "displayScoreboardSidebar", at = @At("HEAD"), cancellable = true)
+    private void vanillahud$scoreboard$persistent(GuiGraphicsExtractor graphics, Objective objective, CallbackInfo ci) {
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        long visible = objective.getScoreboard().listPlayerScores(objective).stream()
+                .filter(score -> !score.isHidden())
+                .count();
+        if (visible == 0 && !(hud.getPersistentTitle() && hud.getScoreboardTitle())) {
+            ci.cancel();
+        }
+    }
+
     @ModifyExpressionValue(
             method = "displayScoreboardSidebar",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Objective;numberFormatOrDefault(Lnet/minecraft/network/chat/numbers/NumberFormat;)Lnet/minecraft/network/chat/numbers/NumberFormat;")
     )
-    private NumberFormat vanillahud$scoreboard$scorePointsColor(NumberFormat original) {
-        return new StyledFormat(Style.EMPTY.withColor(Huds.INSTANCE.getScoreboard().getScorePointsColor().getArgb()));
+    private NumberFormat vanillahud$scoreboard$scorePoints(NumberFormat original, @Local(argsOnly = true) Objective objective) {
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (!hud.showScorePoints(
+                !hud.areScoresConsecutive(objective.getScoreboard().listPlayerScores(objective))
+        )) {
+            return BlankFormat.INSTANCE;
+        }
+        return new StyledFormat(Style.EMPTY.withColor(hud.getScorePointsColor().getArgb()));
+    }
+
+    @WrapOperation(
+            method = "displayScoreboardSidebar",
+            at = @At(
+                    value = "INVOKE",
+                    //? if >=26 {
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    //?} else {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    *///?}
+                    ordinal = 0
+            )
+    )
+    private void vanillahud$scoreboard$titleBackground(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return;
+        original.call(graphics, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getTitleBgColor());
     }
 
     @ModifyArg(
             method = "displayScoreboardSidebar",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"
+                    //? if >=26 {
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    //?} else {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    *///?}
+                    ordinal = 1
             ),
             index = 4
     )
-    private int vanillahud$scoreboard$backgroundColor(int x0) {
-        return Huds.INSTANCE.getScoreboard().getBgColor();
+    private int vanillahud$scoreboard$background(int color) {
+        return Huds.INSTANCE.getScoreboard().getBodyBgColor();
     }
 
-    // TODO: Independent shadows for Header, Body, and Score
+    @WrapOperation(
+            method = "displayScoreboardSidebar",
+            at = @At(
+                    value = "INVOKE",
+                    //? if >=26 {
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
+                    //?} else {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
+                    *///?}
+                    ordinal = 0
+            )
+    )
+    private void vanillahud$scoreboard$title(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, boolean dropShadow, Operation<Void> original) {
+        if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return;
+        original.call(graphics, font, text, x, y, color, dropShadow);
+    }
+
     @ModifyArg(
             method = "displayScoreboardSidebar",
             at = @At(
                     value = "INVOKE",
+                    //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
+                    //?} else {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
+                    *///?}
             ),
             index = 5
     )
     private boolean vanillahud$scoreboard$textShadow(boolean dropShadow) {
-        return Huds.INSTANCE.getScoreboard().getShowShadow();
+        return Huds.INSTANCE.getScoreboard().getTextShadow();
     }
 }

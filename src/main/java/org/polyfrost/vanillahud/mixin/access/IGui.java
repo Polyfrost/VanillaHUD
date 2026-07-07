@@ -6,6 +6,7 @@ import net.minecraft.client.gui.Hud;
 //import net.minecraft.client.gui.Gui;
 //?}
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -23,4 +24,7 @@ public interface IGui {
 
     @Accessor("overlayMessageString")
     Component getOverlay();
+
+    @Accessor("lastToolHighlight")
+    ItemStack getLastToolHighlight();
 }

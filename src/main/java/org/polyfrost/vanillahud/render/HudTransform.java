@@ -20,6 +20,7 @@ public final class HudTransform {
     public static void begin(GuiGraphicsExtractor graphics, VanillaHud provider) {
         VanillaHud hud = resolve(provider);
         boolean placed = hud != null;
+        if (placed) hud.applyLink();
         int w = graphics.guiWidth();
         int h = graphics.guiHeight();
         float ox = provider.vanillaOriginX(w, h);
@@ -29,10 +30,10 @@ public final class HudTransform {
         float s = placed ? hud.getEffectiveScale() : 1f;
         var pose = graphics.pose();
         pose.pushMatrix();
-        //? if <= 1.21.4 {
-        // pose.translate(gx, gy, 0f);
-        // pose.scale(s, s, 1f);
-        // pose.translate(-ox, -oy, 0f);
+        //? if <=1.21.5 {
+        //pose.translate(gx, gy, 0f);
+        //pose.scale(s, s, 1f);
+        //pose.translate(-ox, -oy, 0f);
         //?} else {
         pose.translate(gx, gy);
         pose.scale(s, s);
