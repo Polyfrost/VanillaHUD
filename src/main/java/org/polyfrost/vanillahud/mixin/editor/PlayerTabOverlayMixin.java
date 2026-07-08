@@ -118,8 +118,7 @@ public abstract class PlayerTabOverlayMixin {
     //? if >=26 {
     @ModifyExpressionValue(
             method = "extractRenderState",
-            /*~ if >=26.2 'Lnet/minecraft/network/Connection;isEncrypted()Z' ->
-                'Lnet/minecraft/client/multiplayer/ClientPacketListener;onlineMode()Z'*/
+            //~ if >=26.2 'Lnet/minecraft/network/Connection;isEncrypted()Z' -> 'Lnet/minecraft/client/multiplayer/ClientPacketListener;onlineMode()Z'
             at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;isEncrypted()Z")
     )
     private boolean vanillahud$showHead(boolean original) {

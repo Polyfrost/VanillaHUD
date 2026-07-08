@@ -71,14 +71,14 @@ public class GuiMixinScoreboard {
     }
 
     @WrapOperation(
+            //? if <1.21.4 {
+            /*method = "method_55440",
+            *///?} else {
             method = "displayScoreboardSidebar",
+            //?}
             at = @At(
                     value = "INVOKE",
-                    //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    //?} else {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    *///?}
                     ordinal = 0
             )
     )
@@ -88,14 +88,14 @@ public class GuiMixinScoreboard {
     }
 
     @ModifyArg(
+            //? if <1.21.4 {
+            /*method = "method_55440",
+            *///?} else {
             method = "displayScoreboardSidebar",
+            //?}
             at = @At(
                     value = "INVOKE",
-                    //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    //?} else {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    *///?}
                     ordinal = 1
             ),
             index = 4
@@ -105,30 +105,49 @@ public class GuiMixinScoreboard {
     }
 
     @WrapOperation(
+            //? if <1.21.4 {
+            /*method = "method_55440",
+            *///?} else {
             method = "displayScoreboardSidebar",
+            //?}
             at = @At(
                     value = "INVOKE",
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
-                    //?} else {
+                    //?} elif >=1.21.6 {
                     /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
+                    *///?} else {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
                     *///?}
                     ordinal = 0
             )
     )
+    //? if <1.21.6 {
+    /*private int vanillahud$scoreboard$title(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, boolean dropShadow, Operation<Integer> original) {
+        if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return 0;
+        return original.call(graphics, font, text, x, y, color, dropShadow);
+    }
+    *///?} else {
     private void vanillahud$scoreboard$title(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, boolean dropShadow, Operation<Void> original) {
         if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return;
         original.call(graphics, font, text, x, y, color, dropShadow);
     }
+    //?}
 
     @ModifyArg(
+            //? if <1.21.4 {
+            /*method = "method_55440",
+            *///?} else {
             method = "displayScoreboardSidebar",
+            //?}
             at = @At(
                     value = "INVOKE",
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
-                    //?} else {
+                    //?} elif >=1.21.6 {
                     /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
+                    *///?} else {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I"
                     *///?}
             ),
             index = 5

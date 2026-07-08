@@ -152,7 +152,7 @@ public abstract class GuiEditorMixin {
         return vanillahud$editing() || original;
     }
 
-    @ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;experienceLevel:I", opcode = Opcodes.GETFIELD))
+    @ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
         return vanillahud$editing() && original <= 0 ? 30 : original;
     }
