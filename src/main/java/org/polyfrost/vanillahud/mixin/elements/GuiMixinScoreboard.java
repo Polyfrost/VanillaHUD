@@ -9,9 +9,9 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -29,18 +29,13 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinScoreboard {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderScoreboardSidebar"
-            *///?} else {
-            method = "extractScoreboardSidebar"
-            //?}
-    )
+    //? if <1.21.4 {
+    /*@WrapMethod(method = "renderScoreboardSidebar")
     private void vanillahud$scoreboard(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         if (!Huds.INSTANCE.getScoreboard().shouldRender()) return;
 
@@ -48,6 +43,7 @@ public class GuiMixinScoreboard {
         original.call(graphics, deltaTracker);
         HudTransform.end(graphics);
     }
+    *///?}
 
     @Inject(method = "displayScoreboardSidebar", at = @At("HEAD"), cancellable = true)
     private void vanillahud$scoreboard$persistent(GuiGraphicsExtractor graphics, Objective objective, CallbackInfo ci) {
@@ -81,7 +77,7 @@ public class GuiMixinScoreboard {
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
                     //?} else {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
                     *///?}
                     ordinal = 0
             )
@@ -98,7 +94,7 @@ public class GuiMixinScoreboard {
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
                     //?} else {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
                     *///?}
                     ordinal = 1
             ),
@@ -115,7 +111,7 @@ public class GuiMixinScoreboard {
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
                     //?} else {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
                     *///?}
                     ordinal = 0
             )
@@ -132,7 +128,7 @@ public class GuiMixinScoreboard {
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
                     //?} else {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
                     *///?}
             ),
             index = 5

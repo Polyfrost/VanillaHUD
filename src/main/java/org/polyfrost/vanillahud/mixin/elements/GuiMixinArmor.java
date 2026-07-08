@@ -9,24 +9,19 @@ import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinArmor {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderArmor"
-            *///?} else {
-            method = "extractArmor"
-            //?}
-    )
+    //? if <1.21.6 {
+    /*@WrapMethod(method = "renderArmor")
     private static void vanillahud$armor(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int numHealthRows, int healthRowHeight, int xLeft, Operation<Void> original) {
         if (!Huds.INSTANCE.getArmor().shouldRender()) return;
@@ -35,4 +30,5 @@ public class GuiMixinArmor {
         original.call(graphics, player, yLineBase, numHealthRows, healthRowHeight, xLeft);
         HudTransform.end(graphics);
     }
+    *///?}
 }

@@ -11,24 +11,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinHunger {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderFood"
-            *///?} else {
-            method = "extractFood"
-            //?}
-    )
+    //? if <1.21.6 {
+    /*@WrapMethod(method = "renderFood")
     private void vanillahud$hunger(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int xRight, Operation<Void> original) {
         if (!Huds.INSTANCE.getHunger().shouldRender()) return;
@@ -37,9 +32,8 @@ public class GuiMixinHunger {
         original.call(graphics, player, yLineBase, xRight);
         HudTransform.end(graphics);
     }
+    *///?}
 
-    // Vanilla jitters each icon vertically by random.nextInt(3) - 1 on low saturation.
-    // When the animation is disabled, force it to 1 so the offset resolves to 0.
     @ModifyExpressionValue(
             //? if < 26 {
             /*method = "renderFood",

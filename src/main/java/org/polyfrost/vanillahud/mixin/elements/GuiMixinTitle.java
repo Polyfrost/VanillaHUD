@@ -9,24 +9,19 @@ import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinTitle {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderTitle"
-            *///?} else {
-            method = "extractTitle"
-            //?}
-    )
+    //? if <1.21.4 {
+    /*@WrapMethod(method = "renderTitle")
     private void vanillahud$title(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         if (!Huds.INSTANCE.getTitle().shouldRender()) return;
 
@@ -34,4 +29,5 @@ public class GuiMixinTitle {
         original.call(graphics, deltaTracker);
         HudTransform.end(graphics);
     }
+    *///?}
 }

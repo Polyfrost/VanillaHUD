@@ -15,15 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 *///?}
 
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinAir {
     //? if 1.21.1 {
@@ -45,14 +45,8 @@ public class GuiMixinAir {
     private void vanillahud$airEnd(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
         HudTransform.end(guiGraphics);
     }
-    *///?} elif >=1.21.4 {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderAirBubbles"
-            *///?} else {
-            method = "extractAirBubbles"
-            //?}
-    )
+    *///?} elif >=1.21.4 && <1.21.6 {
+    /*@WrapMethod(method = "renderAirBubbles")
     private void vanillahud$air(GuiGraphicsExtractor graphics, Player player, int vehicleHearts, int yLineAir,
                                 int xRight, Operation<Void> original) {
         if (!Huds.INSTANCE.getAir().shouldRender()) return;
@@ -61,5 +55,5 @@ public class GuiMixinAir {
         original.call(graphics, player, vehicleHearts, yLineAir, xRight);
         HudTransform.end(graphics);
     }
-    //?}
+    *///?}
 }

@@ -12,24 +12,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinHeldItemTooltip {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderSelectedItemName"
-            *///?} else {
-            method = "extractSelectedItemName"
-            //?}
-    )
+    //? if <1.21.6 {
+    /*@WrapMethod(method = "renderSelectedItemName")
     private void vanillahud$itemName(GuiGraphicsExtractor graphics, Operation<Void> original) {
         if (!Huds.INSTANCE.getHeldItemTooltip().shouldRender()) return;
 
@@ -37,6 +32,7 @@ public class GuiMixinHeldItemTooltip {
         original.call(graphics);
         HudTransform.end(graphics);
     }
+    *///?}
 
     @ModifyExpressionValue(
             //? if < 26 {
@@ -44,7 +40,8 @@ public class GuiMixinHeldItemTooltip {
             *///?} else {
             method = "extractSelectedItemName",
             //?}
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Hud;toolHighlightTimer:I", ordinal = 0,
+            //~ if >=26.2 'Gui' -> 'Hud'
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;toolHighlightTimer:I", ordinal = 0,
                     opcode = Opcodes.GETFIELD))
     private int vanillahud$gateTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
@@ -57,7 +54,8 @@ public class GuiMixinHeldItemTooltip {
             *///?} else {
             method = "extractSelectedItemName",
             //?}
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Hud;toolHighlightTimer:I", ordinal = 1,
+            //~ if >=26.2 'Gui' -> 'Hud'
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;toolHighlightTimer:I", ordinal = 1,
                     opcode = Opcodes.GETFIELD))
     private int vanillahud$alphaTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();

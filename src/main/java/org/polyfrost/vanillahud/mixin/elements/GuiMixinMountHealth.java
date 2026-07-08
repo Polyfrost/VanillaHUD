@@ -8,24 +8,19 @@ import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+/*import net.minecraft.client.gui.Hud;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public class GuiMixinMountHealth {
-    @WrapMethod(
-            //? if < 26 {
-            /*method = "renderVehicleHealth"
-            *///?} else {
-            method = "extractVehicleHealth"
-            //?}
-    )
+    //? if <1.21.6 {
+    /*@WrapMethod(method = "renderVehicleHealth")
     private void vanillahud$mount(GuiGraphicsExtractor graphics, Operation<Void> original) {
         if (!Huds.INSTANCE.getMountHealth().shouldRender()) return;
 
@@ -33,4 +28,5 @@ public class GuiMixinMountHealth {
         original.call(graphics);
         HudTransform.end(graphics);
     }
+    *///?}
 }

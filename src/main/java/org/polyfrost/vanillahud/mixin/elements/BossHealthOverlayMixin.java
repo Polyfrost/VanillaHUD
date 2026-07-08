@@ -15,13 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(BossHealthOverlay.class)
 public class BossHealthOverlayMixin {
-    @WrapMethod(
-            //? if >=26 {
-            method = "extractRenderState"
-            //?} else {
-            /*method = "render"
-            *///?}
-    )
+    //? if <1.21.4 {
+    /*@WrapMethod(method = "render")
     private void vanillahud$boss(GuiGraphicsExtractor graphics, Operation<Void> original) {
         if (!Huds.INSTANCE.getBossBar().shouldRender()) return;
 
@@ -29,6 +24,7 @@ public class BossHealthOverlayMixin {
         original.call(graphics);
         HudTransform.end(graphics);
     }
+    *///?}
 
     @WrapOperation(
             //? if >=26 {

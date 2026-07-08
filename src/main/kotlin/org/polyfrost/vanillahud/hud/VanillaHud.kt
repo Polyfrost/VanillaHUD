@@ -49,10 +49,10 @@ abstract class VanillaHud(
     protected val hudAccessor: IGui?
         get() = try {
             //? if >=26.2 {
-            mc.gui.hud as? IGui
-            //?} else {
-            /*mc.gui as? IGui
-            *///?}
+            /*mc.gui.hud as? IGui
+            *///?} else {
+            mc.gui as? IGui
+            //?}
         } catch (_: Throwable) {
             null
         }

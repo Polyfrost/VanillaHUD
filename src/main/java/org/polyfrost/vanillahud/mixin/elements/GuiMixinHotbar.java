@@ -10,7 +10,7 @@ import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if >=26.2 {
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+/*import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.resources.Identifier;
@@ -20,19 +20,19 @@ import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
-//?} else {
-//import net.minecraft.client.gui.Gui;
+*///?} else {
+import net.minecraft.client.gui.Gui;
 //?}
 
 //? if >=26.2 {
-@Mixin(Hud.class)
-//?} else {
-//@Mixin(Gui.class)
+/*@Mixin(Hud.class)
+*///?} else {
+@Mixin(Gui.class)
 //?}
 public
 //? if >=26.2 {
-abstract
-//?}
+/*abstract
+*///?}
 class GuiMixinHotbar {
     @WrapMethod(
             //? if < 26 {
@@ -47,17 +47,17 @@ class GuiMixinHotbar {
 
         HudTransform.begin(graphics, hud);
         //? if >=26.2 {
-        vanillahud$setup(graphics, deltaTracker, hud);
+        /*vanillahud$setup(graphics, deltaTracker, hud);
         original.call(graphics, deltaTracker);
         vanillahud$active = false;
-        //?} else {
-        /*original.call(graphics, deltaTracker);
-        *///?}
+        *///?} else {
+        original.call(graphics, deltaTracker);
+        //?}
         HudTransform.end(graphics);
     }
 
     //? if >=26.2 {
-    @Invoker("getCameraPlayer")
+    /*@Invoker("getCameraPlayer")
     abstract Player vanillahud$getCameraPlayer();
 
     @Unique private static final Identifier VANILLAHUD$HOTBAR = Identifier.withDefaultNamespace("hud/hotbar");
@@ -176,5 +176,5 @@ class GuiMixinHotbar {
         graphics.blitSprite(pipeline, sprite, -w / 2, -h / 2, w, h);
         pose.popMatrix();
     }
-    //?}
+    *///?}
 }
