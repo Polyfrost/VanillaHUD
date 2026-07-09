@@ -17,6 +17,7 @@ abstract class VanillaHud(
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
 
     override fun multipleInstancesAllowed() = false
+    override fun deletable() = false
 
     open fun linkTarget(): VanillaHud? = null
 
