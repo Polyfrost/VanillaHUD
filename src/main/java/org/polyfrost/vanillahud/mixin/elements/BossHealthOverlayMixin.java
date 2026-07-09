@@ -1,17 +1,25 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.client.gui.components.LerpingBossEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 @Mixin(BossHealthOverlay.class)
 public class BossHealthOverlayMixin {
@@ -68,7 +76,7 @@ public class BossHealthOverlayMixin {
             )
             *///?}
     )
-    //? if <1.21.6 {
+            //? if <1.21.6 {
     /*private int vanillahud$bossText(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color, Operation<Integer> original) {
         if (Huds.INSTANCE.getBossBar().getRenderText()) {
             return original.call(graphics, font, name, x, y, color);
@@ -82,4 +90,57 @@ public class BossHealthOverlayMixin {
         }
     }
     //?}
+
+    @ModifyExpressionValue(
+            //? if >= 26 {
+            method = "extractRenderState",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Map;isEmpty()Z"
+            )
+            //?} else {
+            /*method = "render",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Map;isEmpty()Z"
+            )
+            *///?}
+    )
+    private boolean vanillahud$editing(boolean empty) {
+        return !HudManager.INSTANCE.isEditing() && empty;
+    }
+
+    @ModifyExpressionValue(
+            //? if >= 26 {
+            method = "extractRenderState",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Map;values()Ljava/util/Collection;"
+            )
+            //?} else {
+            /*method = "render",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Map;values()Ljava/util/Collection;"
+            )
+            *///?}
+    )
+    private Collection<LerpingBossEvent> vanillahud$demo(Collection<LerpingBossEvent> original) {
+        if (!HudManager.INSTANCE.isEditing() || !original.isEmpty()) {
+            return original;
+        }
+
+        return List.of(
+                new LerpingBossEvent(
+                        UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                        Component.literal("Boss Bar"),
+                        0.67f,
+                        BossEvent.BossBarColor.PINK,
+                        BossEvent.BossBarOverlay.PROGRESS,
+                        false,
+                        false,
+                        false
+                )
+        );
+    }
 }
