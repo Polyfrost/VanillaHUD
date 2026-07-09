@@ -34,9 +34,9 @@ abstract class VanillaHud(
     fun shouldRender(): Boolean {
         if (HudManager.isEditing) return true
 
-        if (HudManager.isDebugScreenVisible && showInF3) return false
-        if (HudManager.isTabListVisible && showInTab) return false
-        if (HudManager.isGuiScreenOpen && showInScreens) return false
+        if (HudManager.isDebugScreenVisible && !showInF3) return false
+        if (HudManager.isTabListVisible && !showInTab) return false
+        if (HudManager.isGuiScreenOpen && !showInScreens) return false
 
         return true
     }
