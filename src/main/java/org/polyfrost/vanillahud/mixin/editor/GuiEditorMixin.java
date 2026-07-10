@@ -53,6 +53,13 @@ public abstract class GuiEditorMixin {
     private int titleFadeOutTime;
 
     @Unique
+    private boolean vanillahud$forcedActionBar;
+    @Unique
+    private boolean vanillahud$forcedItemName;
+    @Unique
+    private boolean vanillahud$forcedTitle;
+
+    @Unique
     private static boolean vanillahud$editing() {
         return HudManager.INSTANCE.isEditing();
     }
@@ -76,10 +83,16 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At("HEAD"))
     private void vanillahud$forceActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
-        if (vanillahud$editing() && (overlayMessageString == null || overlayMessageTime <= 0)) {
-            overlayMessageString = Component.literal("Action Bar");
+        if (vanillahud$editing()) {
+            if (!vanillahud$forcedActionBar) {
+                overlayMessageString = Component.literal("Action Bar");
+                animateOverlayMessageColor = false;
+                vanillahud$forcedActionBar = true;
+            }
             overlayMessageTime = 60;
-            animateOverlayMessageColor = false;
+        } else if (vanillahud$forcedActionBar) {
+            overlayMessageTime = 0;
+            vanillahud$forcedActionBar = false;
         }
     }
 
@@ -91,9 +104,15 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At("HEAD"))
     private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, CallbackInfo ci) {
-        if (vanillahud$editing() && (toolHighlightTimer <= 0 || lastToolHighlight.isEmpty())) {
-            lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
-            toolHighlightTimer = 10;
+        if (vanillahud$editing()) {
+            if (!vanillahud$forcedItemName) {
+                lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
+                vanillahud$forcedItemName = true;
+            }
+            toolHighlightTimer = 100;
+        } else if (vanillahud$forcedItemName) {
+            toolHighlightTimer = 0;
+            vanillahud$forcedItemName = false;
         }
     }
 
@@ -116,13 +135,19 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At("HEAD"))
     private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
-        if (vanillahud$editing() && (title == null || titleTime <= 0)) {
-            title = Component.literal("Title");
-            subtitle = Component.literal("Subtitle");
-            titleFadeInTime = 10;
-            titleStayTime = 70;
-            titleFadeOutTime = 20;
-            titleTime = 90;
+        if (vanillahud$editing()) {
+            if (!vanillahud$forcedTitle) {
+                title = Component.literal("Title");
+                subtitle = Component.literal("Subtitle");
+                titleFadeInTime = 10;
+                titleStayTime = 70;
+                titleFadeOutTime = 20;
+                vanillahud$forcedTitle = true;
+            }
+            titleTime = titleFadeOutTime + titleStayTime;
+        } else if (vanillahud$forcedTitle) {
+            titleTime = 0;
+            vanillahud$forcedTitle = false;
         }
     }
 
