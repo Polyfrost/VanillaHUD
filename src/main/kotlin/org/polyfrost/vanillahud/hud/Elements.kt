@@ -84,7 +84,6 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 30f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    // First bar draws at y=12; its name sits 9px above it. Hitbox top follows the name when shown.
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = if (renderText) 3f else 12f
 
     private fun bossEvents(): Collection<LerpingBossEvent> {
@@ -108,7 +107,6 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
         naturalWidth
     }
 
-    // Bars stack 19px apart; each is 5px tall. Height spans the top (name or bar) to the last bar's bottom.
     override fun measuredHeight(): Float = try {
         val n = bossEvents().size
         if (n == 0) naturalHeight else ((n - 1) * 19 + if (renderText) 14 else 5).toFloat()
@@ -227,6 +225,13 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     )
     var scoreboardPoints: Int = 1
 
+    @Switch(
+        title = "Hide Repeating Scores",
+        category = "Score Points",
+        description = "Hide score points when every visible score shows the same number."
+    )
+    var hideRepeatingScores: Boolean = true
+
     @Color(title = "Score Points Color", category = "Score Points")
     var scorePointsColor = PolyColor(0xFFFF5555.toInt())
 
@@ -254,8 +259,19 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
 
     val textShadow: Boolean get() = textType == 1
 
-    fun showScorePoints(nonConsecutive: Boolean): Boolean =
-        scoreboardPoints == 2 || (scoreboardPoints == 1 && nonConsecutive)
+    fun showScorePoints(scores: Collection<PlayerScoreEntry>): Boolean {
+        if (hideRepeatingScores && areScoresRepeating(scores)) return false
+        return scoreboardPoints == 2 || (scoreboardPoints == 1 && !areScoresConsecutive(scores))
+    }
+
+    fun areScoresRepeating(scores: Collection<PlayerScoreEntry>): Boolean {
+        val values = scores
+            .filter { !it.isHidden }
+            .map { it.value }
+
+        if (values.size < 2) return false
+        return values.all { it == values[0] }
+    }
 
     fun areScoresConsecutive(scores: Collection<PlayerScoreEntry>): Boolean {
         val values = scores
@@ -277,12 +293,10 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     override val naturalHeight get() = 90f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
-        // Vanilla anchors the scores block (title excluded) at h/2; the title sits 9px above it.
         val s = size() ?: return screenHeight / 2f - naturalHeight / 2f
         return screenHeight / 2f - s.scores * 6f - if (s.title) 9f else 0f
     }
 
-    // width, visible score rows (title excluded), whether the title line is shown
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
     private fun size(): Size? {
@@ -297,7 +311,7 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
         if (scores.isEmpty() && !(persistentTitle && showTitle)) return null
 
         val spaceWidth = font.width(": ")
-        val showPoints = showScorePoints(!areScoresConsecutive(scores))
+        val showPoints = showScorePoints(scores)
         var maxWidth = if (showTitle) font.width(objective.displayName) else 0
         for (s in scores) {
             var line = font.width(s.ownerName())
@@ -516,7 +530,6 @@ class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Categor
         val subtitle = gui?.subtitle?.string ?: "Subtitle"
         return try {
             val line = mc.font.lineHeight
-            // Title renders at 4x, subtitle at 2x, stacked with a gap.
             if (subtitle.isNotBlank()) (line * 4 + 14 + line * 2).toFloat() else (line * 4).toFloat()
         } catch (_: Throwable) {
             naturalHeight

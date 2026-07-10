@@ -62,9 +62,7 @@ public class GuiMixinScoreboard {
     )
     private NumberFormat vanillahud$scoreboard$scorePoints(NumberFormat original, @Local(argsOnly = true) Objective objective) {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
-        if (!hud.showScorePoints(
-                !hud.areScoresConsecutive(objective.getScoreboard().listPlayerScores(objective))
-        )) {
+        if (!hud.showScorePoints(objective.getScoreboard().listPlayerScores(objective))) {
             return BlankFormat.INSTANCE;
         }
         return new StyledFormat(Style.EMPTY.withColor(hud.getScorePointsColor().getArgb()));
