@@ -45,7 +45,7 @@ abstract class VanillaHud(
     protected open val exampleText: String? get() = null
 
     override val width: Float get() = measuredWidth()
-    override val height: Float get() = naturalHeight
+    override val height: Float get() = measuredHeight()
 
     protected val hudAccessor: IGui?
         get() = try {
@@ -66,6 +66,8 @@ abstract class VanillaHud(
         }
 
     protected open fun measuredWidth(): Float = textWidth { exampleText }
+
+    protected open fun measuredHeight(): Float = naturalHeight
 
     override fun update() = false
     override fun hasBackground() = false

@@ -13,13 +13,11 @@ import net.minecraft.world.BossEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @Mixin(BossHealthOverlay.class)
 public class BossHealthOverlayMixin {
@@ -130,17 +128,6 @@ public class BossHealthOverlayMixin {
             return original;
         }
 
-        return List.of(
-                new LerpingBossEvent(
-                        UUID.fromString("00000000-0000-0000-0000-000000000001"),
-                        Component.literal("Boss Bar"),
-                        0.67f,
-                        BossEvent.BossBarColor.PINK,
-                        BossEvent.BossBarOverlay.PROGRESS,
-                        false,
-                        false,
-                        false
-                )
-        );
+        return DemoData.demoBossEvents();
     }
 }

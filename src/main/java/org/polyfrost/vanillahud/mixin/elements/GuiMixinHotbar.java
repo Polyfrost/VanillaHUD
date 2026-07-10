@@ -2,24 +2,39 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.polyfrost.vanillahud.hud.HotbarHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
-
-//? if >=26.2 {
-/*import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import net.minecraft.client.gui.Hud;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
+
+//? if >=1.21.6 {
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import org.joml.Matrix3x2fStack;
+//?} else {
+/*import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+*///?}
+//? if >=1.21.2 <1.21.6 {
+/*import net.minecraft.client.renderer.RenderType;
+import java.util.function.Function;
+*///?}
+
+//? if >=1.21.11 {
+import net.minecraft.resources.Identifier;
+//?} else {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
+
+//? if >=26.2 {
+/*import net.minecraft.client.gui.Hud;
 *///?} else {
 import net.minecraft.client.gui.Gui;
 //?}
@@ -29,11 +44,7 @@ import net.minecraft.client.gui.Gui;
 *///?} else {
 @Mixin(Gui.class)
 //?}
-public
-//? if >=26.2 {
-/*abstract
-*///?}
-class GuiMixinHotbar {
+public abstract class GuiMixinHotbar {
     @WrapMethod(
             //? if < 26 {
             /*method = "renderItemHotbar"
@@ -46,26 +57,20 @@ class GuiMixinHotbar {
         if (!hud.shouldRender()) return;
 
         HudTransform.begin(graphics, hud);
-        //? if >=26.2 {
-        /*vanillahud$setup(graphics, deltaTracker, hud);
+        vanillahud$setup(graphics, deltaTracker, hud);
         original.call(graphics, deltaTracker);
         vanillahud$active = false;
-        *///?} else {
-        original.call(graphics, deltaTracker);
-        //?}
         HudTransform.end(graphics);
     }
 
-    //? if >=26.2 {
-    /*@Invoker("getCameraPlayer")
+    @Invoker("getCameraPlayer")
     abstract Player vanillahud$getCameraPlayer();
 
-    @Unique private static final Identifier VANILLAHUD$HOTBAR = Identifier.withDefaultNamespace("hud/hotbar");
-    @Unique private static final Identifier VANILLAHUD$SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
-    @Unique private static final Identifier VANILLAHUD$OFFHAND_LEFT = Identifier.withDefaultNamespace("hud/hotbar_offhand_left");
-    @Unique private static final Identifier VANILLAHUD$OFFHAND_RIGHT = Identifier.withDefaultNamespace("hud/hotbar_offhand_right");
-    @Unique private static final Identifier VANILLAHUD$ATTACK_BG = Identifier.withDefaultNamespace("hud/hotbar_attack_indicator_background");
-    @Unique private static final Identifier VANILLAHUD$ATTACK_PROGRESS = Identifier.withDefaultNamespace("hud/hotbar_attack_indicator_progress");
+    @Unique private static final String VANILLAHUD$HOTBAR = "minecraft:hud/hotbar";
+    @Unique private static final String VANILLAHUD$SELECTION = "minecraft:hud/hotbar_selection";
+    @Unique private static final String VANILLAHUD$OFFHAND_LEFT = "minecraft:hud/hotbar_offhand_left";
+    @Unique private static final String VANILLAHUD$OFFHAND_RIGHT = "minecraft:hud/hotbar_offhand_right";
+    @Unique private static final String VANILLAHUD$ATTACK_BG = "minecraft:hud/hotbar_attack_indicator_background";
 
     // Per-frame state shared with the wrapped blit/slot operations below.
     @Unique private boolean vanillahud$active;
@@ -86,7 +91,16 @@ class GuiMixinHotbar {
         vanillahud$slotCall = 0;
 
         Player player = vanillahud$getCameraPlayer();
-        int selected = player == null ? 0 : player.getInventory().getSelectedSlot();
+        int selected;
+        if (player == null) {
+            selected = 0;
+        } else {
+            //? if >=1.21.5 {
+            selected = player.getInventory().getSelectedSlot();
+            //?} else {
+            /*selected = player.getInventory().selected;
+            *///?}
+        }
         if (!vanillahud$animInit) {
             vanillahud$animSlot = (float) selected;
             vanillahud$animInit = true;
@@ -102,60 +116,149 @@ class GuiMixinHotbar {
     }
 
     @WrapOperation(
+            //? if < 26 {
+            /*method = "renderItemHotbar",
+            *///?} else {
             method = "extractItemHotbar",
+            //?}
+            //? if >=1.21.11 {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V")
+            //?} else if >=1.21.6 {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIII)V")
+            *///?} else if >=1.21.2 {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/ResourceLocation;IIII)V")
+            *///?} else {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V")
+            *///?}
     )
-    private void vanillahud$blit(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite,
-                                 int x, int y, int width, int height, Operation<Void> original) {
+    private void vanillahud$blit(GuiGraphicsExtractor graphics,
+            //? if >=1.21.6 {
+            RenderPipeline pipeline,
+            //?} else if >=1.21.2 {
+            /*Function<ResourceLocation, RenderType> pipeline,
+            *///?}
+            //? if >=1.21.11 {
+            Identifier sprite,
+            //?} else {
+            /*ResourceLocation sprite,
+            *///?}
+            int x, int y, int width, int height, Operation<Void> original) {
         if (!vanillahud$active) {
-            original.call(graphics, pipeline, sprite, x, y, width, height);
+            original.call(graphics,
+                    //? if >=1.21.2 {
+                    pipeline,
+                    //?}
+                    sprite, x, y, width, height);
             return;
         }
 
-        boolean selection = sprite.equals(VANILLAHUD$SELECTION);
+        String id = sprite.toString();
+        boolean selection = id.equals(VANILLAHUD$SELECTION);
 
         if (!vanillahud$vertical) {
             if (selection) {
                 x = graphics.guiWidth() / 2 - 92 + Math.round(vanillahud$animSlot * 20f);
             }
-            original.call(graphics, pipeline, sprite, x, y, width, height);
+            original.call(graphics,
+                    //? if >=1.21.2 {
+                    pipeline,
+                    //?}
+                    sprite, x, y, width, height);
             return;
         }
 
         int ox = vanillahud$originX;
         int oy = vanillahud$originY;
-        if (sprite.equals(VANILLAHUD$HOTBAR)) {
-            vanillahud$blitRotated(graphics, pipeline, sprite, ox + 11, oy + 91, width, height);
+        if (id.equals(VANILLAHUD$HOTBAR)) {
+            vanillahud$blitRotated(graphics,
+                    //? if >=1.21.2 {
+                    pipeline,
+                    //?}
+                    sprite, ox + 11, oy + 91, width, height);
         } else if (selection) {
-            vanillahud$blitRotated(graphics, pipeline, sprite, ox + 11, oy + 11 + Math.round(vanillahud$animSlot * 20f), width, height);
-        } else if (sprite.equals(VANILLAHUD$ATTACK_BG)) {
-            original.call(graphics, pipeline, sprite, ox + 24, oy + 82, width, height);
-        } else if (sprite.equals(VANILLAHUD$OFFHAND_LEFT) || sprite.equals(VANILLAHUD$OFFHAND_RIGHT)) {
+            vanillahud$blitRotated(graphics,
+                    //? if >=1.21.2 {
+                    pipeline,
+                    //?}
+                    sprite, ox + 11, oy + 11 + Math.round(vanillahud$animSlot * 20f), width, height);
+        } else if (id.equals(VANILLAHUD$ATTACK_BG)) {
+            original.call(graphics,
+                    //? if >=1.21.2 {
+                    pipeline,
+                    //?}
+                    sprite, ox + 24, oy + 82, width, height);
+        } else if (id.equals(VANILLAHUD$OFFHAND_LEFT) || id.equals(VANILLAHUD$OFFHAND_RIGHT)) {
         } else {
-            original.call(graphics, pipeline, sprite, x, y, width, height);
+            original.call(graphics,
+                    //? if >=1.21.2 {
+                    pipeline,
+                    //?}
+                    sprite, x, y, width, height);
         }
     }
 
     @WrapOperation(
+            //? if < 26 {
+            /*method = "renderItemHotbar",
+            *///?} else {
             method = "extractItemHotbar",
+            //?}
+            //? if >=1.21.11 {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIIIII)V")
+            //?} else if >=1.21.6 {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V")
+            *///?} else if >=1.21.2 {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V")
+            *///?} else {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V")
+            *///?}
     )
-    private void vanillahud$blitProgress(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite,
-                                         int texW, int texH, int u, int v, int x, int y, int width, int height,
-                                         Operation<Void> original) {
+    private void vanillahud$blitProgress(GuiGraphicsExtractor graphics,
+            //? if >=1.21.6 {
+            RenderPipeline pipeline,
+            //?} else if >=1.21.2 {
+            /*Function<ResourceLocation, RenderType> pipeline,
+            *///?}
+            //? if >=1.21.11 {
+            Identifier sprite,
+            //?} else {
+            /*ResourceLocation sprite,
+            *///?}
+            int texW, int texH, int u, int v, int x, int y, int width, int height,
+            Operation<Void> original) {
         if (vanillahud$active && vanillahud$vertical) {
             x = vanillahud$originX + 24;
             y = vanillahud$originY + 82 + 18 - height;
         }
-        original.call(graphics, pipeline, sprite, texW, texH, u, v, x, y, width, height);
+        original.call(graphics,
+                //? if >=1.21.2 {
+                pipeline,
+                //?}
+                sprite, texW, texH, u, v, x, y, width, height);
     }
 
     @WrapOperation(
+            //? if < 26 {
+            /*method = "renderItemHotbar",
+            *///?} else {
             method = "extractItemHotbar",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
+            //?}
+            //? if >=26.2 {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
+            *///?} else if >=26 {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
+            //?} else {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
+            *///?}
     )
-    private void vanillahud$slot(Hud self, GuiGraphicsExtractor graphics, int x, int y, DeltaTracker deltaTracker,
-                                 Player player, ItemStack stack, int seed, Operation<Void> original) {
+    private void vanillahud$slot(
+            //? if >=26.2 {
+            /*Hud self,
+            *///?} else {
+            Gui self,
+            //?}
+            GuiGraphicsExtractor graphics, int x, int y, DeltaTracker deltaTracker,
+            Player player, ItemStack stack, int seed, Operation<Void> original) {
         if (!vanillahud$active || !vanillahud$vertical) {
             original.call(self, graphics, x, y, deltaTracker, player, stack, seed);
             return;
@@ -168,13 +271,36 @@ class GuiMixinHotbar {
     }
 
     @Unique
-    private void vanillahud$blitRotated(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int cx, int cy, int w, int h) {
+    private void vanillahud$blitRotated(GuiGraphicsExtractor graphics,
+            //? if >=1.21.6 {
+            RenderPipeline pipeline,
+            //?} else if >=1.21.2 {
+            /*Function<ResourceLocation, RenderType> pipeline,
+            *///?}
+            //? if >=1.21.11 {
+            Identifier sprite,
+            //?} else {
+            /*ResourceLocation sprite,
+            *///?}
+            int cx, int cy, int w, int h) {
+        //? if >=1.21.6 {
         Matrix3x2fStack pose = graphics.pose();
         pose.pushMatrix();
         pose.translate((float) cx, (float) cy);
         pose.rotate((float) (Math.PI / 2.0));
         graphics.blitSprite(pipeline, sprite, -w / 2, -h / 2, w, h);
         pose.popMatrix();
+        //?} else {
+        /*PoseStack pose = graphics.pose();
+        pose.pushMatrix();
+        pose.translate((float) cx, (float) cy, 0f);
+        pose.mulPose(Axis.ZP.rotation((float) (Math.PI / 2.0)));
+        graphics.blitSprite(
+                //? if >=1.21.2 {
+                pipeline,
+                //?}
+                sprite, -w / 2, -h / 2, w, h);
+        pose.popMatrix();
+        *///?}
     }
-    *///?}
 }
