@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Hud;
 /*import net.minecraft.client.gui.Gui;
 *///?}
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.scores.Objective;
@@ -21,6 +22,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Collection;
 
 //? if >=26.2 {
 @Mixin(Hud.class)
@@ -252,5 +255,18 @@ public abstract class GuiEditorMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;getDisplayObjective(Lnet/minecraft/world/scores/DisplaySlot;)Lnet/minecraft/world/scores/Objective;", ordinal = 1))
     private Objective vanillahud$forceScoreboard(Objective original) {
         return vanillahud$editing() ? DemoData.demoScoreboardObjective() : original;
+    }
+
+    @ModifyExpressionValue(
+            //? if <26 {
+            /*method = "renderEffects",
+            *///?} else {
+            method = "extractEffects",
+            //?}
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getActiveEffects()Ljava/util/Collection;")
+    )
+    private Collection<MobEffectInstance> vanillahud$forceEffects(Collection<MobEffectInstance> original) {
+        if (HudManager.INSTANCE.isEditing()) return DemoData.demoEffects();
+        return original;
     }
 }

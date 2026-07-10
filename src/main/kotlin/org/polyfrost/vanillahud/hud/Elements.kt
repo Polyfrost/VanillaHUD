@@ -561,6 +561,61 @@ class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Categor
     }
 }
 
+class StatusEffectsHud : VanillaHud("vanillahud/statuseffects.json", "Status Effects", Category.PLAYER) {
+    override val naturalWidth get() = 50f
+    override val naturalHeight get() = 50f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 1f
+
+    private class Counts(val beneficial: Int, val harmful: Int)
+
+    private fun counts(): Counts? {
+        val effects = if (isEditing) DemoData.demoEffects() else mc.player?.activeEffects ?: return null
+        var beneficial = 0
+        var harmful = 0
+        for (effect in effects) {
+            if (!effect.showIcon()) continue
+            if (effect.effect.value().isBeneficial) beneficial++ else harmful++
+        }
+        if (beneficial == 0 && harmful == 0) return null
+        return Counts(beneficial, harmful)
+    }
+
+    override fun measuredWidth(): Float = try {
+        val c = counts() ?: return naturalWidth
+        (25 * maxOf(c.beneficial, c.harmful)).toFloat()
+    } catch (_: Throwable) {
+        naturalWidth
+    }
+
+    override fun measuredHeight(): Float = try {
+        val c = counts() ?: return naturalHeight
+        if (c.harmful > 0) 50f else 24f
+    } catch (_: Throwable) {
+        naturalHeight
+    }
+}
+
+class SubtitlesHud : VanillaHud("vanillahud/subtitles.json", "Closed Captioning", Category.INFO) {
+    override val naturalWidth get() = 90f
+    override val naturalHeight get() = 50f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 3f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 30f - height
+
+    override fun measuredWidth(): Float = try {
+        DemoData.demoSubtitleWidth()
+    } catch (_: Throwable) {
+        naturalWidth
+    }
+
+    override fun measuredHeight(): Float = try {
+        DemoData.demoSubtitleHeight()
+    } catch (_: Throwable) {
+        naturalHeight
+    }
+}
+
 object Huds {
     val hotbar = HotbarHud()
     val health = HealthHud()
@@ -576,11 +631,13 @@ object Huds {
     val scoreboard = ScoreboardHud()
     val tabList = TabListHud()
     val bossBar = BossBarHud()
+    val statusEffects = StatusEffectsHud()
+    val subtitles = SubtitlesHud()
 
     val all: Array<VanillaHud>
         get() = arrayOf(
             hotbar, health, armor, hunger, air, mountHealth,
             experienceBar, experienceLevel, actionBar, heldItemTooltip,
-            title, scoreboard, tabList, bossBar,
+            title, scoreboard, tabList, bossBar, statusEffects, subtitles,
         )
 }

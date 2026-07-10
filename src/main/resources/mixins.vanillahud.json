@@ -14,6 +14,7 @@
         "access.IPlayerTabOverlay",
         "editor.GuiEditorMixin",
         "editor.PlayerTabOverlayMixin",
+        "editor.SubtitleOverlayMixin",
         "elements.BossHealthOverlayMixin",
         "elements.GuiMixinActionBar",
         "elements.GuiMixinAir",
@@ -26,6 +27,8 @@
         "elements.GuiMixinHunger",
         "elements.GuiMixinMountHealth",
         "elements.GuiMixinScoreboard",
+        "elements.GuiMixinSubtitles",
+        "elements.GuiMixinStatusEffects",
         "elements.PlayerTabOverlayMixin",
         "elements.GuiMixinTabList",
         "elements.GuiMixinTitle"
