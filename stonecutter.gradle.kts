@@ -20,6 +20,10 @@ stonecutter parameters {
             replace("net.minecraft.Util", "net.minecraft.util.Util")
         }
 
+        string(current.parsed >= "1.21.11") {
+            replace("ResourceLocation", "Identifier")
+        }
+
         string(current.parsed >= "26") {
             replace("net.minecraft.client.gui.GuiGraphics", "net.minecraft.client.gui.GuiGraphicsExtractor")
             replace("GuiGraphics", "GuiGraphicsExtractor")

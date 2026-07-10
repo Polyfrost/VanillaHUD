@@ -30,7 +30,7 @@ import java.util.function.Function;
 //? if >=1.21.11 {
 import net.minecraft.resources.Identifier;
 //?} else {
-/*import net.minecraft.resources.ResourceLocation;
+/*import net.minecraft.resources.Identifier;
 *///?}
 
 //? if >=26.2 {
@@ -123,23 +123,23 @@ public abstract class GuiMixinHotbar {
             //? if >=1.21.11 {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V")
             //?} else if >=1.21.6 {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIII)V")
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V")
             *///?} else if >=1.21.2 {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/ResourceLocation;IIII)V")
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/Identifier;IIII)V")
             *///?} else {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V")
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/Identifier;IIII)V")
             *///?}
     )
     private void vanillahud$blit(GuiGraphicsExtractor graphics,
             //? if >=1.21.6 {
             RenderPipeline pipeline,
             //?} else if >=1.21.2 {
-            /*Function<ResourceLocation, RenderType> pipeline,
+            /*Function<Identifier, RenderType> pipeline,
             *///?}
             //? if >=1.21.11 {
             Identifier sprite,
             //?} else {
-            /*ResourceLocation sprite,
+            /*Identifier sprite,
             *///?}
             int x, int y, int width, int height, Operation<Void> original) {
         if (!vanillahud$active) {
@@ -205,23 +205,23 @@ public abstract class GuiMixinHotbar {
             //? if >=1.21.11 {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIIIII)V")
             //?} else if >=1.21.6 {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V")
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIIIII)V")
             *///?} else if >=1.21.2 {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V")
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/Identifier;IIIIIIII)V")
             *///?} else {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V")
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/Identifier;IIIIIIII)V")
             *///?}
     )
     private void vanillahud$blitProgress(GuiGraphicsExtractor graphics,
             //? if >=1.21.6 {
             RenderPipeline pipeline,
             //?} else if >=1.21.2 {
-            /*Function<ResourceLocation, RenderType> pipeline,
+            /*Function<Identifier, RenderType> pipeline,
             *///?}
             //? if >=1.21.11 {
             Identifier sprite,
             //?} else {
-            /*ResourceLocation sprite,
+            /*Identifier sprite,
             *///?}
             int texW, int texH, int u, int v, int x, int y, int width, int height,
             Operation<Void> original) {
@@ -274,12 +274,12 @@ public abstract class GuiMixinHotbar {
             //? if >=1.21.6 {
             RenderPipeline pipeline,
             //?} else if >=1.21.2 {
-            /*Function<ResourceLocation, RenderType> pipeline,
+            /*Function<Identifier, RenderType> pipeline,
             *///?}
             //? if >=1.21.11 {
             Identifier sprite,
             //?} else {
-            /*ResourceLocation sprite,
+            /*Identifier sprite,
             *///?}
             int cx, int cy, int w, int h) {
         //? if >=1.21.6 {

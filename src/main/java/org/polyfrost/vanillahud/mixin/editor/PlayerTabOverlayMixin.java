@@ -9,11 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-//? if >= 1.21.11 {
 import net.minecraft.resources.Identifier;
-//?} else {
-/*import net.minecraft.resources.ResourceLocation;
-*///?}
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hook.HeadHook;
@@ -198,14 +194,13 @@ public abstract class PlayerTabOverlayMixin {
                     //?} else if >= 1.21.11 {
                     /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZI)V"
                     *///?} else if >= 1.21.4 {
-                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/ResourceLocation;IIIZZI)V"
+                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZI)V"
                     *///?} else {
-                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/ResourceLocation;IIIZZ)V"
+                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZ)V"
                     *///?}
             )
     )
-    private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
-        if (!Huds.INSTANCE.getTabList().getShowHead()) return;
+    private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*Identifier *//*?}*/ texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
         if (Huds.INSTANCE.getTabList().getBetterHatLayer()) {
             HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
         } else {

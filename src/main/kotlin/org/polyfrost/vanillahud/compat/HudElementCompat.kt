@@ -3,11 +3,7 @@ package org.polyfrost.vanillahud.compat
 import org.polyfrost.vanillahud.hud.Huds
 import org.polyfrost.vanillahud.hud.VanillaHud
 
-//? if >=1.21.11 {
 import net.minecraft.resources.Identifier
-//?} else {
-/*import net.minecraft.resources.ResourceLocation as Identifier
-*///?}
 
 //? if >=1.21.6 {
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
@@ -81,8 +77,8 @@ object HudElementCompat {
     }
 }
 *///?} else {
-/*
-object HudElementCompat {
+
+/*object HudElementCompat {
     fun init() {}
 }
 *///?}
