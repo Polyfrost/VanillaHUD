@@ -2,13 +2,21 @@ package org.polyfrost.vanillahud.mixin.editor;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+//? if >= 1.21.11 {
+import net.minecraft.resources.Identifier;
+//?} else {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.polyfrost.vanillahud.hook.HeadHook;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
 import org.polyfrost.vanillahud.util.TabListManager;
@@ -182,5 +190,32 @@ public abstract class PlayerTabOverlayMixin {
             ci.cancel();
         }
         //?}
+    }
+
+    @WrapOperation(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(
+                    value = "INVOKE",
+                    //? if >= 26.1 {
+                    target = "Lnet/minecraft/client/gui/components/PlayerFaceExtractor;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZI)V"
+                    //?} else if >= 1.21.11 {
+                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/resources/Identifier;IIIZZI)V"
+                    *///?} else if >= 1.21.4 {
+                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/resources/ResourceLocation;IIIZZI)V"
+                    *///?} else {
+                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/resources/ResourceLocation;IIIZZ)V"
+                    *///?}
+            )
+    )
+    private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getBetterHatLayer()) {
+            HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
+        } else {
+            original.call(graphics, texture, x, y, size, hat, flip /*? if >= 1.21.4 {*/, color /*?}*/);
+        }
     }
 }

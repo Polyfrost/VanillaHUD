@@ -9,12 +9,13 @@
         "maxShiftBy": 5
     },
     "client": [
-        "elements.BossHealthOverlayMixin",
+        "PlayerFaceRendererMixin",
+        "access.IBossHealthOverlay",
+        "access.IGui",
+        "access.IPlayerTabOverlay",
         "editor.GuiEditorMixin",
         "editor.PlayerTabOverlayMixin",
-        "access.IGui",
-        "access.IBossHealthOverlay",
-        "access.IPlayerTabOverlay",
+        "elements.BossHealthOverlayMixin",
         "elements.GuiMixinActionBar",
         "elements.GuiMixinAir",
         "elements.GuiMixinArmor",

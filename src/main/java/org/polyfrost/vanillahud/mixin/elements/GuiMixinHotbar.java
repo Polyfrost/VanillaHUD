@@ -72,7 +72,6 @@ public abstract class GuiMixinHotbar {
     @Unique private static final String VANILLAHUD$OFFHAND_RIGHT = "minecraft:hud/hotbar_offhand_right";
     @Unique private static final String VANILLAHUD$ATTACK_BG = "minecraft:hud/hotbar_attack_indicator_background";
 
-    // Per-frame state shared with the wrapped blit/slot operations below.
     @Unique private boolean vanillahud$active;
     @Unique private boolean vanillahud$vertical;
     @Unique private int vanillahud$originX;
