@@ -533,6 +533,12 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
 }
 
 class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
+    @Switch(
+        title = "Auto Scale",
+        description = "Shrink the title and subtitle so they always fit within the screen width."
+    )
+    var autoTitleScale = false
+
     override val naturalWidth get() = 120f
     override val naturalHeight get() = 68f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
@@ -596,7 +602,7 @@ class StatusEffectsHud : VanillaHud("vanillahud/statuseffects.json", "Status Eff
     }
 }
 
-class SubtitlesHud : VanillaHud("vanillahud/subtitles.json", "Closed Captioning", Category.INFO) {
+class SubtitlesHud : VanillaHud("vanillahud/subtitles.json", "Closed Captions", Category.INFO) {
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 50f
 
