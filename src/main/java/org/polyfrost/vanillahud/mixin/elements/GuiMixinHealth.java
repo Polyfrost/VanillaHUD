@@ -37,4 +37,21 @@ public class GuiMixinHealth {
         HudTransform.end(graphics);
     }
     *///?}
+
+    //? if >=1.21.6 {
+    @WrapMethod(
+            //? if <26 {
+            /*method = "renderHearts"
+            *///?} else {
+            method = "extractHearts"
+            //?}
+    )
+    private void vanillahud$healthAnimation(
+            GuiGraphicsExtractor graphics, Player player, int xLeft, int yLineBase, int healthRowHeight,
+            int heartOffsetIndex, float maxHealth, int currentHealth, int oldHealth,
+            int absorption, boolean blink, Operation<Void> original) {
+        original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
+                currentHealth, oldHealth, absorption, blink && Huds.INSTANCE.getHealth().getAnimation());
+    }
+    //?}
 }
