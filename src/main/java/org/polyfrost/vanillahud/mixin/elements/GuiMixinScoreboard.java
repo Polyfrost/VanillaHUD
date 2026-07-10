@@ -22,6 +22,7 @@ import net.minecraft.world.scores.Objective;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.polyfrost.vanillahud.render.ScoreboardBackground;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +35,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /*@Mixin(Gui.class)
 *///?}
 public class GuiMixinScoreboard {
+    @org.spongepowered.asm.mixin.Unique
+    private int vanillahud$scoreboardTop = Integer.MIN_VALUE;
+
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderScoreboardSidebar")
     private void vanillahud$scoreboard(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
@@ -47,6 +51,7 @@ public class GuiMixinScoreboard {
 
     @Inject(method = "displayScoreboardSidebar", at = @At("HEAD"), cancellable = true)
     private void vanillahud$scoreboard$persistent(GuiGraphicsExtractor graphics, Objective objective, CallbackInfo ci) {
+        this.vanillahud$scoreboardTop = Integer.MIN_VALUE;
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         long visible = objective.getScoreboard().listPlayerScores(objective).stream()
                 .filter(score -> !score.isHidden())
@@ -81,11 +86,14 @@ public class GuiMixinScoreboard {
             )
     )
     private void vanillahud$scoreboard$titleBackground(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return;
-        original.call(graphics, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getTitleBgColor());
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (!hud.getScoreboardTitle()) return;
+        this.vanillahud$scoreboardTop = y0;
+        if (hud.getHasCustomBackground()) return;
+        original.call(graphics, x0, y0, x1, y1, hud.getTitleBgColor());
     }
 
-    @ModifyArg(
+    @WrapOperation(
             //? if <1.21.4 {
             /*method = "method_55440",
             *///?} else {
@@ -95,11 +103,15 @@ public class GuiMixinScoreboard {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
                     ordinal = 1
-            ),
-            index = 4
+            )
     )
-    private int vanillahud$scoreboard$background(int color) {
-        return Huds.INSTANCE.getScoreboard().getBodyBgColor();
+    private void vanillahud$scoreboard$background(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (hud.getHasCustomBackground()) {
+            int top = this.vanillahud$scoreboardTop != Integer.MIN_VALUE ? this.vanillahud$scoreboardTop : y0;
+            if (ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath())) return;
+        }
+        original.call(graphics, x0, y0, x1, y1, hud.getBodyBgColor());
     }
 
     @WrapOperation(

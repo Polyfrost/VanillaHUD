@@ -14,6 +14,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
+import org.polyfrost.vanillahud.render.ScoreboardBackground
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
 
@@ -250,12 +251,38 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     @Color(title = "Background Color")
     var backgroundColor = PolyColor(0x4C000000)
 
+    @Switch(
+        title = "Custom Background Image",
+        category = "Background Image",
+        description = "Render an image behind the scoreboard instead of the solid background colour."
+    )
+    var customBackground: Boolean = false
+
+    @Button(
+        title = "Choose Image",
+        text = "Browse…",
+        category = "Background Image",
+        description = "Pick an image file to use as the scoreboard background."
+    )
+    fun chooseImage() {
+        ScoreboardBackground.chooseFile()?.let { backgroundImagePath = it }
+    }
+
+    @Text(
+        title = "Image Path",
+        category = "Background Image",
+        placeholder = "No image selected"
+    )
+    var backgroundImagePath: String = ""
+
     @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
     var textType: Int = 0
 
     val titleBgColor: Int get() = titleColor.argb
 
     val bodyBgColor: Int get() = backgroundColor.argb
+
+    val hasCustomBackground: Boolean get() = customBackground && backgroundImagePath.isNotBlank()
 
     val textShadow: Boolean get() = textType == 1
 
