@@ -56,7 +56,9 @@ public abstract class PlayerTabOverlayMixin {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (HudManager.INSTANCE.isEditing()) {
             TabListManager.INSTANCE.ensureLoaded();
-            return TabListManager.INSTANCE.getDevInfo();
+            List<PlayerInfo> dev = TabListManager.INSTANCE.getDevInfo();
+            int limit = hud.getPlayerLimit();
+            return dev.size() > limit ? dev.subList(0, limit) : dev;
         }
         if (hud.getSelfAtTop() && this.minecraft.player != null) {
             UUID self = this.minecraft.player.getUUID();
@@ -124,15 +126,6 @@ public abstract class PlayerTabOverlayMixin {
     }
 
     //? if >=26 {
-    @ModifyExpressionValue(
-            method = "extractRenderState",
-            //~ if >=26.2 'Lnet/minecraft/network/Connection;isEncrypted()Z' -> 'Lnet/minecraft/client/multiplayer/ClientPacketListener;onlineMode()Z'
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;isEncrypted()Z")
-    )
-    private boolean vanillahud$showHead(boolean original) {
-        return original && Huds.INSTANCE.getTabList().getShowHead();
-    }
-
     @Redirect(
             method = "extractRenderState",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V")
@@ -212,6 +205,7 @@ public abstract class PlayerTabOverlayMixin {
             )
     )
     private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
+        if (!Huds.INSTANCE.getTabList().getShowHead()) return;
         if (Huds.INSTANCE.getTabList().getBetterHatLayer()) {
             HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
         } else {
