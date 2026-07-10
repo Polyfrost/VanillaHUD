@@ -350,7 +350,7 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     var playerLimit = 80
 
     @Dropdown(title = "Mode", options = ["Held", "Toggle"])
-    var displayMode = 1
+    var displayMode = 0
 
     @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
     var textType: Int = 1
