@@ -4,7 +4,7 @@ package org.polyfrost.vanillahud.hook;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 //?} else {
-/*import net.minecraft.client.gui.GuiGraphics;
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 *///?}
 //? if >= 1.21.11 {
@@ -18,5 +18,5 @@ public interface HeadHook {
     //~ if >=26 'PlayerFaceRenderer' -> 'PlayerFaceExtractor'
     HeadHook INSTANCE = (HeadHook) new PlayerFaceExtractor();
 
-    void vanillahud$draw(/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphics *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, int color, boolean hatVisible, boolean flip);
+    void vanillahud$draw(/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphicsExtractor *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, int color, boolean hatVisible, boolean flip);
 }

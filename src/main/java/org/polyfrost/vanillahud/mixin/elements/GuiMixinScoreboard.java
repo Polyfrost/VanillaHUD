@@ -9,10 +9,10 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.numbers.BlankFormat;
@@ -29,10 +29,10 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public class GuiMixinScoreboard {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderScoreboardSidebar")

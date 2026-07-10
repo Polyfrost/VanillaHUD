@@ -15,16 +15,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 *///?}
 
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public class GuiMixinAir {
     //? if 1.21.1 {
     /*@Inject(

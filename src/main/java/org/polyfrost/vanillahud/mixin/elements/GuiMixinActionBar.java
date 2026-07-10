@@ -11,16 +11,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public class GuiMixinActionBar {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderOverlayMessage")
@@ -42,10 +42,10 @@ public class GuiMixinActionBar {
             at = @At(
                     value = "FIELD",
                     //? if >=26.2 {
-                    /*target = "Lnet/minecraft/client/gui/Hud;animateOverlayMessageColor:Z"
-                    *///?} else {
-                    target = "Lnet/minecraft/client/gui/Gui;animateOverlayMessageColor:Z"
-                    //?}
+                    target = "Lnet/minecraft/client/gui/Hud;animateOverlayMessageColor:Z"
+                    //?} else {
+                    /*target = "Lnet/minecraft/client/gui/Gui;animateOverlayMessageColor:Z"
+                    *///?}
             )
     )
     private boolean vanillahud$actionBar$rainbowTimer(boolean original) {

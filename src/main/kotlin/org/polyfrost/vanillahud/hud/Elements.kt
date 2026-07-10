@@ -90,10 +90,10 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
         if (isEditing) return DemoData.demoBossEvents()
         return try {
             //? if >=26.2 {
-            /*(mc.gui.hud.bossOverlay as IBossHealthOverlay).events.values
-            *///?} else {
-            (mc.gui.bossOverlay as IBossHealthOverlay).events.values
-            //?}
+            (mc.gui.hud.bossOverlay as IBossHealthOverlay).events.values
+            //?} else {
+            /*(mc.gui.bossOverlay as IBossHealthOverlay).events.values
+            *///?}
         } catch (_: Throwable) {
             emptyList()
         }
@@ -474,10 +474,10 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
 
         val overlay: IPlayerTabOverlay? = if (isEditing) null else try {
             //? if >=26.2 {
-            /*mc.gui.hud.tabList as IPlayerTabOverlay
-            *///?} else {
-            mc.gui.tabList as IPlayerTabOverlay
-            //?}
+            mc.gui.hud.tabList as IPlayerTabOverlay
+            //?} else {
+            /*mc.gui.tabList as IPlayerTabOverlay
+            *///?}
         } catch (_: Throwable) {
             null
         }

@@ -4,10 +4,10 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,10 +23,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public abstract class GuiEditorMixin {
 
     @Shadow

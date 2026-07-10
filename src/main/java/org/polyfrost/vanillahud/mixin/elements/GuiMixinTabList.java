@@ -14,16 +14,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public class GuiMixinTabList {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderTabList")

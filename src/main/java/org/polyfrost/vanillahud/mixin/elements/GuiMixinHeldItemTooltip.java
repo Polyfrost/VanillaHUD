@@ -12,16 +12,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public class GuiMixinHeldItemTooltip {
     //? if <1.21.6 {
     /*@WrapMethod(method = "renderSelectedItemName")
@@ -41,7 +41,7 @@ public class GuiMixinHeldItemTooltip {
             method = "extractSelectedItemName",
             //?}
             //~ if >=26.2 'Gui' -> 'Hud'
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;toolHighlightTimer:I", ordinal = 0,
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Hud;toolHighlightTimer:I", ordinal = 0,
                     opcode = Opcodes.GETFIELD))
     private int vanillahud$gateTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
@@ -55,7 +55,7 @@ public class GuiMixinHeldItemTooltip {
             method = "extractSelectedItemName",
             //?}
             //~ if >=26.2 'Gui' -> 'Hud'
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;toolHighlightTimer:I", ordinal = 1,
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Hud;toolHighlightTimer:I", ordinal = 1,
                     opcode = Opcodes.GETFIELD))
     private int vanillahud$alphaTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();

@@ -4,7 +4,7 @@ package org.polyfrost.vanillahud.mixin;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 //?} else {
-/*import net.minecraft.client.gui.GuiGraphics;
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 *///?}
 //? if >= 1.21.8 {
@@ -25,13 +25,13 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(/*? if >= 26.1 {*/ PlayerFaceExtractor.class /*?} else {*/ /*PlayerFaceRenderer.class *//*?}*/)
 public class PlayerFaceRendererMixin implements HeadHook {
     @Shadow
-    private static void /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphics *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, boolean flip /*? if >= 1.21.4 {*/ , int color /*?}*/) {
+    private static void /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphicsExtractor *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, boolean flip /*? if >= 1.21.4 {*/ , int color /*?}*/) {
         throw new UnsupportedOperationException("Implemented via mixin");
     }
 
     @Unique
     @Override
-    public void vanillahud$draw(/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphics *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, int color, boolean hatVisible, boolean flip) {
+    public void vanillahud$draw(/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphicsExtractor *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation *//*?}*/ texture, int x, int y, int size, int color, boolean hatVisible, boolean flip) {
         int i = 8 + (flip ? 8 : 0);
         int j = 8 * (flip ? -1 : 1);
         graphics.blit(/*? if >= 1.21.8 {*/ RenderPipelines.GUI_TEXTURED, /*?} else if >= 1.21.4 {*/ /*RenderType::guiTextured, *//*?}*/ texture, x, y, size, size, 8, i, 8, j, 64, 64 /*? if >= 1.21.4 {*/, color /*?}*/);

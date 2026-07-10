@@ -12,19 +12,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 //? if >=1.21.6 {
-import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
+import net.minecraft.client.gui.contextualbar.ContextualBar;
 //?}
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public class GuiMixinExperienceLevel {
     // Visibility + position handled by Fabric on 1.21.4+ (HudElementRegistry EXPERIENCE_LEVEL
     // on 1.21.6+, IdentifiedLayer.EXPERIENCE_LEVEL on 1.21.4/1.21.5). 1.21.1 keeps the Mixin.

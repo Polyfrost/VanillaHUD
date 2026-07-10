@@ -34,16 +34,16 @@ import net.minecraft.resources.Identifier;
 *///?}
 
 //? if >=26.2 {
-/*import net.minecraft.client.gui.Hud;
-*///?} else {
-import net.minecraft.client.gui.Gui;
-//?}
+import net.minecraft.client.gui.Hud;
+//?} else {
+/*import net.minecraft.client.gui.Gui;
+*///?}
 
 //? if >=26.2 {
-/*@Mixin(Hud.class)
-*///?} else {
-@Mixin(Gui.class)
-//?}
+@Mixin(Hud.class)
+//?} else {
+/*@Mixin(Gui.class)
+*///?}
 public abstract class GuiMixinHotbar {
     @WrapMethod(
             //? if < 26 {
@@ -243,19 +243,19 @@ public abstract class GuiMixinHotbar {
             method = "extractItemHotbar",
             //?}
             //? if >=26.2 {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
-            *///?} else if >=26 {
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
-            //?} else {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
+            //?} else if >=26 {
+            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
+            *///?} else {
             /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/client/DeltaTracker;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V")
             *///?}
     )
     private void vanillahud$slot(
             //? if >=26.2 {
-            /*Hud self,
-            *///?} else {
-            Gui self,
-            //?}
+            Hud self,
+            //?} else {
+            /*Gui self,
+            *///?}
             GuiGraphicsExtractor graphics, int x, int y, DeltaTracker deltaTracker,
             Player player, ItemStack stack, int seed, Operation<Void> original) {
         if (!vanillahud$active || !vanillahud$vertical) {
