@@ -20,25 +20,6 @@ import net.minecraft.client.gui.Hud;
 /*@Mixin(Gui.class)
 *///?}
 public class GuiMixinHealth {
-    //? if <=1.21.6 {
-    /*@WrapMethod(
-            method = "renderHearts"
-    )
-    private void vanillahud$health(
-            GuiGraphicsExtractor graphics, Player player, int xLeft, int yLineBase, int healthRowHeight,
-            int heartOffsetIndex, float maxHealth, int currentHealth, int oldHealth,
-            int absorption, boolean blink, Operation<Void> original) {
-        boolean animatedBlink = blink && Huds.INSTANCE.getHealth().getAnimation();
-
-        if (!Huds.INSTANCE.getHealth().shouldRender()) return;
-        HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
-        original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
-                currentHealth, oldHealth, absorption, animatedBlink);
-        HudTransform.end(graphics);
-    }
-    *///?}
-
-    //? if >=1.21.6 {
     @WrapMethod(
             //? if <26 {
             /*method = "renderHearts"
@@ -50,8 +31,16 @@ public class GuiMixinHealth {
             GuiGraphicsExtractor graphics, Player player, int xLeft, int yLineBase, int healthRowHeight,
             int heartOffsetIndex, float maxHealth, int currentHealth, int oldHealth,
             int absorption, boolean blink, Operation<Void> original) {
+        //? if <=1.21.6 {
+        /*if (!Huds.INSTANCE.getHealth().shouldRender()) return;
+        HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
+        *///?}
+
         original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
                 currentHealth, oldHealth, absorption, blink && Huds.INSTANCE.getHealth().getAnimation());
+
+        //? if <=1.21.6 {
+        /*HudTransform.end(graphics);
+        *///?}
     }
-    //?}
 }

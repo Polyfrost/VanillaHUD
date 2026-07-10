@@ -1,11 +1,10 @@
 package org.polyfrost.vanillahud.mixin;
 
-//? if >= 26.1 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+//? if >= 26.1 {
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 //?} else {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+/*import net.minecraft.client.gui.components.PlayerFaceRenderer;
 *///?}
 //? if >= 1.21.8 {
 import net.minecraft.client.renderer.RenderPipelines;
@@ -21,7 +20,7 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(/*? if >= 26.1 {*/ PlayerFaceExtractor.class /*?} else {*/ /*PlayerFaceRenderer.class *//*?}*/)
 public class PlayerFaceRendererMixin implements HeadHook {
     @Shadow
-    private static void /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (/*? if >= 26.1 {*/ GuiGraphicsExtractor /*?} else {*/ /*GuiGraphicsExtractor *//*?}*/ graphics, /*? if >= 1.21.11 {*/ Identifier /*?} else {*/ /*Identifier *//*?}*/ texture, int x, int y, int size, boolean flip /*? if >= 1.21.4 {*/ , int color /*?}*/) {
+    private static void /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean flip /*? if >= 1.21.4 {*/ , int color /*?}*/) {
         throw new UnsupportedOperationException("Implemented via mixin");
     }
 

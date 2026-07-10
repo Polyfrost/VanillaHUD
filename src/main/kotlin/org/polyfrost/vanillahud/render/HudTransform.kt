@@ -17,15 +17,14 @@ object HudTransform {
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         val hud = resolve(provider)
-        val placed = hud != null
-        if (placed) hud!!.applyLink()
+        hud?.applyLink()
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
         val ox = provider.vanillaOriginX(w, h)
         val oy = provider.vanillaOriginY(w, h)
-        val gx = if (placed) hud!!.x else ox
-        val gy = if (placed) hud!!.y else oy
-        val s = if (placed) hud!!.effectiveScale else 1f
+        val gx = hud?.x ?: ox
+        val gy = hud?.y ?: oy
+        val s = hud?.effectiveScale ?: 1f
         val pose = graphics.pose()
         pose.pushMatrix()
         //? if <=1.21.5 {

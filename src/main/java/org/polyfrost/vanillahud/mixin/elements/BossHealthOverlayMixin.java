@@ -1,7 +1,6 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
@@ -12,12 +11,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.Huds;
-import org.polyfrost.vanillahud.render.HudTransform;
 import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.Collection;
+
+//? if <1.21.4 {
+/*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import org.polyfrost.vanillahud.render.HudTransform;
+*///?}
 
 @Mixin(BossHealthOverlay.class)
 public class BossHealthOverlayMixin {

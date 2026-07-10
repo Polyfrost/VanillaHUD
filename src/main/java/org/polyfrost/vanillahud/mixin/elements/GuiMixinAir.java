@@ -1,13 +1,17 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.world.entity.player.Player;
-import org.polyfrost.vanillahud.hud.Huds;
-import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
+//? if <1.21.6 {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.render.HudTransform;
+*///?}
+//? if >=1.21.4 <1.21.6 {
+/*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import net.minecraft.world.entity.player.Player;
+*///?}
 //? if 1.21.1 {
 /*import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

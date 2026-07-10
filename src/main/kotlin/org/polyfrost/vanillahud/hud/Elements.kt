@@ -1,8 +1,5 @@
 package org.polyfrost.vanillahud.hud
 
-//? if <26 {
-/*import org.polyfrost.oneconfig.utils.v1.dsl.mc
-*///?}
 import net.minecraft.client.gui.components.LerpingBossEvent
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component

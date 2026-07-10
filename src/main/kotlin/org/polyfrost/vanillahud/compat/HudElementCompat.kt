@@ -1,9 +1,10 @@
 package org.polyfrost.vanillahud.compat
 
+//? if >=1.21.4 {
 import org.polyfrost.vanillahud.hud.Huds
 import org.polyfrost.vanillahud.hud.VanillaHud
-
 import net.minecraft.resources.Identifier
+//?}
 
 //? if >=1.21.6 {
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement

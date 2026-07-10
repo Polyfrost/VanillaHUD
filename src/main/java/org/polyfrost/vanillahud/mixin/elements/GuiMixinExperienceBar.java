@@ -1,23 +1,20 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import org.spongepowered.asm.mixin.Mixin;
+
+//? if <=1.21.5 {
+/*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
+*///?}
 
 //? if >=26.2 {
 import net.minecraft.client.gui.Hud;
 //?} else {
 /*import net.minecraft.client.gui.Gui;
 *///?}
-//? if >=1.21.6 {
-import net.minecraft.client.gui.contextualbar.ContextualBar;
-//?}
 
 //? if >=26.2 {
 @Mixin(Hud.class)
@@ -35,6 +32,4 @@ public class GuiMixinExperienceBar {
         HudTransform.end(graphics);
     }
     *///?}
-
-    // On 1.21.6+ visibility + position are handled by Fabric HudElementRegistry (INFO_BAR).
 }

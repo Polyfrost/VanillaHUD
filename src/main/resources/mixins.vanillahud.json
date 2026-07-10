@@ -3,7 +3,6 @@
     "minVersion": "0.8",
     "package": "org.polyfrost.vanillahud.mixin",
     "compatibilityLevel": "JAVA_21",
-    "plugin": "org.polyfrost.vanillahud.mixin.VanillaHUDMixinPlugin",
     "injectors": {
         "defaultRequire": 1,
         "maxShiftBy": 5
@@ -27,6 +26,7 @@
         "elements.GuiMixinHunger",
         "elements.GuiMixinMountHealth",
         "elements.GuiMixinScoreboard",
+        "elements.PlayerTabOverlayMixin",
         "elements.GuiMixinTabList",
         "elements.GuiMixinTitle"
     ]
