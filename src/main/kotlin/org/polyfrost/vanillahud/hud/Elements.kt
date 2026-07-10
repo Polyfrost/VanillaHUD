@@ -3,11 +3,18 @@ package org.polyfrost.vanillahud.hud
 //? if <26 {
 /*import org.polyfrost.oneconfig.utils.v1.dsl.mc
 *///?}
+import net.minecraft.client.gui.components.LerpingBossEvent
+import net.minecraft.client.multiplayer.PlayerInfo
+import net.minecraft.network.chat.Component
+import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
+import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
+import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
 
 class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Category.INFO) {
@@ -76,8 +83,38 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
 
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 30f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 12f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
+    // First bar draws at y=12; its name sits 9px above it. Hitbox top follows the name when shown.
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = if (renderText) 3f else 12f
+
+    private fun bossEvents(): Collection<LerpingBossEvent> {
+        if (isEditing) return DemoData.demoBossEvents()
+        return try {
+            //? if >=26.2 {
+            /*(mc.gui.hud.bossOverlay as IBossHealthOverlay).events.values
+            *///?} else {
+            (mc.gui.bossOverlay as IBossHealthOverlay).events.values
+            //?}
+        } catch (_: Throwable) {
+            emptyList()
+        }
+    }
+
+    override fun measuredWidth(): Float = try {
+        val events = bossEvents()
+        if (events.isEmpty() || !renderText) return naturalWidth
+        events.fold(naturalWidth) { acc, e -> maxOf(acc, mc.font.width(e.name).toFloat()) }
+    } catch (_: Throwable) {
+        naturalWidth
+    }
+
+    // Bars stack 19px apart; each is 5px tall. Height spans the top (name or bar) to the last bar's bottom.
+    override fun measuredHeight(): Float = try {
+        val n = bossEvents().size
+        if (n == 0) naturalHeight else ((n - 1) * 19 + if (renderText) 14 else 5).toFloat()
+    } catch (_: Throwable) {
+        naturalHeight
+    }
 }
 
 class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Bar", Category.PLAYER) {
@@ -238,8 +275,51 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
 
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - naturalWidth - 1f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - naturalHeight / 2f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
+        // Vanilla anchors the scores block (title excluded) at h/2; the title sits 9px above it.
+        val s = size() ?: return screenHeight / 2f - naturalHeight / 2f
+        return screenHeight / 2f - s.scores * 6f - if (s.title) 9f else 0f
+    }
+
+    // width, visible score rows (title excluded), whether the title line is shown
+    private class Size(val width: Float, val scores: Int, val title: Boolean)
+
+    private fun size(): Size? {
+        val objective = (if (isEditing) DemoData.demoScoreboardObjective()
+        else mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)) ?: return null
+        val font = mc.font
+        val scores = objective.scoreboard.listPlayerScores(objective)
+            .filter { !it.isHidden }
+            .sortedByDescending { it.value }
+            .take(15)
+        val showTitle = scoreboardTitle
+        if (scores.isEmpty() && !(persistentTitle && showTitle)) return null
+
+        val spaceWidth = font.width(": ")
+        val showPoints = showScorePoints(!areScoresConsecutive(scores))
+        var maxWidth = if (showTitle) font.width(objective.displayName) else 0
+        for (s in scores) {
+            var line = font.width(s.ownerName())
+            if (showPoints) line += spaceWidth + font.width(s.value.toString())
+            maxWidth = maxOf(maxWidth, line)
+        }
+
+        return Size((maxWidth + 2).toFloat(), scores.size, showTitle)
+    }
+
+    override fun measuredWidth(): Float = try {
+        size()?.width ?: naturalWidth
+    } catch (_: Throwable) {
+        naturalWidth
+    }
+
+    override fun measuredHeight(): Float = try {
+        val s = size() ?: return naturalHeight
+        (s.scores * 9 + if (s.title) 9 else 0).toFloat()
+    } catch (_: Throwable) {
+        naturalHeight
+    }
 }
 
 class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) {
@@ -273,7 +353,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     @Switch(title = "Show Player's Head")
     var showHead: Boolean = true
 
-    // TODO:
     @Switch(title = "Better Hat Layer")
     var betterHatLayer: Boolean = false
 
@@ -326,8 +405,93 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
 
     override val naturalWidth get() = 200f
     override val naturalHeight get() = 100f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
+
+    private fun players(): List<PlayerInfo> = try {
+        if (isEditing) {
+            TabListManager.devInfo.take(playerLimit)
+        } else {
+            mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
+        }
+    } catch (_: Throwable) {
+        emptyList()
+    }
+
+    private fun displayName(info: PlayerInfo): Component {
+        info.tabListDisplayName?.let { return it }
+        val name = try {
+            //? if >=1.21.9 {
+            info.profile.name() ?: ""
+            //?} else {
+            /*info.profile.name ?: ""
+            *///?}
+        } catch (_: Throwable) {
+            ""
+        }
+        return Component.literal(name)
+    }
+
+    private fun tabText(editing: String, live: () -> Component?, show: Boolean): Component? {
+        if (!show) return null
+        return if (isEditing) Component.literal(editing) else try { live() } catch (_: Throwable) { null }
+    }
+
+    private fun size(): Pair<Float, Float>? {
+        val list = players()
+        if (list.isEmpty()) return null
+        val font = mc.font
+        val line = font.lineHeight
+
+        var maxName = 0
+        for (p in list) maxName = maxOf(maxName, font.width(displayName(p)))
+
+        val count = list.size
+        var rows = count
+        var columns = 1
+        while (rows > 20) {
+            columns++
+            rows = (count + columns - 1) / columns
+        }
+
+        val cellWidth = 9 + maxName + 13
+        var width = columns * cellWidth + (columns - 1) * 5
+        var height = rows * line
+
+        val overlay: IPlayerTabOverlay? = if (isEditing) null else try {
+            //? if >=26.2 {
+            /*mc.gui.hud.tabList as IPlayerTabOverlay
+            *///?} else {
+            mc.gui.tabList as IPlayerTabOverlay
+            //?}
+        } catch (_: Throwable) {
+            null
+        }
+        val header = tabText("Tab List", { overlay?.header }, showHeader)
+        val footer = tabText("VanillaHUD", { overlay?.footer }, showFooter)
+        if (header != null) {
+            width = maxOf(width, font.width(header))
+            height += line + 1
+        }
+        if (footer != null) {
+            width = maxOf(width, font.width(footer))
+            height += line + 1
+        }
+
+        return (width + 2).toFloat() to (height + 2).toFloat()
+    }
+
+    override fun measuredWidth(): Float = try {
+        size()?.first ?: naturalWidth
+    } catch (_: Throwable) {
+        naturalWidth
+    }
+
+    override fun measuredHeight(): Float = try {
+        size()?.second ?: naturalHeight
+    } catch (_: Throwable) {
+        naturalHeight
+    }
 }
 
 class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
@@ -344,6 +508,18 @@ class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Categor
             maxOf(mc.font.width(title) * 4, mc.font.width(subtitle) * 2).toFloat()
         } catch (_: Throwable) {
             naturalWidth
+        }
+    }
+
+    override fun measuredHeight(): Float {
+        val gui = if (isEditing) null else hudAccessor
+        val subtitle = gui?.subtitle?.string ?: "Subtitle"
+        return try {
+            val line = mc.font.lineHeight
+            // Title renders at 4x, subtitle at 2x, stacked with a gap.
+            if (subtitle.isNotBlank()) (line * 4 + 14 + line * 2).toFloat() else (line * 4).toFloat()
+        } catch (_: Throwable) {
+            naturalHeight
         }
     }
 }

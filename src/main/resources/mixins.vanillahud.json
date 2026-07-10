@@ -13,6 +13,8 @@
         "editor.GuiEditorMixin",
         "editor.PlayerTabOverlayMixin",
         "access.IGui",
+        "access.IBossHealthOverlay",
+        "access.IPlayerTabOverlay",
         "elements.GuiMixinActionBar",
         "elements.GuiMixinAir",
         "elements.GuiMixinArmor",
