@@ -21,6 +21,40 @@ abstract class VanillaHud(
 
     open fun linkTarget(): VanillaHud? = null
 
+    private var seededWidth = -1
+    private var seededHeight = -1
+
+    private fun isAtDefaultPosition(): Boolean {
+        return try {
+            val relXDef = getProperty("relativeX")?.getMetadata<Float?>("default") ?: return false
+            val relYDef = getProperty("relativeY")?.getMetadata<Float?>("default") ?: return false
+            val sectionDef = getProperty("section")?.getMetadata<Any?>("default") ?: return false
+            sectionDef == section &&
+                kotlin.math.abs(relXDef - relativeX) < 1e-4f &&
+                kotlin.math.abs(relYDef - relativeY) < 1e-4f
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    fun reseedDefaultForScreen() {
+        if (tree == null) return
+        val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
+        val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
+        if (w == seededWidth && h == seededHeight) return
+        seededWidth = w
+        seededHeight = h
+        try {
+            val wasDefault = isAtDefaultPosition()
+            capturePositionDefaults()
+            if (wasDefault) {
+                val (dx, dy) = defaultPosition()
+                setAbsolutePosition(dx, dy)
+            }
+        } catch (_: Throwable) {
+        }
+    }
+
     fun applyLink() {
         val target = linkTarget() ?: return
         if (target === this || target.linkTarget() === this) return

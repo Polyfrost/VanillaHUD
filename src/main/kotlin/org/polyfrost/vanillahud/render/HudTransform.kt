@@ -17,6 +17,7 @@ object HudTransform {
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         val hud = resolve(provider)
+        hud?.reseedDefaultForScreen()
         hud?.applyLink()
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
