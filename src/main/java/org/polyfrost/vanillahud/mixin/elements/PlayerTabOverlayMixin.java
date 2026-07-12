@@ -82,6 +82,63 @@ public abstract class PlayerTabOverlayMixin {
         return Huds.INSTANCE.getTabList().getTabWidgetArgb();
     }
 
+    @ModifyArg(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE",
+                    //? if <26 {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    *///?} else {
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    //?}
+                    ordinal = 0),
+            index = 4
+    )
+    private int vanillahud$headerBg(int color) {
+        return Huds.INSTANCE.getTabList().getHeaderBgArgb();
+    }
+
+    @ModifyArg(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE",
+                    //? if <26 {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    *///?} else {
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    //?}
+                    ordinal = 1),
+            index = 4
+    )
+    private int vanillahud$bodyBg(int color) {
+        return Huds.INSTANCE.getTabList().getBodyBgArgb();
+    }
+
+    @ModifyArg(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE",
+                    //? if <26 {
+                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                    *///?} else {
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    //?}
+                    ordinal = 3),
+            index = 4
+    )
+    private int vanillahud$footerBg(int color) {
+        return Huds.INSTANCE.getTabList().getFooterBgArgb();
+    }
+
     //? if >=26 {
     @org.spongepowered.asm.mixin.injection.Redirect(
             method = "extractRenderState",

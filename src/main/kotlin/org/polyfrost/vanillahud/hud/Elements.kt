@@ -432,6 +432,19 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
 
     val tabWidgetArgb: Int get() = tabWidgetColor.argb
 
+    @Color(title = "Header Background Color")
+    var headerBgColor = PolyColor(0x80000000.toInt())
+
+    @Color(title = "Body Background Color")
+    var bodyBgColor = PolyColor(0x80000000.toInt())
+
+    @Color(title = "Footer Background Color")
+    var footerBgColor = PolyColor(0x80000000.toInt())
+
+    val headerBgArgb: Int get() = headerBgColor.argb
+    val bodyBgArgb: Int get() = bodyBgColor.argb
+    val footerBgArgb: Int get() = footerBgColor.argb
+
     fun pingColor(ping: Int): Int = when {
         ping >= 400 -> pingLevelSix
         ping >= 300 -> pingLevelFive
