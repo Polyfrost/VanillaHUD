@@ -5,8 +5,10 @@ import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
+import net.minecraft.world.scores.PlayerTeam
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
@@ -324,8 +326,8 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
     private fun size(): Size? {
-        val objective = (if (isEditing) DemoData.demoScoreboardObjective()
-        else mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)) ?: return null
+        val objective = (mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)
+        ?: if (isEditing) DemoData.demoScoreboardObjective() else null) ?: return null
         val font = mc.font
         val scores = objective.scoreboard.listPlayerScores(objective)
             .filter { !it.isHidden }
@@ -428,9 +430,7 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     var pingLevelSix = PolyColor(0xFFAA0000.toInt())
 
     @Color(title = "Tab Widget Color")
-    var tabWidgetColor = PolyColor(0x275536481.toInt())
-
-    val tabWidgetArgb: Int get() = tabWidgetColor.argb
+    var tabWidgetColor = PolyColor(0x20FFFFFF.toInt())
 
     @Color(title = "Header Background Color")
     var headerBgColor = PolyColor(0x80000000.toInt())
@@ -441,6 +441,7 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     @Color(title = "Footer Background Color")
     var footerBgColor = PolyColor(0x80000000.toInt())
 
+    val tabWidgetArgb: Int get() = tabWidgetColor.argb
     val headerBgArgb: Int get() = headerBgColor.argb
     val bodyBgArgb: Int get() = bodyBgColor.argb
     val footerBgArgb: Int get() = footerBgColor.argb
@@ -460,11 +461,9 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
 
     private fun players(): List<PlayerInfo> = try {
-        if (isEditing) {
-            TabListManager.devInfo.take(playerLimit)
-        } else {
-            mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
-        }
+        val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
+        val useDemo = isEditing && (real.isEmpty() || mc.hasSingleplayerServer())
+        if (useDemo) TabListManager.devInfo.take(playerLimit) else real
     } catch (_: Throwable) {
         emptyList()
     }
@@ -480,12 +479,14 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         } catch (_: Throwable) {
             ""
         }
-        return Component.literal(name)
+        return PlayerTeam.formatNameForTeam(info.team, Component.literal(name))
     }
 
     private fun tabText(editing: String, live: () -> Component?, show: Boolean): Component? {
         if (!show) return null
-        return if (isEditing) Component.literal(editing) else try { live() } catch (_: Throwable) { null }
+        val real = try { live() } catch (_: Throwable) { null }
+        if (real != null) return real
+        return if (isEditing) Component.literal(editing) else null
     }
 
     private fun size(): Pair<Float, Float>? {
@@ -493,6 +494,7 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         if (list.isEmpty()) return null
         val font = mc.font
         val line = font.lineHeight
+        val screenWidth = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
 
         var maxName = 0
         for (p in list) maxName = maxOf(maxName, font.width(displayName(p)))
@@ -506,10 +508,11 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         }
 
         val cellWidth = 9 + maxName + 13
-        var width = columns * cellWidth + (columns - 1) * 5
+        val slotWidth = minOf(columns * cellWidth, screenWidth - 50) / columns
+        var width = slotWidth * columns + (columns - 1) * 5
         var height = rows * line
 
-        val overlay: IPlayerTabOverlay? = if (isEditing) null else try {
+        val overlay: IPlayerTabOverlay? = try {
             //? if >=26.2 {
             mc.gui.hud.tabList as IPlayerTabOverlay
             //?} else {
@@ -521,12 +524,14 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         val header = tabText("Tab List", { overlay?.header }, showHeader)
         val footer = tabText("VanillaHUD", { overlay?.footer }, showFooter)
         if (header != null) {
-            width = maxOf(width, font.width(header))
-            height += line + 1
+            val lines = font.split(header, screenWidth - 50)
+            for (l in lines) width = maxOf(width, font.width(l))
+            height += lines.size * line + 1
         }
         if (footer != null) {
-            width = maxOf(width, font.width(footer))
-            height += line + 1
+            val lines = font.split(footer, screenWidth - 50)
+            for (l in lines) width = maxOf(width, font.width(l))
+            height += lines.size * line + 1
         }
 
         return (width + 2).toFloat() to (height + 2).toFloat()
@@ -589,7 +594,8 @@ class StatusEffectsHud : VanillaHud("vanillahud/statuseffects.json", "Status Eff
     private class Counts(val beneficial: Int, val harmful: Int)
 
     private fun counts(): Counts? {
-        val effects = if (isEditing) DemoData.demoEffects() else mc.player?.activeEffects ?: return null
+        val real = mc.player?.activeEffects ?: emptyList()
+        val effects = if (real.isEmpty() && isEditing) DemoData.demoEffects() else real
         var beneficial = 0
         var harmful = 0
         for (effect in effects) {

@@ -53,6 +53,12 @@ repositories {
         content { includeGroup("net.azureaaron") }
     }
     maven("https://redirector.kotlinlang.org/maven/compose-dev")
+
+    maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1") {
+        content {
+            includeGroup("me.djtheredstoner")
+        }
+    }
 }
 
 dependencies {
@@ -68,6 +74,8 @@ dependencies {
     ocfg("${sc.current.version}-fabric", "commands", "config", "config-impl", "events", "internal", "ui", "utils", "hud")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${sc.properties["deps.fabric_api"] as String}")
+
+    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
 }
 
 loom {

@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.mixin.editor;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
@@ -26,6 +27,7 @@ public abstract class PlayerTabOverlayMixin {
     @ModifyReturnValue(method = "getPlayerInfos", at = @At("RETURN"))
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         if (!HudManager.INSTANCE.isEditing()) return original;
+        if (!original.isEmpty() && !Minecraft.getInstance().hasSingleplayerServer()) return original;
         TabListManager.INSTANCE.ensureLoaded();
         List<PlayerInfo> dev = TabListManager.INSTANCE.getDevInfo();
         int limit = Huds.INSTANCE.getTabList().getPlayerLimit();
@@ -41,8 +43,9 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;header:Lnet/minecraft/network/chat/Component;", opcode = Opcodes.GETFIELD)
     )
     private Component vanillahud$header(PlayerTabOverlay self) {
-        if (HudManager.INSTANCE.isEditing()) return Component.literal("Tab List");
-        return Huds.INSTANCE.getTabList().getShowHeader() ? this.header : null;
+        if (!Huds.INSTANCE.getTabList().getShowHeader()) return null;
+        if (this.header != null) return this.header;
+        return HudManager.INSTANCE.isEditing() ? Component.literal("Tab List") : null;
     }
 
     @Redirect(
@@ -54,7 +57,8 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;footer:Lnet/minecraft/network/chat/Component;", opcode = Opcodes.GETFIELD)
     )
     private Component vanillahud$footer(PlayerTabOverlay self) {
-        if (HudManager.INSTANCE.isEditing()) return Component.literal("VanillaHUD");
-        return Huds.INSTANCE.getTabList().getShowFooter() ? this.footer : null;
+        if (!Huds.INSTANCE.getTabList().getShowFooter()) return null;
+        if (this.footer != null) return this.footer;
+        return HudManager.INSTANCE.isEditing() ? Component.literal("VanillaHUD") : null;
     }
 }

@@ -254,7 +254,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;getDisplayObjective(Lnet/minecraft/world/scores/DisplaySlot;)Lnet/minecraft/world/scores/Objective;", ordinal = 1))
     private Objective vanillahud$forceScoreboard(Objective original) {
-        return vanillahud$editing() ? DemoData.demoScoreboardObjective() : original;
+        return vanillahud$editing() && original == null ? DemoData.demoScoreboardObjective() : original;
     }
 
     @ModifyExpressionValue(
@@ -266,7 +266,7 @@ public abstract class GuiEditorMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getActiveEffects()Ljava/util/Collection;")
     )
     private Collection<MobEffectInstance> vanillahud$forceEffects(Collection<MobEffectInstance> original) {
-        if (HudManager.INSTANCE.isEditing()) return DemoData.demoEffects();
+        if (HudManager.INSTANCE.isEditing() && original.isEmpty()) return DemoData.demoEffects();
         return original;
     }
 }
