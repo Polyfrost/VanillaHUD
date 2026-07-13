@@ -362,6 +362,34 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     }
 }
 
+/**
+ * For meowdding custom scoreboard compatibility.
+ */
+class CustomScoreboardHud : VanillaHud("vanillahud/customscoreboard.json", "Custom Scoreboard", Category.INFO) {
+    override val naturalWidth get() = 90f
+    override val naturalHeight get() = 90f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float {
+        val d = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.defaultX
+        return if (d != 0) d.toFloat() else screenWidth - width - 1f
+    }
+
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
+        val d = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.defaultY
+        return if (d != 0) d.toFloat() else screenHeight / 2f - naturalHeight / 2f
+    }
+
+    override fun measuredWidth(): Float {
+        val w = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.contentWidth
+        return if (w > 0) w.toFloat() else naturalWidth
+    }
+
+    override fun measuredHeight(): Float {
+        val h = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.contentHeight
+        return if (h > 0) h.toFloat() else naturalHeight
+    }
+}
+
 class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) {
     init {
         TabListManager.ensureLoaded()
@@ -471,8 +499,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
 
-    // Reveal animation state. `open` is the desired state (key held / toggled),
-    // the clip fraction eases between 0 (closed) and 1 (fully shown).
     private var animOpen = false
     private var animStart = 0L
     private var animFrom = 0f
@@ -483,7 +509,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         return 1f - t * t * t * t
     }
 
-    /** Update the target open state, seeding a new tween on a change. */
     fun updateOpen(open: Boolean) {
         if (open == animOpen) return
         animOpen = open
@@ -492,7 +517,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         animStart = System.currentTimeMillis()
     }
 
-    /** 0 = fully clipped (closed), 1 = fully revealed. */
     fun clipFraction(): Float {
         if (!animation) return if (animOpen) 1f else 0f
         val dur = animationDuration.coerceAtLeast(1f)
@@ -500,7 +524,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         return animFrom + (animTo - animFrom) * easeOutQuart(t)
     }
 
-    /** Whether the tab list should still render (open, or mid close-animation). */
     fun isRendering(): Boolean = animOpen || clipFraction() > 0.001f
 
     private fun players(): List<PlayerInfo> = try {
@@ -697,6 +720,9 @@ object Huds {
     val heldItemTooltip = HeldItemTooltipHud()
     val title = TitleHud()
     val scoreboard = ScoreboardHud()
+
+    val customScoreboard = CustomScoreboardHud()
+
     val tabList = TabListHud()
     val bossBar = BossBarHud()
     val statusEffects = StatusEffectsHud()

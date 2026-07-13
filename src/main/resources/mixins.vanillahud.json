@@ -9,6 +9,7 @@
     },
     "client": [
         "PlayerFaceRendererMixin",
+        "compat.CustomScoreboardRendererMixin",
         "access.IBossHealthOverlay",
         "access.IGui",
         "access.IPlayerTabOverlay",
