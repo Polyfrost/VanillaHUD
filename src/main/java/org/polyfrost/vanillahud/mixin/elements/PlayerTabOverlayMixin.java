@@ -137,21 +137,21 @@ public abstract class PlayerTabOverlayMixin {
     }
 
     //? if >=26 {
-    @Redirect(
+    @WrapOperation(
             method = "extractRenderState",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V")
     )
     private void vanillahud$textShadowComponent(GuiGraphicsExtractor graphics, Font font, Component str, int x, int y,
-                                                int color) {
+                                                int color, Operation<Void> original) {
         graphics.text(font, str, x, y, color, Huds.INSTANCE.getTabList().getTextType() != 0);
     }
 
-    @Redirect(
+    @WrapOperation(
             method = "extractRenderState",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)V")
     )
     private void vanillahud$textShadowSequence(GuiGraphicsExtractor graphics, Font font, FormattedCharSequence str,
-                                               int x, int y, int color) {
+                                               int x, int y, int color, Operation<Void> original) {
         graphics.text(font, str, x, y, color, Huds.INSTANCE.getTabList().getTextType() != 0);
     }
     //?}

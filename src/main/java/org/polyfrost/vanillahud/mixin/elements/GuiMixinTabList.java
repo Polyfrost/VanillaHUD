@@ -1,12 +1,12 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
-import net.minecraft.client.KeyMapping;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 
 //? if <1.21.4 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
@@ -45,7 +45,7 @@ public class GuiMixinTabList {
     @Unique
     private boolean vanillahud$toggled;
 
-    @Redirect(
+    @ModifyExpressionValue(
             //? if <26 {
             /*method = "renderTabList",
             *///?} else {
@@ -53,8 +53,7 @@ public class GuiMixinTabList {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z")
     )
-    private boolean vanillahud$displayMode(KeyMapping key) {
-        boolean down = key.isDown();
+    private boolean vanillahud$displayMode(boolean down) {
         if (HudManager.INSTANCE.isEditing()) return true;
         if (Huds.INSTANCE.getTabList().getDisplayMode() == 0) return down;
         if (down && !vanillahud$keyHeld) vanillahud$toggled = !vanillahud$toggled;
