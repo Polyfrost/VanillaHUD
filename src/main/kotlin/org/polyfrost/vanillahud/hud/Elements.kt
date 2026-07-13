@@ -378,6 +378,17 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     @Dropdown(title = "Mode", options = ["Held", "Toggle"])
     var displayMode = 0
 
+    @Switch(title = "Animation", description = "Slide the tab list open and closed instead of snapping.")
+    var animation = true
+
+    @Slider(
+        title = "Animation Duration",
+        description = "How long the open / close animation takes, in milliseconds.",
+        min = 50f,
+        max = 1000f
+    )
+    var animationDuration = 400f
+
     @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
     var textType: Int = 1
 
@@ -459,6 +470,38 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     override val naturalHeight get() = 100f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
+
+    // Reveal animation state. `open` is the desired state (key held / toggled),
+    // the clip fraction eases between 0 (closed) and 1 (fully shown).
+    private var animOpen = false
+    private var animStart = 0L
+    private var animFrom = 0f
+    private var animTo = 0f
+
+    private fun easeOutQuart(x: Float): Float {
+        val t = 1f - x
+        return 1f - t * t * t * t
+    }
+
+    /** Update the target open state, seeding a new tween on a change. */
+    fun updateOpen(open: Boolean) {
+        if (open == animOpen) return
+        animOpen = open
+        animFrom = clipFraction()
+        animTo = if (open) 1f else 0f
+        animStart = System.currentTimeMillis()
+    }
+
+    /** 0 = fully clipped (closed), 1 = fully revealed. */
+    fun clipFraction(): Float {
+        if (!animation) return if (animOpen) 1f else 0f
+        val dur = animationDuration.coerceAtLeast(1f)
+        val t = ((System.currentTimeMillis() - animStart).toFloat() / dur).coerceIn(0f, 1f)
+        return animFrom + (animTo - animFrom) * easeOutQuart(t)
+    }
+
+    /** Whether the tab list should still render (open, or mid close-animation). */
+    fun isRendering(): Boolean = animOpen || clipFraction() > 0.001f
 
     private fun players(): List<PlayerInfo> = try {
         val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()

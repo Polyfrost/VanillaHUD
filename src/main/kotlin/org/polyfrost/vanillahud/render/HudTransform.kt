@@ -2,9 +2,14 @@ package org.polyfrost.vanillahud.render
 
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
+import kotlin.math.ceil
+import kotlin.math.floor
 
 object HudTransform {
+    private var scissored = false
+
     private fun resolve(provider: VanillaHud): VanillaHud? {
         for (h in HudManager.activeInstances) {
             if (provider.javaClass.isInstance(h)) {
@@ -26,6 +31,18 @@ object HudTransform {
         val gx = hud?.x ?: ox
         val gy = hud?.y ?: oy
         val s = hud?.effectiveScale ?: 1f
+
+        scissored = false
+        val tab = (hud ?: provider) as? TabListHud
+        if (tab != null && tab.animation && !HudManager.isEditing) {
+            val frac = tab.clipFraction()
+            if (frac < 1f) {
+                val clipH = (hud?.height ?: provider.height) * frac * s
+                graphics.enableScissor(0, floor(gy).toInt(), w, ceil(gy + clipH).toInt())
+                scissored = true
+            }
+        }
+
         val pose = graphics.pose()
         pose.pushMatrix()
         //? if <=1.21.5 {
@@ -42,5 +59,9 @@ object HudTransform {
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {
         graphics.pose().popMatrix()
+        if (scissored) {
+            graphics.disableScissor()
+            scissored = false
+        }
     }
 }
