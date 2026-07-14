@@ -449,7 +449,7 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     var showHead: Boolean = true
 
     @Switch(title = "Better Hat Layer")
-    var betterHatLayer: Boolean = false
+    var betterHatLayer: Boolean = true
 
     @Switch(title = "Show Player's Ping")
     var showPing: Boolean = true
