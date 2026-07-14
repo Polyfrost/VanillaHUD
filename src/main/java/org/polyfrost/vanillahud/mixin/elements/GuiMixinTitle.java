@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -57,12 +58,7 @@ public class GuiMixinTitle {
                     *///?}
                     ordinal = 0, shift = At.Shift.AFTER))
     private void vanillahud$titleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (!Huds.INSTANCE.getTitle().getAutoTitleScale()) return;
-        // title is drawn at 4x; 50F padding keeps it off the screen edges
-        float width = Minecraft.getInstance().font.width(title) * 4.0F + 50.0F;
-        if (width > graphics.guiWidth()) {
-            vanillahud$autoScale(graphics, graphics.guiWidth() / width);
-        }
+        vanillahud$autoScale(graphics, title, 4.0F);
     }
 
     @Inject(
@@ -79,19 +75,32 @@ public class GuiMixinTitle {
                     *///?}
                     ordinal = 1, shift = At.Shift.AFTER))
     private void vanillahud$subtitleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (!Huds.INSTANCE.getTitle().getAutoTitleScale()) return;
-        // subtitle is drawn at 2x
-        float width = Minecraft.getInstance().font.width(subtitle) * 2.0F + 50.0F;
-        if (width > graphics.guiWidth()) {
-            vanillahud$autoScale(graphics, graphics.guiWidth() / width);
-        }
+        vanillahud$autoScale(graphics, subtitle, 2.0F);
     }
 
-    private void vanillahud$autoScale(GuiGraphicsExtractor graphics, float scale) {
+    @Unique
+    private void vanillahud$autoScale(GuiGraphicsExtractor graphics, Component text, float drawScale) {
+        if (!Huds.INSTANCE.getTitle().getAutoTitleScale()) return;
+        if (!vanillahud$isNormalTitle(text)) return;
+
+        float width = Minecraft.getInstance().font.width(text) * drawScale + 50.0F;
+        if (width <= graphics.guiWidth()) return;
+
+        float scale = graphics.guiWidth() / width;
         //? if >=1.21.6 {
         graphics.pose().scale(scale, scale);
         //?} else {
         /*graphics.pose().scale(scale, scale, 1.0F);
         *///?}
+    }
+
+    @Unique
+    private boolean vanillahud$isNormalTitle(Component text) {
+        String string = text.getString();
+        if (string.isEmpty()) return true;
+
+        char first = string.charAt(0);
+        boolean isCustomIcon = first >= '\uE000' && first <= '\uF8FF';
+        return !(isCustomIcon && string.length() <= 2);
     }
 }
