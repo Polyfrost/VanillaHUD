@@ -10,7 +10,6 @@ import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hook.HeadHook;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
@@ -30,7 +29,7 @@ import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix3x2fStack;
 //?}
 
-@Mixin(PlayerTabOverlay.class)
+@Mixin(value = PlayerTabOverlay.class, priority = 1100)
 public abstract class PlayerTabOverlayMixin {
     @Final
     @Shadow
@@ -38,7 +37,6 @@ public abstract class PlayerTabOverlayMixin {
 
     @ModifyReturnValue(method = "getPlayerInfos", at = @At("RETURN"))
     private List<PlayerInfo> vanillahud$selfAtTop(List<PlayerInfo> original) {
-        if (HudManager.INSTANCE.isEditing()) return original;
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (hud.getSelfAtTop() && this.minecraft.player != null) {
             UUID self = this.minecraft.player.getUUID();
