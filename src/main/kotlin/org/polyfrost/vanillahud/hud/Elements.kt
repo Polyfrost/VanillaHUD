@@ -7,10 +7,12 @@ import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.compat.CustomScoreboardBridge
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.render.ScoreboardBackground
@@ -366,26 +368,40 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
  * For meowdding custom scoreboard compatibility.
  */
 class CustomScoreboardHud : VanillaHud("vanillahud/customscoreboard.json", "Custom Scoreboard", Category.INFO) {
+    private var options = false
+
+    fun stealOptions() {
+        if (options) return
+        val target = tree ?: return
+        val csTree = try {
+            ConfigManager.active().get(CustomScoreboardBridge.CONFIG_ID)
+        } catch (_: Throwable) {
+            null
+        } ?: return
+        target.put(csTree)
+        options = true
+    }
+
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float {
-        val d = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.defaultX
+        val d = CustomScoreboardBridge.defaultX
         return if (d != 0) d.toFloat() else screenWidth - width - 1f
     }
 
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
-        val d = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.defaultY
+        val d = CustomScoreboardBridge.defaultY
         return if (d != 0) d.toFloat() else screenHeight / 2f - naturalHeight / 2f
     }
 
     override fun measuredWidth(): Float {
-        val w = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.contentWidth
+        val w = CustomScoreboardBridge.contentWidth
         return if (w > 0) w.toFloat() else naturalWidth
     }
 
     override fun measuredHeight(): Float {
-        val h = org.polyfrost.vanillahud.compat.CustomScoreboardBridge.contentHeight
+        val h = CustomScoreboardBridge.contentHeight
         return if (h > 0) h.toFloat() else naturalHeight
     }
 }

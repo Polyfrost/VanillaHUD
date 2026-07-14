@@ -13,7 +13,10 @@ object VanillaHUDClient : ClientModInitializer {
 
         if (CustomScoreboardBridge.present) {
             HudManager.register(Huds.customScoreboard)
-            ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { CustomScoreboardBridge.syncVisibility() })
+            ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
+                CustomScoreboardBridge.syncVisibility()
+                Huds.customScoreboard.stealOptions()
+            })
         }
 
         HudElementCompat.init()
