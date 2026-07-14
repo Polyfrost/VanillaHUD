@@ -473,13 +473,13 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     var pingLevelTwo = PolyColor(0xFF00AA00.toInt())
 
     @Color(title = "Ping Between 145 and 200")
-    var pingLevelThree = PolyColor(0xFFFF55FF.toInt())
+    var pingLevelThree = PolyColor(0xFFFFFF55.toInt())
 
     @Color(title = "Ping Between 200 and 300")
-    var pingLevelFour = PolyColor(0xFFAA00FF.toInt())
+    var pingLevelFour = PolyColor(0xFFFFAA00.toInt())
 
     @Color(title = "Ping Between 300 and 400")
-    var pingLevelFive = PolyColor(0xFF5555FF.toInt())
+    var pingLevelFive = PolyColor(0xFFFF5555.toInt())
 
     @Color(title = "Ping Above 400")
     var pingLevelSix = PolyColor(0xFFAA0000.toInt())
