@@ -84,11 +84,7 @@ public abstract class PlayerTabOverlayMixin {
             method = "extractRenderState",
             //?}
             at = @At(value = "INVOKE",
-                    //? if <26 {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
-                    *///?} else {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    //?}
                     ordinal = 0),
             index = 4
     )
@@ -103,11 +99,7 @@ public abstract class PlayerTabOverlayMixin {
             method = "extractRenderState",
             //?}
             at = @At(value = "INVOKE",
-                    //? if <26 {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
-                    *///?} else {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    //?}
                     ordinal = 1),
             index = 4
     )
@@ -122,11 +114,7 @@ public abstract class PlayerTabOverlayMixin {
             method = "extractRenderState",
             //?}
             at = @At(value = "INVOKE",
-                    //? if <26 {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
-                    *///?} else {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    //?}
                     ordinal = 3),
             index = 4
     )

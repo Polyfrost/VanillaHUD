@@ -712,6 +712,27 @@ class StatusEffectsHud : VanillaHud("vanillahud/statuseffects.json", "Status Eff
 }
 
 class SubtitlesHud : VanillaHud("vanillahud/subtitles.json", "Closed Captions", Category.INFO) {
+    @Color(title = "Text Color")
+    var captionTextColor = PolyColor(0xFFFFFFFF.toInt())
+
+    @Color(
+        title = "Background Color",
+        description = "Overrides the vanilla text background opacity setting for closed captions."
+    )
+    var captionBgColor = PolyColor(0xCC000000.toInt())
+
+    val captionBgArgb: Int get() = captionBgColor.argb
+
+    fun captionTextArgb(vanilla: Int): Int {
+        val fade = vanilla and 0xFF
+        val color = captionTextColor.argb
+        val a = color ushr 24 and 0xFF
+        val r = (color ushr 16 and 0xFF) * fade / 255
+        val g = (color ushr 8 and 0xFF) * fade / 255
+        val b = (color and 0xFF) * fade / 255
+        return (a shl 24) or (r shl 16) or (g shl 8) or b
+    }
+
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 50f
 
