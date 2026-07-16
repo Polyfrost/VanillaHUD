@@ -15,6 +15,8 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.compat.CustomScoreboardBridge
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
+import org.polyfrost.vanillahud.mixin.access.ISubtitle
+import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
 import org.polyfrost.vanillahud.render.ScoreboardBackground
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
@@ -89,8 +91,7 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = if (renderText) 3f else 12f
 
     private fun bossEvents(): Collection<LerpingBossEvent> {
-        if (isEditing) return DemoData.demoBossEvents()
-        return try {
+        val live = try {
             //? if >=26.2 {
             (mc.gui.hud.bossOverlay as IBossHealthOverlay).events.values
             //?} else {
@@ -99,6 +100,8 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
         } catch (_: Throwable) {
             emptyList()
         }
+        if (live.isEmpty() && isEditing) return DemoData.demoBossEvents()
+        return live
     }
 
     override fun measuredWidth(): Float = try {
@@ -322,7 +325,7 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
         val s = size() ?: return screenHeight / 2f - naturalHeight / 2f
-        return screenHeight / 2f - s.scores * 6f - if (s.title) 9f else 0f
+        return screenHeight / 2f - s.scores * 6f - if (s.title) 10f else 1f
     }
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
@@ -331,7 +334,8 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
         val objective = (mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)
         ?: if (isEditing) DemoData.demoScoreboardObjective() else null) ?: return null
         val font = mc.font
-        val scores = objective.scoreboard.listPlayerScores(objective)
+        val scoreboard = objective.scoreboard
+        val scores = scoreboard.listPlayerScores(objective)
             .filter { !it.isHidden }
             .sortedByDescending { it.value }
             .take(15)
@@ -340,14 +344,18 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
 
         val spaceWidth = font.width(": ")
         val showPoints = showScorePoints(scores)
-        var maxWidth = if (showTitle) font.width(objective.displayName) else 0
+        var maxWidth = font.width(objective.displayName)
         for (s in scores) {
-            var line = font.width(s.ownerName())
-            if (showPoints) line += spaceWidth + font.width(s.value.toString())
+            val name = PlayerTeam.formatNameForTeam(scoreboard.getPlayersTeam(s.owner()), s.ownerName())
+            var line = font.width(name)
+            if (showPoints) {
+                val scoreWidth = font.width(s.value.toString())
+                if (scoreWidth > 0) line += spaceWidth + scoreWidth
+            }
             maxWidth = maxOf(maxWidth, line)
         }
 
-        return Size((maxWidth + 2).toFloat(), scores.size, showTitle)
+        return Size((maxWidth + 4).toFloat(), scores.size, showTitle)
     }
 
     override fun measuredWidth(): Float = try {
@@ -358,7 +366,7 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
 
     override fun measuredHeight(): Float = try {
         val s = size() ?: return naturalHeight
-        (s.scores * 9 + if (s.title) 9 else 0).toFloat()
+        (s.scores * 9 + if (s.title) 10 else 1).toFloat()
     } catch (_: Throwable) {
         naturalHeight
     }
@@ -707,19 +715,35 @@ class SubtitlesHud : VanillaHud("vanillahud/subtitles.json", "Closed Captions", 
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 50f
 
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 3f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 30f - height
 
+    private fun texts(): List<Component> {
+        val overlay = hudAccessor?.subtitleOverlay as? ISubtitleOverlay ?: return emptyList()
+        return overlay.audibleSubtitles.mapNotNull { (it as? ISubtitle)?.subtitleText }
+    }
+
     override fun measuredWidth(): Float = try {
-        DemoData.demoSubtitleWidth()
+        val texts = texts()
+        if (texts.isEmpty()) naturalWidth else {
+            val font = mc.font
+            val row = texts.maxOf { font.width(it) } +
+                font.width("<") + font.width(" ") + font.width(">") + font.width(" ")
+            (row / 2 * 2 + 2).toFloat()
+        }
     } catch (_: Throwable) {
         naturalWidth
     }
 
     override fun measuredHeight(): Float = try {
-        DemoData.demoSubtitleHeight()
+        val lines = texts().size
+        if (lines == 0) naturalHeight else (lines * SUBTITLE_ROW).toFloat()
     } catch (_: Throwable) {
         naturalHeight
+    }
+
+    private companion object {
+        const val SUBTITLE_ROW = 10
     }
 }
 

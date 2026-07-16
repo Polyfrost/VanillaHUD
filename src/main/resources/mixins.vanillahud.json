@@ -13,6 +13,8 @@
         "access.IBossHealthOverlay",
         "access.IGui",
         "access.IPlayerTabOverlay",
+        "access.ISubtitle",
+        "access.ISubtitleOverlay",
         "editor.GuiEditorMixin",
         "editor.PlayerTabOverlayMixin",
         "editor.SubtitleOverlayMixin",

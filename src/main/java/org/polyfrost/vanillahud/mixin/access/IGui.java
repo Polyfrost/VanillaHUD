@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Hud;
 //?} else {
 /*import net.minecraft.client.gui.Gui;
 *///?}
+import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,4 +28,7 @@ public interface IGui {
 
     @Accessor("lastToolHighlight")
     ItemStack getLastToolHighlight();
+
+    @Accessor("subtitleOverlay")
+    SubtitleOverlay getSubtitleOverlay();
 }

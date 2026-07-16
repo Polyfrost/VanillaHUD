@@ -17,7 +17,6 @@ import net.minecraft.world.scores.ScoreHolder
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.scores.Scoreboard
 import net.minecraft.world.scores.criteria.ObjectiveCriteria
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import java.util.UUID
 
 object DemoData {
@@ -30,20 +29,6 @@ object DemoData {
         "Squid swims" to 1,
         "Splashing" to -1,
     )
-
-    private const val SUBTITLE_ROW = 10
-
-    @JvmStatic
-    fun demoSubtitleWidth(): Float = try {
-        val font = mc.font
-        val arrows = font.width("<") + font.width(" ") + font.width(">") + font.width(" ")
-        (subtitleLines.maxOf { font.width(it.first) } + arrows + 2).toFloat()
-    } catch (_: Throwable) {
-        90f
-    }
-
-    @JvmStatic
-    fun demoSubtitleHeight(): Float = (subtitleLines.size * SUBTITLE_ROW).toFloat()
 
     class DemoSubtitle(val sound: SoundInstance, val event: WeighedSoundEvents, val range: Float)
 
