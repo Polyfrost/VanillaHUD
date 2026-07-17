@@ -39,8 +39,13 @@ abstract class VanillaHud(
 
     fun reseedDefaultForScreen() {
         if (tree == null) return
+        syncRenderedSize()
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
+        // HudManager's dimensions start at a hardcoded 960x540 and are only published at the
+        // Gui.render tail, i.e. after our element hooks run. Seeding against that placeholder
+        // bakes relativeX/relativeY into the wrong grid, so wait for the real screen.
+        if (w != mc.window.guiScaledWidth || h != mc.window.guiScaledHeight) return
         if (w == seededWidth && h == seededHeight) return
         seededWidth = w
         seededHeight = h
@@ -58,6 +63,7 @@ abstract class VanillaHud(
     fun trackExternalDefault(defX: Float, defY: Float): Boolean {
         return try {
             if (tree == null) return false
+            syncRenderedSize()
             val wasDefault = isAtDefaultPosition()
             capturePositionDefaults()
             if (wasDefault) {
@@ -75,6 +81,7 @@ abstract class VanillaHud(
         val target = linkTarget() ?: return
         if (target === this || target.linkTarget() === this) return
         target.applyLink()
+        target.syncRenderedSize()
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
         val offX = vanillaOriginX(w, h) - target.vanillaOriginX(w, h)
@@ -97,6 +104,17 @@ abstract class VanillaHud(
 
     override val width: Float get() = measuredWidth()
     override val height: Float get() = measuredHeight()
+
+    /**
+     * [scaledWidth]/[scaledHeight] read [renderedW]/[renderedH], which LegacyHudRenderer only
+     * fills in at the end of the frame — after our element hooks have already run. Any position
+     * math we do before that would see a stale zero and fall back to [minimumSize].
+     */
+    private fun syncRenderedSize() {
+        val scale = effectiveScale
+        renderedW = width * scale
+        renderedH = height * scale
+    }
 
     protected val hudAccessor: IGui?
         get() = try {
