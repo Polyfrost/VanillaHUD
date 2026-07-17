@@ -13,7 +13,6 @@ Adds in a load of customization to a few native UI elements such as the bossbar,
 - Title / subtitle customization
 - Hotbar customization
 - Tablist customization
-- Scrollable tooltips
 
 
 **And, all elements can be customized with**
