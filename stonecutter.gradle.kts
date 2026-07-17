@@ -34,3 +34,7 @@ stonecutter parameters {
         }
     }
 }
+
+stonecutter tasks {
+    order("publishModrinth")
+}
