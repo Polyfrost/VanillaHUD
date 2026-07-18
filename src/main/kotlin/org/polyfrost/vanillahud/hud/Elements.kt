@@ -147,6 +147,9 @@ class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
 
     override fun linkTarget() = if (mountLink) Huds.mountHealth else null
+
+    @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
+    var hardcoreHearts = 0;
 }
 
 class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
