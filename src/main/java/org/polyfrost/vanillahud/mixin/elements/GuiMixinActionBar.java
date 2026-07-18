@@ -50,7 +50,8 @@ public class GuiMixinActionBar {
                     //?} else {
                     /*target = "Lnet/minecraft/client/gui/Gui;animateOverlayMessageColor:Z",
                     *///?}
-                    opcode = Opcodes.GETFIELD)
+                    opcode = Opcodes.GETFIELD
+            )
     )
     private boolean vanillahud$actionBar$rainbowTimer(boolean original) {
         return original && Huds.INSTANCE.getActionBar().getRainbowTimer();
