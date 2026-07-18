@@ -6,6 +6,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.player.Player;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if >=26.2 {
@@ -42,5 +44,18 @@ public class GuiMixinHealth {
         //? if <=1.21.6 {
         /*HudTransform.end(graphics);
         *///?}
+    }
+
+    @ModifyVariable(
+            //? if >= 26 {
+            method = "extractHeart", at = @At(value = "HEAD"), argsOnly = true, name = "isHardcore"
+            //?} else {
+            /*method = "renderHearts", at = @At(value = "STORE"), ordinal = 1
+            *///?}
+    )
+    private boolean setAlwaysHardcoreHearts(boolean isHardcore) {
+        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 1) return true;
+        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 2) return false;
+        return isHardcore;
     }
 }

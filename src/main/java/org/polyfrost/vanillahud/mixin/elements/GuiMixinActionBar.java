@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,11 +46,11 @@ public class GuiMixinActionBar {
             at = @At(
                     value = "FIELD",
                     //? if >=26.2 {
-                    target = "Lnet/minecraft/client/gui/Hud;animateOverlayMessageColor:Z"
+                    target = "Lnet/minecraft/client/gui/Hud;animateOverlayMessageColor:Z",
                     //?} else {
-                    /*target = "Lnet/minecraft/client/gui/Gui;animateOverlayMessageColor:Z"
+                    /*target = "Lnet/minecraft/client/gui/Gui;animateOverlayMessageColor:Z",
                     *///?}
-            )
+                    opcode = Opcodes.GETFIELD)
     )
     private boolean vanillahud$actionBar$rainbowTimer(boolean original) {
         return original && Huds.INSTANCE.getActionBar().getRainbowTimer();
