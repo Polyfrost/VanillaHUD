@@ -199,15 +199,18 @@ public abstract class PlayerTabOverlayMixin {
 
     // At clamped GUI scales names overflow their column into the numeric ping. Clip them.
     @WrapOperation(
-            //? if <26 {
+            //? if <1.21.6 {
             /*method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I", ordinal = 0)
+            *///?} else if <26 {
+            /*method = "render",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", ordinal = 0)
             *///?} else {
             method = "extractRenderState",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", ordinal = 0)
             //?}
     )
-    //? if <26 {
+    //? if <1.21.6 {
     /*private int vanillahud$clipName(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color,
                                    Operation<Integer> original, @Share("vhTabSlotRight") LocalIntRef slotRight) {
         int clipRight = slotRight.get() - vanillahud$pingReserve();
