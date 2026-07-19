@@ -21,7 +21,7 @@ import org.polyfrost.vanillahud.render.ScoreboardBackground
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
 
-class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Category.INFO) {
+class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Category.INFO) {
     @Switch(
         title = "Use Jukebox Rainbow Timer Color",
         description = "Use the rainbow timer color when a jukebox begins playing."
@@ -40,7 +40,7 @@ class ActionBarHud : VanillaHud("vanillahud/actionbar.json", "Action Bar", Categ
     }
 }
 
-class AirHud : VanillaHud("vanillahud/air.json", "Air", Category.PLAYER) {
+class AirHud : VanillaHud("vanillahud-air.json", "Air", Category.PLAYER) {
     @Checkbox(title = "Link with health")
     var healthLink = false
 
@@ -59,7 +59,7 @@ class AirHud : VanillaHud("vanillahud/air.json", "Air", Category.PLAYER) {
     }
 }
 
-class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
+class ArmorHud : VanillaHud("vanillahud-armor.json", "Armor", Category.PLAYER) {
     @Checkbox(title = "Link with health")
     var healthLink = true
 
@@ -78,7 +78,7 @@ class ArmorHud : VanillaHud("vanillahud/armor.json", "Armor", Category.PLAYER) {
     }
 }
 
-class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.COMBAT) {
+class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.COMBAT) {
     @Switch(title = "Render Text")
     var renderText = true
 
@@ -120,21 +120,21 @@ class BossBarHud : VanillaHud("vanillahud/bossbar.json", "Boss Bar", Category.CO
     }
 }
 
-class ExperienceBarHud : VanillaHud("vanillahud/experience.json", "Experience Bar", Category.PLAYER) {
+class ExperienceBarHud : VanillaHud("vanillahud-experience.json", "Experience Bar", Category.PLAYER) {
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 5f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
 }
 
-class ExperienceLevelHud : VanillaHud("vanillahud/experience-level.json", "Experience Level", Category.PLAYER) {
+class ExperienceLevelHud : VanillaHud("vanillahud-experience-level.json", "Experience Level", Category.PLAYER) {
     override val naturalWidth get() = 16f
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 8f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
 }
 
-class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER) {
+class HealthHud : VanillaHud("vanillahud-health.json", "Health", Category.PLAYER) {
     @Checkbox(title = "Link with mount health")
     var mountLink = false
 
@@ -152,7 +152,7 @@ class HealthHud : VanillaHud("vanillahud/health.json", "Health", Category.PLAYER
     var hardcoreHearts = 0;
 }
 
-class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER) {
+class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER) {
     @Dropdown(title = "Mode", options = ["Horizontal", "Vertical"])
     var hotbarMode = 0
 
@@ -172,7 +172,7 @@ class HotbarHud : VanillaHud("vanillahud/hotbar.json", "Hotbar", Category.PLAYER
         if (vertical) screenHeight / 2f - 91f else screenHeight - 22f
 }
 
-class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER) {
+class HungerHud : VanillaHud("vanillahud-hunger.json", "Hunger", Category.PLAYER) {
     @Checkbox(title = "Link with health")
     var healthLink: Boolean = false
 
@@ -194,7 +194,7 @@ class HungerHud : VanillaHud("vanillahud/hunger.json", "Hunger", Category.PLAYER
     }
 }
 
-class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Category.PLAYER) {
+class MountHealthHud : VanillaHud("vanillahud-mount.json", "Mount Health", Category.PLAYER) {
     @Checkbox(title = "Link with health")
     var healthLink: Boolean = false
 
@@ -206,7 +206,7 @@ class MountHealthHud : VanillaHud("vanillahud/mount.json", "Mount Health", Categ
     override fun linkTarget() = if (healthLink) Huds.health else null
 }
 
-class HeldItemTooltipHud : VanillaHud("vanillahud/itemtooltip.json", "Held Item Tooltip", Category.INFO) {
+class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
     @Switch(title = "Fade Out")
     var fadeOut: Boolean = true
 
@@ -225,7 +225,7 @@ class HeldItemTooltipHud : VanillaHud("vanillahud/itemtooltip.json", "Held Item 
     }
 }
 
-class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Category.INFO) {
+class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Category.INFO) {
     @Dropdown(
         title = "Show Score Points",
         category = "Score Points",
@@ -378,7 +378,7 @@ class ScoreboardHud : VanillaHud("vanillahud/scoreboard.json", "Scoreboard", Cat
 /**
  * For meowdding custom scoreboard compatibility.
  */
-class CustomScoreboardHud : VanillaHud("vanillahud/customscoreboard.json", "Custom Scoreboard", Category.INFO) {
+class CustomScoreboardHud : VanillaHud("vanillahud-customscoreboard.json", "Custom Scoreboard", Category.INFO) {
     private var options = false
 
     fun stealOptions() {
@@ -417,7 +417,7 @@ class CustomScoreboardHud : VanillaHud("vanillahud/customscoreboard.json", "Cust
     }
 }
 
-class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) {
+class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) {
     init {
         TabListManager.ensureLoaded()
     }
@@ -643,7 +643,7 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     }
 }
 
-class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Category.INFO) {
+class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Category.INFO) {
     @Switch(
         title = "Auto Scale",
         description = "Shrink the title and subtitle so they always fit within the screen width."
@@ -678,7 +678,7 @@ class TitleHud : VanillaHud("vanillahud/title.json", "Title & Subtitle", Categor
     }
 }
 
-class StatusEffectsHud : VanillaHud("vanillahud/statuseffects.json", "Status Effects", Category.PLAYER) {
+class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Effects", Category.PLAYER) {
     override val naturalWidth get() = 50f
     override val naturalHeight get() = 50f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width
@@ -714,7 +714,7 @@ class StatusEffectsHud : VanillaHud("vanillahud/statuseffects.json", "Status Eff
     }
 }
 
-class SubtitlesHud : VanillaHud("vanillahud/subtitles.json", "Closed Captions", Category.INFO) {
+class SubtitlesHud : VanillaHud("vanillahud-subtitles.json", "Closed Captions", Category.INFO) {
     @Color(title = "Text Color")
     var captionTextColor = PolyColor(0xFFFFFFFF.toInt())
 

@@ -48,7 +48,7 @@ public class GuiMixinHealth {
 
     @ModifyVariable(
             //? if >= 26 {
-            method = "extractHeart", at = @At(value = "HEAD"), argsOnly = true, name = "isHardcore"
+            method = "extractHeart", at = @At(value = "HEAD"), argsOnly = true, index = 5
             //?} else {
             /*method = "renderHearts", at = @At(value = "STORE"), ordinal = 1
             *///?}

@@ -108,10 +108,8 @@ public abstract class GuiEditorMixin {
             at = @At("HEAD"))
     private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, CallbackInfo ci) {
         if (vanillahud$editing()) {
-            if (!vanillahud$forcedItemName) {
-                lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
-                vanillahud$forcedItemName = true;
-            }
+            lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
+            vanillahud$forcedItemName = true;
             toolHighlightTimer = 100;
         } else if (vanillahud$forcedItemName) {
             toolHighlightTimer = 0;
