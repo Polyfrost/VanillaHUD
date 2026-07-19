@@ -1,7 +1,6 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Share;
@@ -23,9 +22,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 //? if >=26 {
 import net.minecraft.util.FormattedCharSequence;
@@ -43,34 +43,31 @@ public abstract class PlayerTabOverlayMixin {
     @Shadow
     private Minecraft minecraft;
 
-    @ModifyReturnValue(method = "getPlayerInfos", at = @At("RETURN"))
-    private List<PlayerInfo> vanillahud$selfAtTop(List<PlayerInfo> original) {
-        TabListHud hud = Huds.INSTANCE.getTabList();
-        if (hud.getSelfAtTop() && this.minecraft.player != null) {
-            UUID self = this.minecraft.player.getUUID();
-            List<PlayerInfo> reordered = new ArrayList<>(original);
-            for (int i = 0; i < reordered.size(); i++) {
-                //? if >=1.21.9 {
-                UUID id = reordered.get(i).getProfile().id();
-                //?} else {
-                /*UUID id = reordered.get(i).getProfile().getId();
-                *///?}
-                if (self.equals(id)) {
-                    reordered.addFirst(reordered.remove(i));
-                    break;
-                }
-            }
-            return reordered;
-        }
-        return original;
-    }
-
-    @ModifyArg(
+    @WrapOperation(
             method = "getPlayerInfos",
             at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;limit(J)Ljava/util/stream/Stream;")
     )
-    private long vanillahud$playerLimit(long original) {
-        return Huds.INSTANCE.getTabList().getPlayerLimit();
+    private Stream<PlayerInfo> vanillahud$selfAtTopAndLimit(Stream<PlayerInfo> stream, long original,
+                                                           Operation<Stream<PlayerInfo>> op) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        long limit = hud.getPlayerLimit();
+        if (hud.getSelfAtTop() && this.minecraft.player != null) {
+            UUID self = this.minecraft.player.getUUID();
+            List<PlayerInfo> list = stream.collect(Collectors.toList());
+            for (int i = 0; i < list.size(); i++) {
+                //? if >=1.21.9 {
+                UUID id = list.get(i).getProfile().id();
+                //?} else {
+                /*UUID id = list.get(i).getProfile().getId();
+                *///?}
+                if (self.equals(id)) {
+                    list.addFirst(list.remove(i));
+                    break;
+                }
+            }
+            return list.stream().limit(limit);
+        }
+        return op.call(stream, limit);
     }
 
     @ModifyExpressionValue(
