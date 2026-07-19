@@ -4,7 +4,10 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -16,6 +19,7 @@ import org.polyfrost.vanillahud.hud.TabListHud;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -24,10 +28,14 @@ import java.util.List;
 import java.util.UUID;
 
 //? if >=26 {
-import net.minecraft.client.gui.Font;
 import net.minecraft.util.FormattedCharSequence;
+//?}
+//? if >=1.21.6 {
 import org.joml.Matrix3x2fStack;
 //?}
+//? if <1.21.6 {
+/*import com.mojang.blaze3d.vertex.PoseStack;
+*///?}
 
 @Mixin(value = PlayerTabOverlay.class, priority = 1100)
 public abstract class PlayerTabOverlayMixin {
@@ -154,6 +162,75 @@ public abstract class PlayerTabOverlayMixin {
         return original && Huds.INSTANCE.getTabList().getShowHead();
     }
 
+    @Unique
+    private int vanillahud$pingReserve() {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getShowPing() && hud.getNumberPing() && hud.getPingType() == 1) {
+            return this.minecraft.font.width("999") + 3;
+        }
+        return 0;
+    }
+
+    @ModifyConstant(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            constant = @Constant(intValue = 13))
+    private int vanillahud$pingReserveWidth(int original) {
+        int reserve = vanillahud$pingReserve();
+        return reserve > 0 ? Math.max(original, reserve) : original;
+    }
+
+    // Capture each slot's right edge so the name clip below knows where the ping sits.
+    @WrapOperation(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    ordinal = 2))
+    private void vanillahud$captureSlotRight(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int color,
+                                             Operation<Void> original,
+                                             @Share("vhTabSlotRight") LocalIntRef slotRight) {
+        slotRight.set(x2);
+        original.call(graphics, x1, y1, x2, y2, color);
+    }
+
+    // At clamped GUI scales names overflow their column into the numeric ping. Clip them.
+    @WrapOperation(
+            //? if <26 {
+            /*method = "render",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I", ordinal = 0)
+            *///?} else {
+            method = "extractRenderState",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", ordinal = 0)
+            //?}
+    )
+    //? if <26 {
+    /*private int vanillahud$clipName(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color,
+                                   Operation<Integer> original, @Share("vhTabSlotRight") LocalIntRef slotRight) {
+        int clipRight = slotRight.get() - vanillahud$pingReserve();
+        boolean clip = vanillahud$pingReserve() > 0 && clipRight > x && x + this.minecraft.font.width(name) > clipRight;
+        if (clip) graphics.enableScissor(x, y - 1, clipRight, y + 9);
+        int r = original.call(graphics, font, name, x, y, color);
+        if (clip) graphics.disableScissor();
+        return r;
+    }
+    *///?} else {
+    private void vanillahud$clipName(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color,
+                                     Operation<Void> original, @Share("vhTabSlotRight") LocalIntRef slotRight) {
+        int clipRight = slotRight.get() - vanillahud$pingReserve();
+        boolean clip = vanillahud$pingReserve() > 0 && clipRight > x && x + this.minecraft.font.width(name) > clipRight;
+        if (clip) graphics.enableScissor(x, y - 1, clipRight, y + 9);
+        original.call(graphics, font, name, x, y, color);
+        if (clip) graphics.disableScissor();
+    }
+    //?}
+
     @Inject(
             //? if <26 {
             /*method = "renderPingIcon",
@@ -169,7 +246,6 @@ public abstract class PlayerTabOverlayMixin {
             ci.cancel();
             return;
         }
-        //? if >=26 {
         if (hud.getNumberPing()) {
             int ping = info.getLatency();
             if (hud.getHideFalsePing() && (ping <= 1 || ping >= 999)) {
@@ -178,20 +254,45 @@ public abstract class PlayerTabOverlayMixin {
             }
             int color = hud.pingColor(ping);
             String str = String.valueOf(ping);
-            Component text = Component.literal(str);
             int w = this.minecraft.font.width(str);
-            if (hud.getPingType() == 1) {
-                graphics.text(this.minecraft.font, text, xo + slotWidth - w - 1, yo, color);
+            boolean full = hud.getPingType() == 1;
+            int fullX = xo + slotWidth - w - 1;
+            int scaledX = 2 * (xo + slotWidth) - w - 2;
+            int scaledY = 2 * yo + 2;
+            //? if >=26 {
+            Component text = Component.literal(str);
+            if (full) {
+                graphics.text(this.minecraft.font, text, fullX, yo, color);
             } else {
                 Matrix3x2fStack pose = graphics.pose();
                 pose.pushMatrix();
                 pose.scale(0.5f, 0.5f);
-                graphics.text(this.minecraft.font, text, 2 * (xo + slotWidth) - w - 2, 2 * yo + 2, color);
+                graphics.text(this.minecraft.font, text, scaledX, scaledY, color);
                 pose.popMatrix();
             }
+            //?} else if >=1.21.6 {
+            /*if (full) {
+                graphics.drawString(this.minecraft.font, str, fullX, yo, color);
+            } else {
+                Matrix3x2fStack pose = graphics.pose();
+                pose.pushMatrix();
+                pose.scale(0.5f, 0.5f);
+                graphics.drawString(this.minecraft.font, str, scaledX, scaledY, color);
+                pose.popMatrix();
+            }
+            *///?} else {
+            /*if (full) {
+                graphics.drawString(this.minecraft.font, str, fullX, yo, color);
+            } else {
+                PoseStack pose = graphics.pose();
+                pose.pushPose();
+                pose.scale(0.5f, 0.5f, 1.0f);
+                graphics.drawString(this.minecraft.font, str, scaledX, scaledY, color);
+                pose.popPose();
+            }
+            *///?}
             ci.cancel();
         }
-        //?}
     }
 
     @WrapOperation(
