@@ -600,7 +600,9 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
             rows = (count + columns - 1) / columns
         }
 
-        val cellWidth = 9 + maxName + 13
+        val headWidth = if (showHead) 9 else 0
+        val pingReserve = if (showPing && numberPing && pingType == 1) font.width("999") + 3 else 0
+        val cellWidth = headWidth + maxName + maxOf(13, pingReserve)
         val slotWidth = minOf(columns * cellWidth, screenWidth - 50) / columns
         var width = slotWidth * columns + (columns - 1) * 5
         var height = rows * line
