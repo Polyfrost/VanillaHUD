@@ -28,6 +28,7 @@
         "elements.GuiMixinHeldItemTooltip",
         "elements.GuiMixinHotbar",
         "elements.GuiMixinHunger",
+        "elements.GuiMixinLocatorBar",
         "elements.GuiMixinMountHealth",
         "elements.GuiMixinScoreboard",
         "elements.GuiMixinSubtitles",

@@ -22,10 +22,14 @@ object HudTransform {
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         val hud = resolve(provider)
-        hud?.reseedDefaultForScreen()
-        hud?.applyLink()
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
+        if (!HudManager.isEditing) {
+            HudManager.guiScreenWidth = w.toFloat()
+            HudManager.guiScreenHeight = h.toFloat()
+        }
+        hud?.reseedDefaultForScreen()
+        hud?.applyLink()
         val ox = provider.vanillaOriginX(w, h)
         val oy = provider.vanillaOriginY(w, h)
         val gx = hud?.x ?: ox
