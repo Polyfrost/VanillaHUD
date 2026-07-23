@@ -27,6 +27,30 @@ abstract class VanillaHud(
 
     private var seededWidth = -1
     private var seededHeight = -1
+    private var forcePending = false
+
+    fun queueForceDefault() {
+        forcePending = true
+    }
+
+    fun cancelForceDefault() {
+        forcePending = false
+    }
+
+    fun applyForceDefault() {
+        if (!forcePending || tree == null) return
+        syncRenderedSize()
+        val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
+        val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
+        if (w != mc.window.guiScaledWidth || h != mc.window.guiScaledHeight) return
+        try {
+            capturePositionDefaults()
+            val (dx, dy) = defaultPosition()
+            setAbsolutePosition(dx, dy)
+        } catch (_: Throwable) {
+        }
+        forcePending = false
+    }
 
     private fun isAtDefaultPosition(): Boolean {
         return try {
@@ -46,9 +70,6 @@ abstract class VanillaHud(
         syncRenderedSize()
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
-        // HudManager's dimensions start at a hardcoded 960x540 and are only published at the
-        // Gui.render tail, i.e. after our element hooks run. Seeding against that placeholder
-        // bakes relativeX/relativeY into the wrong grid, so wait for the real screen.
         if (w != mc.window.guiScaledWidth || h != mc.window.guiScaledHeight) return
         if (w == seededWidth && h == seededHeight) return
         seededWidth = w

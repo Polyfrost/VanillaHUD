@@ -28,6 +28,7 @@ object HudTransform {
             HudManager.guiScreenWidth = w.toFloat()
             HudManager.guiScreenHeight = h.toFloat()
         }
+        hud?.applyForceDefault()
         val locked = hud?.let { it.locked && !it.previewing } ?: false
         if (!locked) {
             hud?.reseedDefaultForScreen()
