@@ -1,82 +1,30 @@
 [
   {
-    "name" : "DeDiamondPro",
-    "id" : "0b4d470f-f2fb-4874-9334-1eaef8ba4804"
-  },
-  {
-    "name" : "Deftu",
-    "id" : "63677969-c517-46fb-b60f-a130b3d9beb9"
-  },
-  {
-    "name" : "DTRW",
-    "id" : "1f248c4b-793d-4f68-80e5-ab793c772534"
-  },
-  {
-    "name" : "Erymanthus",
-    "id" : "b43d7457-9da4-408b-a9fb-51239022cec9"
-  },
-  {
-    "name" : "ImToggle",
-    "id" : "c8bf4768-af44-48cb-a259-01e42fb7bc79"
+    "name" : "Mayaqq",
+    "id" : "a1732122-e22e-4edf-883c-09673eb55de8"
   },
   {
     "name" : "Microcontrollers",
     "id" : "ad371f40-7c81-44c0-bea5-59fdf019384f"
   },
   {
-    "name" : "Mixces",
-    "id" : "0e3ee1e0-f4d2-4550-8fe9-4f7a0d2cd08a"
+    "name" : "nextdayy",
+    "id" : "0dee60d4-9ff8-40a9-a79f-bb415bbaa909"
   },
   {
     "name" : "Redth",
     "id" : "0d68ec06-ec8f-4558-959f-7a6d7efd7fa5"
   },
   {
-    "name" : "SDice",
-    "id" : "4a6eb88f-f940-4386-8191-e66f822ade04"
-  },
-  {
-    "name" : "Tsuzuito",
-    "id" : "a7826831-d68a-47d8-b1a5-937242dbaeb7"
+    "name" : "Taubsie",
+    "id" : "39642ffc-a7fb-4d24-a1d4-916f4cad1d98"
   },
   {
     "name" : "Wyvest",
     "id" : "a5331404-0e77-440e-8bef-24c071dac1ae"
   },
   {
-    "name" : "hazelynn",
-    "id" : "0a96d267-ea55-48ad-9c21-73dd2d7a8669"
-  },
-  {
-    "name" : "iAT3",
-    "id" : "c97b779f-bbbb-4e3e-87f1-60b1c73a5028"
-  },
-  {
-    "name" : "imnoyou",
-    "id" : "7146deb5-eadd-429d-887c-64158a523c5d"
-  },
-  {
-    "name" : "nextdayy",
-    "id" : "0dee60d4-9ff8-40a9-a79f-bb415bbaa909"
-  },
-  {
-    "name" : "o9o",
-    "id" : "673a55db-acc1-4a42-9977-4b701466ca9f"
-  },
-  {
-    "name" : "redefault",
-    "id" : "3ea72459-597a-482d-ba88-c34e49b2cc81"
-  },
-  {
-    "name" : "weqg",
-    "id" : "a5e0a932-2350-48d1-a18a-44d31fa6ea2b"
-  },
-  {
-    "name" : "Mayaqq",
-    "id" : "a1732122-e22e-4edf-883c-09673eb55de8"
-  },
-  {
-    "name" : "Taubsie",
-    "id" : "39642ffc-a7fb-4d24-a1d4-916f4cad1d98"
+    "name" : "ImToggle",
+    "id" : "c8bf4768-af44-48cb-a259-01e42fb7bc79"
   }
 ]
