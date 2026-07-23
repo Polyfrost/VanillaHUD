@@ -10,7 +10,6 @@ import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.oneconfig.api.hud.v1.HudManager.isEditing
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.compat.CustomScoreboardBridge
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
@@ -35,7 +34,7 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 72f
 
     override fun measuredWidth(): Float {
-        if (isEditing) return super.measuredWidth()
+        if (previewing) return super.measuredWidth()
         return textWidth { hudAccessor?.overlay?.string }
     }
 }
@@ -100,7 +99,7 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
         } catch (_: Throwable) {
             emptyList()
         }
-        if (live.isEmpty() && isEditing) return DemoData.demoBossEvents()
+        if (previewing) return DemoData.demoBossEvents()
         return live
     }
 
@@ -220,7 +219,7 @@ class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item 
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f
 
     override fun measuredWidth(): Float {
-        if (isEditing) return super.measuredWidth()
+        if (previewing) return super.measuredWidth()
         return textWidth { hudAccessor?.lastToolHighlight?.takeUnless { s -> s.isEmpty }?.hoverName?.string }
     }
 }
@@ -334,8 +333,8 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
     private fun size(): Size? {
-        val objective = (mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)
-        ?: if (isEditing) DemoData.demoScoreboardObjective() else null) ?: return null
+        val objective = (if (previewing) DemoData.demoScoreboardObjective()
+        else mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)) ?: return null
         val font = mc.font
         val scoreboard = objective.scoreboard
         val scores = scoreboard.listPlayerScores(objective)
@@ -555,8 +554,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     private fun players(): List<PlayerInfo> = try {
         val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
-        val useDemo = isEditing && (real.isEmpty() || mc.hasSingleplayerServer())
-        if (useDemo) TabListManager.devInfo.take(playerLimit) else real
+        if (previewing) TabListManager.devInfo.take(playerLimit) else real
     } catch (_: Throwable) {
         emptyList()
     }
@@ -577,9 +575,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     private fun tabText(editing: String, live: () -> Component?, show: Boolean): Component? {
         if (!show) return null
-        val real = try { live() } catch (_: Throwable) { null }
-        if (real != null) return real
-        return if (isEditing) Component.literal(editing) else null
+        if (previewing) return Component.literal(editing)
+        return try { live() } catch (_: Throwable) { null }
     }
 
     private fun size(): Pair<Float, Float>? {
@@ -658,7 +655,7 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
 
     override fun measuredWidth(): Float {
-        val gui = if (isEditing) null else hudAccessor
+        val gui = if (previewing) null else hudAccessor
         val title = gui?.title?.string ?: "Title"
         val subtitle = gui?.subtitle?.string ?: "Subtitle"
         return try {
@@ -669,7 +666,7 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     }
 
     override fun measuredHeight(): Float {
-        val gui = if (isEditing) null else hudAccessor
+        val gui = if (previewing) null else hudAccessor
         val subtitle = gui?.subtitle?.string ?: "Subtitle"
         return try {
             val line = mc.font.lineHeight
@@ -690,7 +687,7 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 
     private fun counts(): Counts? {
         val real = mc.player?.activeEffects ?: emptyList()
-        val effects = if (real.isEmpty() && isEditing) DemoData.demoEffects() else real
+        val effects = if (previewing) DemoData.demoEffects() else real
         var beneficial = 0
         var harmful = 0
         for (effect in effects) {

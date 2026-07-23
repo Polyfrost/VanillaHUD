@@ -5,7 +5,7 @@ import com.mojang.blaze3d.audio.ListenerTransform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SubtitleOverlay;
-import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SubtitleOverlayMixin {
     @Unique
     private static boolean vanillahud$editing() {
-        return HudManager.INSTANCE.isEditing();
+        return Huds.INSTANCE.getSubtitles().getPreviewing();
     }
 
     @Inject(

@@ -1,6 +1,5 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
-import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -56,7 +55,7 @@ public class GuiMixinTabList {
     )
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (HudManager.INSTANCE.isEditing()) {
+        if (hud.getPreviewing()) {
             hud.updateOpen(true);
             return true;
         }

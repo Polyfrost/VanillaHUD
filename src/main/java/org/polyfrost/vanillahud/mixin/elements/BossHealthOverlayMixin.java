@@ -9,7 +9,6 @@ import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
-import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
@@ -108,7 +107,7 @@ public class BossHealthOverlayMixin {
             *///?}
     )
     private boolean vanillahud$editing(boolean empty) {
-        return !HudManager.INSTANCE.isEditing() && empty;
+        return !Huds.INSTANCE.getBossBar().getPreviewing() && empty;
     }
 
     @ModifyExpressionValue(
@@ -127,7 +126,7 @@ public class BossHealthOverlayMixin {
             *///?}
     )
     private Collection<LerpingBossEvent> vanillahud$demo(Collection<LerpingBossEvent> original) {
-        if (!HudManager.INSTANCE.isEditing() || !original.isEmpty()) {
+        if (!Huds.INSTANCE.getBossBar().getPreviewing()) {
             return original;
         }
 

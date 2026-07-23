@@ -11,6 +11,10 @@ abstract class VanillaHud(
     title: String,
     category: Category,
 ) : LegacyHud(id, title, category) {
+    init {
+        locked = true
+    }
+
     abstract val naturalWidth: Float
     abstract val naturalHeight: Float
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
@@ -89,6 +93,13 @@ abstract class VanillaHud(
         setAbsolutePosition(target.x + offX, target.y + offY)
     }
 
+    /**
+     * `true` when this HUD should show demo/example content: while the HUD editor is open, or while
+     * the main OneConfig UI is open *and this HUD is unlocked*. A locked HUD in the OneConfig screen
+     * renders its real (live) content instead of demo data.
+     */
+    val previewing: Boolean get() = previewing(this)
+
     fun shouldRender(): Boolean {
         if (HudManager.isEditing) return true
 
@@ -148,4 +159,12 @@ abstract class VanillaHud(
     }
 
     override fun render(mcCtx: GuiGraphicsExtractor) {}
+
+    companion object {
+        @JvmStatic
+        fun previewing(hud: VanillaHud?): Boolean {
+            if (HudManager.isEditorOpen) return true
+            return HudManager.isConfigUiOpen && hud?.locked == false
+        }
+    }
 }

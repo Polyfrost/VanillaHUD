@@ -28,12 +28,15 @@ object HudTransform {
             HudManager.guiScreenWidth = w.toFloat()
             HudManager.guiScreenHeight = h.toFloat()
         }
-        hud?.reseedDefaultForScreen()
-        hud?.applyLink()
+        val locked = hud?.let { it.locked && !it.previewing } ?: false
+        if (!locked) {
+            hud?.reseedDefaultForScreen()
+            hud?.applyLink()
+        }
         val ox = provider.vanillaOriginX(w, h)
         val oy = provider.vanillaOriginY(w, h)
-        val gx = hud?.x ?: ox
-        val gy = hud?.y ?: oy
+        val gx = if (locked) ox else (hud?.x ?: ox)
+        val gy = if (locked) oy else (hud?.y ?: oy)
         val s = hud?.effectiveScale ?: 1f
 
         scissored = false
