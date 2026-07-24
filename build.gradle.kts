@@ -70,6 +70,8 @@ dependencies {
     }
 
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
+    testImplementation("net.fabricmc:fabric-loader-junit:${property("deps.fabric_loader")}")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
 
     ocfg("${sc.current.version}-fabric", "commands", "config", "config-impl", "events", "internal", "ui", "utils", "hud")
 
@@ -107,6 +109,10 @@ java {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
+
     processResources {
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]

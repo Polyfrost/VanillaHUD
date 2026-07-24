@@ -3,6 +3,9 @@ build/
 run/
 versions/*/build/
 versions/*/.gradle/
+versions/*/.fabric/
+versions/*/logs/
+versions/*/mods/
 *.log
 .DS_Store
 **/.DS_Store
