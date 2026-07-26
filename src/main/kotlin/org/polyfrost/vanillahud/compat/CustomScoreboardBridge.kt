@@ -7,8 +7,6 @@ import kotlin.math.roundToInt
 object CustomScoreboardBridge {
     const val MOD_ID = "customscoreboard"
 
-    const val CONFIG_ID = "customscoreboard/config"
-
     @JvmStatic
     val present: Boolean by lazy { FabricLoader.getInstance().isModLoaded(MOD_ID) }
 
