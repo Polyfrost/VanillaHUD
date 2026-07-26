@@ -378,10 +378,6 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
  * For meowdding custom scoreboard compatibility.
  */
 class CustomScoreboardHud : VanillaHud("vanillahud-customscoreboard.json", "Custom Scoreboard", Category.INFO) {
-    init {
-        locked = false
-    }
-
     private var options = false
 
     fun stealOptions() {

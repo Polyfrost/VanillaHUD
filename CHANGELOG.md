@@ -1,2 +1,3 @@
-## 3.2.2
-- fix: custom scoreboard hud no longer locked by default
+## 3.1.2
+- fixes gui positions messing up after changing gui scale
+- fixes player list being measured incorrectly in the hud editor
