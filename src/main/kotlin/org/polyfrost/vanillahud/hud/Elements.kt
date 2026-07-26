@@ -7,11 +7,9 @@ import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 import org.polyfrost.compose.render.PolyColor
-import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.vanillahud.compat.CustomScoreboardBridge
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.mixin.access.ISubtitle
@@ -148,7 +146,7 @@ class HealthHud : VanillaHud("vanillahud-health.json", "Health", Category.PLAYER
     override fun linkTarget() = if (mountLink) Huds.mountHealth else null
 
     @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
-    var hardcoreHearts = 0;
+    var hardcoreHearts = 0
 }
 
 class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER) {
@@ -371,52 +369,6 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         (s.scores * 9 + if (s.title) 10 else 1).toFloat()
     } catch (_: Throwable) {
         naturalHeight
-    }
-}
-
-/**
- * For meowdding custom scoreboard compatibility.
- */
-class CustomScoreboardHud : VanillaHud("vanillahud-customscoreboard.json", "Custom Scoreboard", Category.INFO) {
-    init {
-        locked = false
-    }
-
-    private var options = false
-
-    fun stealOptions() {
-        if (options) return
-        val target = tree ?: return
-        val csTree = try {
-            ConfigManager.active().get(CustomScoreboardBridge.CONFIG_ID)
-        } catch (_: Throwable) {
-            null
-        } ?: return
-        target.put(csTree)
-        options = true
-    }
-
-    override val naturalWidth get() = 90f
-    override val naturalHeight get() = 90f
-
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float {
-        val d = CustomScoreboardBridge.defaultX
-        return if (d != 0) d.toFloat() else screenWidth - width - 1f
-    }
-
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
-        val d = CustomScoreboardBridge.defaultY
-        return if (d != 0) d.toFloat() else screenHeight / 2f - naturalHeight / 2f
-    }
-
-    override fun measuredWidth(): Float {
-        val w = CustomScoreboardBridge.contentWidth
-        return if (w > 0) w.toFloat() else naturalWidth
-    }
-
-    override fun measuredHeight(): Float {
-        val h = CustomScoreboardBridge.contentHeight
-        return if (h > 0) h.toFloat() else naturalHeight
     }
 }
 
@@ -787,9 +739,6 @@ object Huds {
     val heldItemTooltip = HeldItemTooltipHud()
     val title = TitleHud()
     val scoreboard = ScoreboardHud()
-
-    val customScoreboard = CustomScoreboardHud()
-
     val tabList = TabListHud()
     val bossBar = BossBarHud()
     val statusEffects = StatusEffectsHud()

@@ -3,7 +3,6 @@ package org.polyfrost.vanillahud
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.vanillahud.compat.CustomScoreboardBridge
 import org.polyfrost.vanillahud.compat.HudElementCompat
 import org.polyfrost.vanillahud.hud.Huds
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
@@ -18,14 +17,6 @@ object VanillaHUDClient : ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
             ForceDefaultPosition.tick()
         })
-
-        if (CustomScoreboardBridge.present) {
-            HudManager.register(Huds.customScoreboard)
-            ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
-                CustomScoreboardBridge.syncVisibility()
-                Huds.customScoreboard.stealOptions()
-            })
-        }
 
         HudElementCompat.init()
     }

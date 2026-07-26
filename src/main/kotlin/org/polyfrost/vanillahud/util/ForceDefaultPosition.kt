@@ -14,6 +14,10 @@ object ForceDefaultPosition {
     val optedOut: Boolean
         get() = optedOutCache ?: Files.exists(marker).also { optedOutCache = it }
 
+    fun invalidate() {
+        optedOutCache = null
+    }
+
     private fun markOptedOut() {
         if (optedOut) return
         optedOutCache = true
