@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     id("dev.kikugie.loom-back-compat")
     id("org.jetbrains.kotlin.jvm") version "2.3.0"
@@ -70,6 +72,8 @@ dependencies {
     }
 
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
+    testImplementation("net.fabricmc:fabric-loader-junit:${property("deps.fabric_loader")}")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
 
     ocfg("${sc.current.version}-fabric", "commands", "config", "config-impl", "events", "internal", "ui", "utils", "hud")
 
@@ -107,6 +111,14 @@ java {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+            testLogging {
+            showStackTraces = true
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+    }
+
     processResources {
         fun MutableMap<String, String>.register(key: String, property: String) {
             val value: String = sc.properties[property]
