@@ -9,7 +9,9 @@ import java.nio.file.Path
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 1
+    private const val SCHEMA_VERSION = 2
+
+    private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
     private val POSITION_KEYS = arrayOf("relativeX", "relativeY", "section")
 
@@ -17,7 +19,16 @@ object HudConfigMigrator {
 
     fun migrate() {
         moveLegacyFolder()
-        resetPositions()
+
+        val folder = try { ConfigManager.active().folder } catch (_: Throwable) { return }
+        val stamp = folder.resolve("vanillahud-migration")
+        val from = readStamp(stamp)
+        if (from >= SCHEMA_VERSION) return
+
+        if (from < 1) resetPositions(folder)
+        if (from < 2) unlockCustomScoreboard(folder)
+
+        writeStamp(stamp)
     }
 
     private fun moveLegacyFolder() {
@@ -38,18 +49,15 @@ object HudConfigMigrator {
         }
     }
 
-    private fun resetPositions() {
+    private fun resetPositions(folder: Path) {
         try {
-            val folder = ConfigManager.active().folder
-            val stamp = folder.resolve("vanillahud-migration")
-            if (readStamp(stamp) >= SCHEMA_VERSION) return
-
             var touched = false
             val hudsDir = folder.resolve("huds")
             if (Files.isDirectory(hudsDir)) {
                 Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { stream ->
                     for (p in stream) {
                         if (!Files.isRegularFile(p)) continue
+                        if (p.fileName.toString() == CUSTOM_SCOREBOARD_FILE) continue
                         if (resetFile(p)) touched = true
                     }
                 }
@@ -58,8 +66,20 @@ object HudConfigMigrator {
             if (touched) {
                 try { Files.deleteIfExists(folder.resolve("vanillahud-unlocked")) } catch (_: Throwable) {}
             }
+        } catch (_: Throwable) {
+        }
+    }
 
-            writeStamp(stamp)
+    private fun unlockCustomScoreboard(folder: Path) {
+        try {
+            val path = folder.resolve("huds").resolve(CUSTOM_SCOREBOARD_FILE)
+            if (!Files.isRegularFile(path)) return
+            val json = Files.newBufferedReader(path).use { JsonParser.parseReader(it) }
+            if (!json.isJsonObject) return
+            val obj = json.asJsonObject
+            if (!isLocked(obj)) return
+            obj.addProperty("locked", false)
+            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
         } catch (_: Throwable) {
         }
     }
