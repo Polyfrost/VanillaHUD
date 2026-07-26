@@ -13,6 +13,10 @@ object VanillaHUDClient : ClientModInitializer {
 
         HudManager.register(*Huds.all)
 
+        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
+            ForceDefaultPosition.tick()
+        })
+
         HudElementCompat.init()
     }
 }

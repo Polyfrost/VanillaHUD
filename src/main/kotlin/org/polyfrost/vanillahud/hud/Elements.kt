@@ -372,7 +372,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     }
 }
 
-class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) {
+class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) {
     init {
         TabListManager.ensureLoaded()
     }
@@ -481,8 +481,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
 
-    // Reveal animation state. `open` is the desired state (key held / toggled),
-    // the clip fraction eases between 0 (closed) and 1 (fully shown).
     private var animOpen = false
     private var animStart = 0L
     private var animFrom = 0f
@@ -493,7 +491,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         return 1f - t * t * t * t
     }
 
-    /** Update the target open state, seeding a new tween on a change. */
     fun updateOpen(open: Boolean) {
         if (open == animOpen) return
         animOpen = open
@@ -502,7 +499,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         animStart = System.currentTimeMillis()
     }
 
-    /** 0 = fully clipped (closed), 1 = fully revealed. */
     fun clipFraction(): Float {
         if (!animation) return if (animOpen) 1f else 0f
         val dur = animationDuration.coerceAtLeast(1f)
@@ -510,7 +506,6 @@ class TabListHud : VanillaHud("vanillahud/tab.json", "Tab List", Category.INFO) 
         return animFrom + (animTo - animFrom) * easeOutQuart(t)
     }
 
-    /** Whether the tab list should still render (open, or mid close-animation). */
     fun isRendering(): Boolean = animOpen || clipFraction() > 0.001f
 
     private fun players(): List<PlayerInfo> = try {

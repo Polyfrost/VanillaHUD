@@ -85,6 +85,23 @@ abstract class VanillaHud(
         }
     }
 
+    fun trackExternalDefault(defX: Float, defY: Float): Boolean {
+        return try {
+            if (tree == null) return false
+            syncRenderedSize()
+            val wasDefault = isAtDefaultPosition()
+            capturePositionDefaults()
+            if (wasDefault) {
+                setAbsolutePosition(defX, defY)
+                false
+            } else {
+                true
+            }
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
     fun applyLink() {
         val target = linkTarget() ?: return
         if (target === this || target.linkTarget() === this) return

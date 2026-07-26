@@ -9,7 +9,7 @@ import java.nio.file.Path
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 1
+    private const val SCHEMA_VERSION = 2
 
     private val POSITION_KEYS = arrayOf("relativeX", "relativeY", "section")
 
@@ -17,7 +17,16 @@ object HudConfigMigrator {
 
     fun migrate() {
         moveLegacyFolder()
-        resetPositions()
+
+        val folder = try { ConfigManager.active().folder } catch (_: Throwable) { return }
+        val stamp = folder.resolve("vanillahud-migration")
+        val from = readStamp(stamp)
+        if (from >= SCHEMA_VERSION) return
+
+        if (from < 1) resetPositions(folder)
+        if (from < 2) unlockCustomScoreboard(folder)
+
+        writeStamp(stamp)
     }
 
     private fun moveLegacyFolder() {
@@ -38,12 +47,8 @@ object HudConfigMigrator {
         }
     }
 
-    private fun resetPositions() {
+    private fun resetPositions(folder: Path) {
         try {
-            val folder = ConfigManager.active().folder
-            val stamp = folder.resolve("vanillahud-migration")
-            if (readStamp(stamp) >= SCHEMA_VERSION) return
-
             var touched = false
             val hudsDir = folder.resolve("huds")
             if (Files.isDirectory(hudsDir)) {
@@ -58,11 +63,11 @@ object HudConfigMigrator {
             if (touched) {
                 try { Files.deleteIfExists(folder.resolve("vanillahud-unlocked")) } catch (_: Throwable) {}
             }
-
-            writeStamp(stamp)
         } catch (_: Throwable) {
         }
     }
+
+    private fun unlockCustomScoreboard(folder: Path) {}
 
     private fun resetFile(path: Path): Boolean {
         return try {
