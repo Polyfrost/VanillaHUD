@@ -1,2 +1,3 @@
-## 3.2.2
-- fix: custom scoreboard hud no longer locked by default
+## 3.3.0
+- Removed compatibility with Skyblock Custom Scoreboard
+  - This added unintended behavior to the mod, which is now fixed.
