@@ -14,7 +14,6 @@ import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.mixin.access.ISubtitle
 import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
-import org.polyfrost.vanillahud.render.ScoreboardBackground
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
 
@@ -30,6 +29,8 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
     override val naturalHeight get() = 11f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 72f
+    override val anchorX get() = 0.5f
+    override val anchorY get() = 1f
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
@@ -48,6 +49,8 @@ class AirHud : VanillaHud("vanillahud-air.json", "Air", Category.PLAYER) {
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
+    override val anchorX get() = 1f
+    override val anchorY get() = 1f
 
     override fun linkTarget() = when {
         mountLink -> Huds.mountHealth
@@ -67,6 +70,8 @@ class ArmorHud : VanillaHud("vanillahud-armor.json", "Armor", Category.PLAYER) {
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
+    override val anchorX get() = 0f
+    override val anchorY get() = 1f
 
     override fun linkTarget() = when {
         mountLink -> Huds.mountHealth
@@ -86,6 +91,8 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
     override val naturalHeight get() = 30f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = if (renderText) 3f else 12f
+    override val anchorX get() = 0.5f
+    override val anchorY get() = 0f
 
     private fun bossEvents(): Collection<LerpingBossEvent> {
         val live = try {
@@ -122,6 +129,8 @@ class ExperienceBarHud : VanillaHud("vanillahud-experience.json", "Experience Ba
     override val naturalHeight get() = 5f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
+    override val anchorX get() = 0f
+    override val anchorY get() = 1f
 }
 
 class ExperienceLevelHud : VanillaHud("vanillahud-experience-level.json", "Experience Level", Category.PLAYER) {
@@ -129,6 +138,8 @@ class ExperienceLevelHud : VanillaHud("vanillahud-experience-level.json", "Exper
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 8f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
+    override val anchorX get() = 0.5f
+    override val anchorY get() = 1f
 }
 
 class HealthHud : VanillaHud("vanillahud-health.json", "Health", Category.PLAYER) {
@@ -142,6 +153,8 @@ class HealthHud : VanillaHud("vanillahud-health.json", "Health", Category.PLAYER
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+    override val anchorX get() = 0f
+    override val anchorY get() = 1f
 
     override fun linkTarget() = if (mountLink) Huds.mountHealth else null
 
@@ -167,6 +180,8 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
         if (vertical) 4f else screenWidth / 2f - 91f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
         if (vertical) screenHeight / 2f - 91f else screenHeight - 22f
+    override val anchorX get() = 0f
+    override val anchorY get() = if (vertical) 0.5f else 1f
 }
 
 class HungerHud : VanillaHud("vanillahud-hunger.json", "Hunger", Category.PLAYER) {
@@ -183,6 +198,8 @@ class HungerHud : VanillaHud("vanillahud-hunger.json", "Hunger", Category.PLAYER
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+    override val anchorX get() = 1f
+    override val anchorY get() = 1f
 
     override fun linkTarget() = when {
         mountLink -> Huds.mountHealth
@@ -199,6 +216,8 @@ class MountHealthHud : VanillaHud("vanillahud-mount.json", "Mount Health", Categ
     override val naturalHeight get() = 9f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
+    override val anchorX get() = 1f
+    override val anchorY get() = 1f
 
     override fun linkTarget() = if (healthLink) Huds.health else null
 }
@@ -215,6 +234,8 @@ class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item 
     override val naturalHeight get() = 11f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f
+    override val anchorX get() = 0.5f
+    override val anchorY get() = 1f
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
@@ -256,25 +277,18 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     var backgroundColor = PolyColor(0x4C000000)
 
     @Switch(
-        title = "Custom Background Image",
+        title = "Keep Background Colour",
         category = "Background Image",
-        description = "Render an image behind the scoreboard instead of the solid background colour."
+        description = "Draw the solid background colours on top of the image instead of replacing them."
     )
-    var customBackground: Boolean = false
+    var keepBackgroundColor: Boolean = false
 
-    @Button(
-        title = "Choose Image",
-        text = "Browse…",
+    @File(
+        title = "Image",
         category = "Background Image",
-        description = "Pick an image file to use as the scoreboard background."
-    )
-    fun chooseImage() {
-        ScoreboardBackground.chooseFile()?.let { backgroundImagePath = it }
-    }
-
-    @Text(
-        title = "Image Path",
-        category = "Background Image",
+        description = "The PNG image file to use as the scoreboard background.",
+        types = ["png"],
+        filterName = "PNG Images",
         placeholder = "No image selected"
     )
     var backgroundImagePath: String = ""
@@ -286,7 +300,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     val bodyBgColor: Int get() = backgroundColor.argb
 
-    val hasCustomBackground: Boolean get() = customBackground && backgroundImagePath.isNotBlank()
+    val hasCustomBackground: Boolean get() = backgroundImagePath.isNotBlank()
 
     val textShadow: Boolean get() = textType == 1
 
@@ -327,6 +341,8 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         val s = size() ?: return screenHeight / 2f - naturalHeight / 2f
         return screenHeight / 2f - s.scores * 6f - if (s.title) 10f else 1f
     }
+    override val anchorX get() = 1f
+    override val anchorY get() = 0.5f
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
@@ -480,6 +496,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     override val naturalHeight get() = 100f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
+    override val anchorX get() = 0.5f
+    override val anchorY get() = 0f
 
     private var animOpen = false
     private var animStart = 0L
@@ -609,6 +627,8 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     override val naturalHeight get() = 68f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
+    override val anchorX get() = 0.5f
+    override val anchorY get() = 0.5f
 
     override fun measuredWidth(): Float {
         val gui = if (previewing) null else hudAccessor
@@ -638,6 +658,8 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
     override val naturalHeight get() = 50f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 1f
+    override val anchorX get() = 1f
+    override val anchorY get() = 0f
 
     private class Counts(val beneficial: Int, val harmful: Int)
 
@@ -669,7 +691,7 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
     }
 }
 
-class SubtitlesHud : VanillaHud("vanillahud-subtitles.json", "Closed Captions", Category.INFO) {
+class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed Captioning", Category.INFO) {
     @Color(title = "Text Color")
     var captionTextColor = PolyColor(0xFFFFFFFF.toInt())
 
@@ -679,7 +701,12 @@ class SubtitlesHud : VanillaHud("vanillahud-subtitles.json", "Closed Captions", 
     )
     var captionBgColor = PolyColor(0xCC000000.toInt())
 
+    @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
+    var textType: Int = 1
+
     val captionBgArgb: Int get() = captionBgColor.argb
+
+    val textShadow: Boolean get() = textType == 1
 
     fun captionTextArgb(vanilla: Int): Int {
         val fade = vanilla and 0xFF
@@ -696,6 +723,8 @@ class SubtitlesHud : VanillaHud("vanillahud-subtitles.json", "Closed Captions", 
 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 30f - height
+    override val anchorX get() = 1f
+    override val anchorY get() = 1f
 
     private fun texts(): List<Component> {
         val overlay = hudAccessor?.subtitleOverlay as? ISubtitleOverlay ?: return emptyList()
@@ -716,13 +745,13 @@ class SubtitlesHud : VanillaHud("vanillahud-subtitles.json", "Closed Captions", 
 
     override fun measuredHeight(): Float = try {
         val lines = texts().size
-        if (lines == 0) naturalHeight else (lines * SUBTITLE_ROW).toFloat()
+        if (lines == 0) naturalHeight else (lines * CAPTION_ROW).toFloat()
     } catch (_: Throwable) {
         naturalHeight
     }
 
     private companion object {
-        const val SUBTITLE_ROW = 10
+        const val CAPTION_ROW = 10
     }
 }
 
@@ -742,12 +771,12 @@ object Huds {
     val tabList = TabListHud()
     val bossBar = BossBarHud()
     val statusEffects = StatusEffectsHud()
-    val subtitles = SubtitlesHud()
+    val closedCaptions = ClosedCaptionsHud()
 
     val all: Array<VanillaHud>
         get() = arrayOf(
             hotbar, health, armor, hunger, air, mountHealth,
             experienceBar, experienceLevel, actionBar, heldItemTooltip,
-            title, scoreboard, tabList, bossBar, statusEffects, subtitles,
+            title, scoreboard, tabList, bossBar, statusEffects, closedCaptions,
         )
 }

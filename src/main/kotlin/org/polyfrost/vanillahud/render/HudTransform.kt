@@ -29,16 +29,16 @@ object HudTransform {
             HudManager.guiScreenHeight = h.toFloat()
         }
         hud?.applyForceDefault()
-        val locked = hud?.let { it.locked && !it.previewing } ?: false
-        if (!locked) {
-            hud?.reseedDefaultForScreen()
-            hud?.applyLink()
+        hud?.reseedDefaultForScreen()
+        if (hud != null && (!hud.locked || hud.previewing)) {
+            hud.applyLink()
         }
-        val ox = provider.vanillaOriginX(w, h)
-        val oy = provider.vanillaOriginY(w, h)
-        val gx = if (locked) ox else (hud?.x ?: ox)
-        val gy = if (locked) oy else (hud?.y ?: oy)
+        val anchored = hud?.anchorsToVanillaOrigin() ?: false
         val s = hud?.effectiveScale ?: 1f
+         val ox = provider.vanillaOriginX(w, h)
+        val oy = provider.vanillaOriginY(w, h)
+        val gx = if (anchored) provider.scaledOriginX(w, h, s) else (hud?.x ?: ox)
+        val gy = if (anchored) provider.scaledOriginY(w, h, s) else (hud?.y ?: oy)
 
         scissored = false
         val tab = (hud ?: provider) as? TabListHud

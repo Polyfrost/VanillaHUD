@@ -20,6 +20,15 @@ abstract class VanillaHud(
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
 
+    protected open val anchorX: Float get() = 0f
+    protected open val anchorY: Float get() = 0f
+
+    fun scaledOriginX(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
+        vanillaOriginX(screenWidth, screenHeight) + (1f - scale) * width * anchorX
+
+    fun scaledOriginY(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
+        vanillaOriginY(screenWidth, screenHeight) + (1f - scale) * height * anchorY
+
     override fun multipleInstancesAllowed() = false
     override fun deletable() = false
 
@@ -52,18 +61,21 @@ abstract class VanillaHud(
         forcePending = false
     }
 
-    private fun isAtDefaultPosition(): Boolean {
+    private fun isAtDefaultPosition(fallback: Boolean = false): Boolean {
         return try {
-            val relXDef = getProperty("relativeX")?.getMetadata<Float?>("default") ?: return false
-            val relYDef = getProperty("relativeY")?.getMetadata<Float?>("default") ?: return false
-            val sectionDef = getProperty("section")?.getMetadata<Any?>("default") ?: return false
+            val relXDef = getProperty("relativeX")?.getMetadata<Float?>("default") ?: return fallback
+            val relYDef = getProperty("relativeY")?.getMetadata<Float?>("default") ?: return fallback
+            val sectionDef = getProperty("section")?.getMetadata<Any?>("default") ?: return fallback
             sectionDef == section &&
                 kotlin.math.abs(relXDef - relativeX) < 1e-4f &&
                 kotlin.math.abs(relYDef - relativeY) < 1e-4f
         } catch (_: Throwable) {
-            false
+            fallback
         }
     }
+
+    fun anchorsToVanillaOrigin(): Boolean =
+        locked && !previewing && isAtDefaultPosition(fallback = true)
 
     fun reseedDefaultForScreen() {
         if (tree == null) return
@@ -92,16 +104,11 @@ abstract class VanillaHud(
         target.syncRenderedSize()
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
-        val offX = vanillaOriginX(w, h) - target.vanillaOriginX(w, h)
-        val offY = vanillaOriginY(w, h) - target.vanillaOriginY(w, h)
+        val offX = scaledOriginX(w, h) - target.scaledOriginX(w, h)
+        val offY = scaledOriginY(w, h) - target.scaledOriginY(w, h)
         setAbsolutePosition(target.x + offX, target.y + offY)
     }
 
-    /**
-     * `true` when this HUD should show demo/example content: while the HUD editor is open, or while
-     * the main OneConfig UI is open *and this HUD is unlocked*. A locked HUD in the OneConfig screen
-     * renders its real (live) content instead of demo data.
-     */
     val previewing: Boolean get() = previewing(this)
 
     fun shouldRender(): Boolean {
@@ -120,11 +127,6 @@ abstract class VanillaHud(
     override val width: Float get() = measuredWidth()
     override val height: Float get() = measuredHeight()
 
-    /**
-     * [scaledWidth]/[scaledHeight] read [renderedW]/[renderedH], which LegacyHudRenderer only
-     * fills in at the end of the frame — after our element hooks have already run. Any position
-     * math we do before that would see a stale zero and fall back to [minimumSize].
-     */
     private fun syncRenderedSize() {
         val scale = effectiveScale
         renderedW = width * scale
@@ -159,7 +161,7 @@ abstract class VanillaHud(
     override fun defaultPosition(): Pair<Float, Float> {
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
-        return Pair(vanillaOriginX(w, h), vanillaOriginY(w, h))
+        return Pair(scaledOriginX(w, h), scaledOriginY(w, h))
     }
 
     override fun render(mcCtx: GuiGraphicsExtractor) {}

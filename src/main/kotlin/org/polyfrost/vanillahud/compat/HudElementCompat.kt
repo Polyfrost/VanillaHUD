@@ -30,7 +30,7 @@ object HudElementCompat {
         //? if >=26 {
         replace(VanillaHudElements.MOB_EFFECTS) { Huds.statusEffects }
         //?}
-        replace(VanillaHudElements.SUBTITLES) { Huds.subtitles }
+        replace(VanillaHudElements.SUBTITLES) { Huds.closedCaptions }
     }
 
     private fun replace(id: Identifier, hud: () -> VanillaHud) {
@@ -65,7 +65,7 @@ object HudElementCompat {
             replace(layers, IdentifiedLayer.SCOREBOARD) { Huds.scoreboard }
             replace(layers, IdentifiedLayer.PLAYER_LIST) { Huds.tabList }
             replace(layers, IdentifiedLayer.BOSS_BAR) { Huds.bossBar }
-            replace(layers, IdentifiedLayer.SUBTITLES) { Huds.subtitles }
+            replace(layers, IdentifiedLayer.SUBTITLES) { Huds.closedCaptions }
         }
     }
 

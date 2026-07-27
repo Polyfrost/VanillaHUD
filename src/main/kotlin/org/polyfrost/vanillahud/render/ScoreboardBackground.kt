@@ -10,8 +10,6 @@ import net.minecraft.client.renderer.RenderPipelines
 *///?}
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.util.tinyfd.TinyFileDialogs
 import java.io.FileInputStream
 
 object ScoreboardBackground {
@@ -22,22 +20,6 @@ object ScoreboardBackground {
     private var loaded = false
     private var texWidth = 0
     private var texHeight = 0
-
-    @JvmStatic
-    fun chooseFile(): String? {
-        try {
-            MemoryStack.stackPush().use { stack ->
-                val filters = stack.mallocPointer(1)
-                filters.put(stack.UTF8("*.png"))
-                filters.flip()
-                return TinyFileDialogs.tinyfd_openFileDialog(
-                    "Select Scoreboard Background", "", filters, "Image Files", false
-                )
-            }
-        } catch (t: Throwable) {
-            return null
-        }
-    }
 
     @JvmStatic
     fun render(graphics: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int, path: String?): Boolean {
@@ -62,7 +44,7 @@ object ScoreboardBackground {
     }
 
     private fun ensureLoaded(path: String?): Boolean {
-        if (path == null || path.isEmpty()) {
+        if (path.isNullOrEmpty()) {
             loadedPath = path
             loaded = false
             return false

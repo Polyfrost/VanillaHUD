@@ -9,10 +9,12 @@ import java.nio.file.Path
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 3
+    private const val SCHEMA_VERSION = 4
 
-    /** Left behind by the removed Custom Scoreboard compat layer; no hud claims it anymore. */
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
+
+    private const val SUBTITLES_FILE = "vanillahud-subtitles.json"
+    private const val CLOSED_CAPTIONS_FILE = "vanillahud-closedcaptions.json"
 
     private val POSITION_KEYS = arrayOf("relativeX", "relativeY", "section")
 
@@ -25,10 +27,6 @@ object HudConfigMigrator {
         listenForProfileChanges()
     }
 
-    /**
-     * Every profile folder, including the root (profile-less) one. OneConfig only mounts the active
-     * profile, so inactive profiles keep their own copy of every hud config and need migrating too.
-     */
     private fun configFolders(): List<Path> {
         val out = LinkedHashMap<Path, Path>()
 
@@ -49,10 +47,6 @@ object HudConfigMigrator {
         return out.values.toList()
     }
 
-    /**
-     * Profiles created or dropped in while the game is running never went through [migrate].
-     * Switching onto one re-runs it; the stamp makes already-migrated folders a no-op.
-     */
     private fun listenForProfileChanges() {
         if (listening) return
         try {
@@ -76,6 +70,7 @@ object HudConfigMigrator {
 
         if (from < 1) resetPositions(folder)
         if (from < 3) dropCustomScoreboard(folder)
+        if (from < 4) renameSubtitles(folder)
 
         writeStamp(stamp)
     }
@@ -121,6 +116,34 @@ object HudConfigMigrator {
     private fun dropCustomScoreboard(folder: Path) {
         try {
             Files.deleteIfExists(folder.resolve("huds").resolve(CUSTOM_SCOREBOARD_FILE))
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun renameSubtitles(folder: Path) {
+        try {
+            val hudsDir = folder.resolve("huds")
+            val old = hudsDir.resolve(SUBTITLES_FILE)
+            if (!Files.isRegularFile(old)) return
+            val target = hudsDir.resolve(CLOSED_CAPTIONS_FILE)
+            if (Files.exists(target)) {
+                Files.deleteIfExists(old)
+                return
+            }
+            Files.move(old, target)
+            retagId(target)
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun retagId(path: Path) {
+        try {
+            val json = Files.newBufferedReader(path).use { JsonParser.parseReader(it) }
+            if (!json.isJsonObject) return
+            val obj = json.asJsonObject
+            if (obj.get("id")?.asString != SUBTITLES_FILE) return
+            obj.addProperty("id", CLOSED_CAPTIONS_FILE)
+            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
         } catch (_: Throwable) {
         }
     }

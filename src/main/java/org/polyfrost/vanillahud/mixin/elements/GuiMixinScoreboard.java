@@ -21,6 +21,7 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.ScoreboardBackground;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -38,8 +39,11 @@ import org.polyfrost.vanillahud.render.HudTransform;
 /*@Mixin(Gui.class)
 *///?}
 public class GuiMixinScoreboard {
-    @org.spongepowered.asm.mixin.Unique
+    @Unique
     private int vanillahud$scoreboardTop = Integer.MIN_VALUE;
+
+    @Unique
+    private int vanillahud$titleX0, vanillahud$titleX1, vanillahud$titleY1;
 
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderScoreboardSidebar")
@@ -92,7 +96,12 @@ public class GuiMixinScoreboard {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         if (!hud.getScoreboardTitle()) return;
         this.vanillahud$scoreboardTop = y0;
-        if (hud.getHasCustomBackground()) return;
+        if (hud.getHasCustomBackground()) {
+            this.vanillahud$titleX0 = x0;
+            this.vanillahud$titleX1 = x1;
+            this.vanillahud$titleY1 = y1;
+            return;
+        }
         original.call(graphics, x0, y0, x1, y1, hud.getTitleBgColor());
     }
 
@@ -111,8 +120,13 @@ public class GuiMixinScoreboard {
     private void vanillahud$scoreboard$background(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         if (hud.getHasCustomBackground()) {
-            int top = this.vanillahud$scoreboardTop != Integer.MIN_VALUE ? this.vanillahud$scoreboardTop : y0;
-            if (ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath())) return;
+            boolean hasTitle = this.vanillahud$scoreboardTop != Integer.MIN_VALUE;
+            int top = hasTitle ? this.vanillahud$scoreboardTop : y0;
+            boolean drew = ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath());
+            if (hasTitle && (hud.getKeepBackgroundColor() || !drew)) {
+                original.call(graphics, this.vanillahud$titleX0, top, this.vanillahud$titleX1, this.vanillahud$titleY1, hud.getTitleBgColor());
+            }
+            if (drew && !hud.getKeepBackgroundColor()) return;
         }
         original.call(graphics, x0, y0, x1, y1, hud.getBodyBgColor());
     }
