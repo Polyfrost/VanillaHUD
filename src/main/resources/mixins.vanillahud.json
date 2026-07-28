@@ -8,6 +8,7 @@
         "maxShiftBy": 5
     },
     "client": [
+        "GuiFrameMixin",
         "PlayerFaceRendererMixin",
         "access.IBossHealthOverlay",
         "access.IGui",

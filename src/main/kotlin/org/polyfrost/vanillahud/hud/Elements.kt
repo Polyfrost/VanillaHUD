@@ -108,17 +108,27 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
         return live
     }
 
-    override fun measuredWidth(): Float = try {
+    private class Size(val width: Float, val height: Float)
+
+    private fun size(): Size? = measureOnce { measureSize() }
+
+    private fun measureSize(): Size {
         val events = bossEvents()
-        if (events.isEmpty() || !renderText) return naturalWidth
-        events.fold(naturalWidth) { acc, e -> maxOf(acc, mc.font.width(e.name).toFloat()) }
+        val width = if (events.isEmpty() || !renderText) naturalWidth
+        else events.fold(naturalWidth) { acc, e -> maxOf(acc, mc.font.width(e.name).toFloat()) }
+        val n = events.size
+        val height = if (n == 0) naturalHeight else ((n - 1) * 19 + if (renderText) 14 else 5).toFloat()
+        return Size(width, height)
+    }
+
+    override fun measuredWidth(): Float = try {
+        size()?.width ?: naturalWidth
     } catch (_: Throwable) {
         naturalWidth
     }
 
     override fun measuredHeight(): Float = try {
-        val n = bossEvents().size
-        if (n == 0) naturalHeight else ((n - 1) * 19 + if (renderText) 14 else 5).toFloat()
+        size()?.height ?: naturalHeight
     } catch (_: Throwable) {
         naturalHeight
     }
@@ -346,7 +356,9 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
-    private fun size(): Size? {
+    private fun size(): Size? = measureOnce { measureSize() }
+
+    private fun measureSize(): Size? {
         val objective = (if (previewing) DemoData.demoScoreboardObjective()
         else mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)) ?: return null
         val font = mc.font
@@ -553,7 +565,9 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         return try { live() } catch (_: Throwable) { null }
     }
 
-    private fun size(): Pair<Float, Float>? {
+    private fun size(): Pair<Float, Float>? = measureOnce { measureSize() }
+
+    private fun measureSize(): Pair<Float, Float>? {
         val list = players()
         if (list.isEmpty()) return null
         val font = mc.font
@@ -630,26 +644,32 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     override val anchorX get() = 0.5f
     override val anchorY get() = 0.5f
 
-    override fun measuredWidth(): Float {
+    private class Size(val width: Float, val height: Float)
+
+    private fun size(): Size? = measureOnce { measureSize() }
+
+    private fun measureSize(): Size {
         val gui = if (previewing) null else hudAccessor
         val title = gui?.title?.string ?: "Title"
         val subtitle = gui?.subtitle?.string ?: "Subtitle"
-        return try {
-            maxOf(mc.font.width(title) * 4, mc.font.width(subtitle) * 2).toFloat()
-        } catch (_: Throwable) {
-            naturalWidth
-        }
+        val font = mc.font
+        val line = font.lineHeight
+        return Size(
+            maxOf(font.width(title) * 4, font.width(subtitle) * 2).toFloat(),
+            if (subtitle.isNotBlank()) (line * 4 + 14 + line * 2).toFloat() else (line * 4).toFloat(),
+        )
     }
 
-    override fun measuredHeight(): Float {
-        val gui = if (previewing) null else hudAccessor
-        val subtitle = gui?.subtitle?.string ?: "Subtitle"
-        return try {
-            val line = mc.font.lineHeight
-            if (subtitle.isNotBlank()) (line * 4 + 14 + line * 2).toFloat() else (line * 4).toFloat()
-        } catch (_: Throwable) {
-            naturalHeight
-        }
+    override fun measuredWidth(): Float = try {
+        size()?.width ?: naturalWidth
+    } catch (_: Throwable) {
+        naturalWidth
+    }
+
+    override fun measuredHeight(): Float = try {
+        size()?.height ?: naturalHeight
+    } catch (_: Throwable) {
+        naturalHeight
     }
 }
 
@@ -663,7 +683,9 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 
     private class Counts(val beneficial: Int, val harmful: Int)
 
-    private fun counts(): Counts? {
+    private fun counts(): Counts? = measureOnce { measureCounts() }
+
+    private fun measureCounts(): Counts? {
         val real = mc.player?.activeEffects ?: emptyList()
         val effects = if (previewing) DemoData.demoEffects() else real
         var beneficial = 0
@@ -731,21 +753,27 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
         return overlay.audibleSubtitles.mapNotNull { (it as? ISubtitle)?.subtitleText }
     }
 
-    override fun measuredWidth(): Float = try {
+    private class Size(val width: Float, val height: Float)
+
+    private fun size(): Size? = measureOnce { measureSize() }
+
+    private fun measureSize(): Size {
         val texts = texts()
-        if (texts.isEmpty()) naturalWidth else {
-            val font = mc.font
-            val row = texts.maxOf { font.width(it) } +
-                font.width("<") + font.width(" ") + font.width(">") + font.width(" ")
-            (row / 2 * 2 + 2).toFloat()
-        }
+        if (texts.isEmpty()) return Size(naturalWidth, naturalHeight)
+        val font = mc.font
+        val row = texts.maxOf { font.width(it) } +
+            font.width("<") + font.width(" ") + font.width(">") + font.width(" ")
+        return Size((row / 2 * 2 + 2).toFloat(), (texts.size * CAPTION_ROW).toFloat())
+    }
+
+    override fun measuredWidth(): Float = try {
+        size()?.width ?: naturalWidth
     } catch (_: Throwable) {
         naturalWidth
     }
 
     override fun measuredHeight(): Float = try {
-        val lines = texts().size
-        if (lines == 0) naturalHeight else (lines * CAPTION_ROW).toFloat()
+        size()?.height ?: naturalHeight
     } catch (_: Throwable) {
         naturalHeight
     }

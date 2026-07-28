@@ -155,6 +155,28 @@ abstract class VanillaHud(
 
     protected open fun measuredHeight(): Float = naturalHeight
 
+    private var measuredFrame = -1L
+    private var measuredKey = 0
+    private var measured: Any? = null
+
+    @Suppress("UNCHECKED_CAST")
+    protected fun <T : Any> measureOnce(measure: () -> T?): T? {
+        val key = measureKey()
+        if (measuredFrame == frame && measuredKey == key) return measured as T?
+        val value = measure()
+        measured = value
+        measuredFrame = frame
+        measuredKey = key
+        return value
+    }
+
+    private fun measureKey(): Int {
+        var key = if (previewing) 1 else 0
+        key = key * 31 + HudManager.guiScreenWidth.toInt()
+        key = key * 31 + HudManager.guiScreenHeight.toInt()
+        return key
+    }
+
     override fun update() = false
     override fun hasBackground() = false
 
@@ -167,6 +189,13 @@ abstract class VanillaHud(
     override fun render(mcCtx: GuiGraphicsExtractor) {}
 
     companion object {
+        private var frame = 0L
+
+        @JvmStatic
+        fun beginFrame() {
+            frame++
+        }
+
         @JvmStatic
         fun previewing(hud: VanillaHud?): Boolean {
             if (HudManager.isEditorOpen) return true
