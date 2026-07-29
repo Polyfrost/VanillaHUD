@@ -29,6 +29,8 @@ repositories {
     gradlePluginPortal()
     google()
 
+    mavenLocal()
+
     maven("https://maven.parchmentmc.org")
     maven("https://repo.polyfrost.org/releases")
     maven("https://repo.polyfrost.org/snapshots")

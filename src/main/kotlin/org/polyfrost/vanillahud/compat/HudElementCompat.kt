@@ -37,7 +37,7 @@ object HudElementCompat {
         HudElementRegistry.replaceElement(id) { original ->
             HudElement { context, tickCounter ->
                 val element = hud()
-                if (element.shouldRender()) {
+                if (element.shouldDraw()) {
                     HudTransform.begin(context, element)
                     //? if >=26 {
                     original.extractRenderState(context, tickCounter)

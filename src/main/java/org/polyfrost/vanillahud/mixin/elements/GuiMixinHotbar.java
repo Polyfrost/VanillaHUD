@@ -50,7 +50,7 @@ public abstract class GuiMixinHotbar {
     )
     private void vanillahud$hotbar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         HotbarHud hud = Huds.INSTANCE.getHotbar();
-        if (!hud.shouldRender()) return;
+        if (!hud.shouldDraw()) return;
 
         HudTransform.begin(graphics, hud);
         vanillahud$setup(graphics, deltaTracker, hud);

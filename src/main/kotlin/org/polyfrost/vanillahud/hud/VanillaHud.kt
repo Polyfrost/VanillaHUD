@@ -31,6 +31,7 @@ abstract class VanillaHud(
 
     override fun multipleInstancesAllowed() = false
     override fun deletable() = false
+    override fun showByDefault() = true
 
     open fun linkTarget(): VanillaHud? = null
 
@@ -111,14 +112,15 @@ abstract class VanillaHud(
 
     val previewing: Boolean get() = previewing(this)
 
-    fun shouldRender(): Boolean {
-        if (HudManager.isEditing) return true
-
-        if (hidden) return false
+    fun shouldDraw(): Boolean {
+        if (hidden && !HudManager.isEditing) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false
-        if (HudManager.isGuiScreenOpen && !showInScreens) return false
-
+        if (!HudManager.overrideShowInScreens && !HudManager.isEditing) {
+            if (HudManager.isChatScreenOpen) {
+                if (!showInChat) return false
+            } else if (HudManager.isGuiScreenOpen && !showInScreens) return false
+        }
         return true
     }
 

@@ -36,7 +36,7 @@ public class GuiMixinLocatorBar {
             *///?}
     )
     private void vanillahud$locatorBar(ContextualBar bar, GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!Huds.INSTANCE.getExperienceBar().shouldRender()) return;
+        if (!Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar());
         original.call(bar, graphics, delta);
