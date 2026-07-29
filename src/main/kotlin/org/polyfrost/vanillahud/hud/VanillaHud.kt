@@ -37,6 +37,8 @@ abstract class VanillaHud(
 
     private var seededWidth = -1
     private var seededHeight = -1
+    private var seededHudWidth = -1f
+    private var seededHudHeight = -1f
     private var forcePending = false
 
     fun queueForceDefault() {
@@ -84,9 +86,13 @@ abstract class VanillaHud(
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
         if (w != mc.window.guiScaledWidth || h != mc.window.guiScaledHeight) return
-        if (w == seededWidth && h == seededHeight) return
+        if (w == seededWidth && h == seededHeight &&
+            renderedW == seededHudWidth && renderedH == seededHudHeight
+        ) return
         seededWidth = w
         seededHeight = h
+        seededHudWidth = renderedW
+        seededHudHeight = renderedH
         try {
             val wasDefault = isAtDefaultPosition()
             capturePositionDefaults()
