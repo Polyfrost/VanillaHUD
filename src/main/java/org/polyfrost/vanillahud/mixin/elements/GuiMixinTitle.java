@@ -36,7 +36,7 @@ public class GuiMixinTitle {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderTitle")
     private void vanillahud$title(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
-        if (!Huds.INSTANCE.getTitle().shouldRender()) return;
+        if (!Huds.INSTANCE.getTitle().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getTitle());
         original.call(graphics, deltaTracker);

@@ -29,7 +29,7 @@ public class GuiMixinHunger {
     /*@WrapMethod(method = "renderFood")
     private void vanillahud$hunger(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int xRight, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHunger().shouldRender()) return;
+        if (!Huds.INSTANCE.getHunger().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getHunger());
         original.call(graphics, player, yLineBase, xRight);

@@ -34,7 +34,7 @@ public class GuiMixinHealth {
             int heartOffsetIndex, float maxHealth, int currentHealth, int oldHealth,
             int absorption, boolean blink, Operation<Void> original) {
         //? if <=1.21.6 {
-        /*if (!Huds.INSTANCE.getHealth().shouldRender()) return;
+        /*if (!Huds.INSTANCE.getHealth().shouldDraw()) return;
         HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
         *///?}
 

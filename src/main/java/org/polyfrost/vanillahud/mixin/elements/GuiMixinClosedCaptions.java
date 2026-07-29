@@ -23,7 +23,7 @@ public class GuiMixinClosedCaptions {
     /*@WrapMethod(method = "render")
     private void vanillahud$closedCaptions(GuiGraphicsExtractor graphics, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
-        if (!hud.shouldRender()) return;
+        if (!hud.shouldDraw()) return;
 
         HudTransform.begin(graphics, hud);
         original.call(graphics);

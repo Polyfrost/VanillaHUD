@@ -26,7 +26,7 @@ public class GuiMixinStatusEffects {
     //? if <26 {
     /*@WrapMethod(method = "renderEffects")
     private void vanillahud$statusEffects(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
-        if (!Huds.INSTANCE.getStatusEffects().shouldRender()) return;
+        if (!Huds.INSTANCE.getStatusEffects().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getStatusEffects());
         original.call(graphics, deltaTracker);

@@ -26,7 +26,7 @@ public class BossHealthOverlayMixin {
     //? if <1.21.4 {
     /*@WrapMethod(method = "render")
     private void vanillahud$boss(GuiGraphicsExtractor graphics, Operation<Void> original) {
-        if (!Huds.INSTANCE.getBossBar().shouldRender()) return;
+        if (!Huds.INSTANCE.getBossBar().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getBossBar());
         original.call(graphics);

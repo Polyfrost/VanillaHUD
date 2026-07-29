@@ -29,7 +29,7 @@ public class GuiMixinHeldItemTooltip {
     //? if <1.21.6 {
     /*@WrapMethod(method = "renderSelectedItemName")
     private void vanillahud$itemName(GuiGraphicsExtractor graphics, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHeldItemTooltip().shouldRender()) return;
+        if (!Huds.INSTANCE.getHeldItemTooltip().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getHeldItemTooltip());
         original.call(graphics);

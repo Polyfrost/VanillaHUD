@@ -26,7 +26,7 @@ public class GuiMixinExperienceLevel {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderExperienceLevel")
     private void vanillahud$xpLevel(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!Huds.INSTANCE.getExperienceLevel().shouldRender()) return;
+        if (!Huds.INSTANCE.getExperienceLevel().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getExperienceLevel());
         original.call(graphics, delta);

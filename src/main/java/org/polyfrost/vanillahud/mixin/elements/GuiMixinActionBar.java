@@ -29,7 +29,7 @@ public class GuiMixinActionBar {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderOverlayMessage")
     private void vanillahud$actionBar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
-        if (!Huds.INSTANCE.getActionBar().shouldRender()) return;
+        if (!Huds.INSTANCE.getActionBar().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getActionBar());
         original.call(graphics, deltaTracker);

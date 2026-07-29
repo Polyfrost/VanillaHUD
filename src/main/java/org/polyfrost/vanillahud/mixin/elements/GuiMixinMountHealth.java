@@ -25,7 +25,7 @@ public class GuiMixinMountHealth {
     //? if <1.21.6 {
     /*@WrapMethod(method = "renderVehicleHealth")
     private void vanillahud$mount(GuiGraphicsExtractor graphics, Operation<Void> original) {
-        if (!Huds.INSTANCE.getMountHealth().shouldRender()) return;
+        if (!Huds.INSTANCE.getMountHealth().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getMountHealth());
         original.call(graphics);

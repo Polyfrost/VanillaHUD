@@ -32,7 +32,7 @@ public class GuiMixinTabList {
     /*@WrapMethod(method = "renderTabList")
     private void vanillahud$tabList(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker,
                                     Operation<Void> original) {
-        if (!Huds.INSTANCE.getTabList().shouldRender()) return;
+        if (!Huds.INSTANCE.getTabList().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getTabList());
         original.call(graphics, deltaTracker);

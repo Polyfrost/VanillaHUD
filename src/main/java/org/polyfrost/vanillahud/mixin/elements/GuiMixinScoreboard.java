@@ -48,7 +48,7 @@ public class GuiMixinScoreboard {
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderScoreboardSidebar")
     private void vanillahud$scoreboard(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
-        if (!Huds.INSTANCE.getScoreboard().shouldRender()) return;
+        if (!Huds.INSTANCE.getScoreboard().shouldDraw()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getScoreboard());
         original.call(graphics, deltaTracker);
