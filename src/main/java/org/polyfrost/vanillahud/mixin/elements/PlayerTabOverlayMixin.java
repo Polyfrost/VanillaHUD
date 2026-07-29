@@ -13,6 +13,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.polyfrost.vanillahud.hook.HeadHook;
+import org.polyfrost.vanillahud.hook.TextShadowHook;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
 import org.spongepowered.asm.mixin.Final;
@@ -27,9 +28,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//? if >=26 {
-import net.minecraft.util.FormattedCharSequence;
-//?}
 //? if >=1.21.6 {
 import org.joml.Matrix3x2fStack;
 //?}
@@ -127,25 +125,29 @@ public abstract class PlayerTabOverlayMixin {
         return Huds.INSTANCE.getTabList().getFooterBgArgb();
     }
 
-    //? if >=26 {
-    @WrapOperation(
+    @Inject(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
             method = "extractRenderState",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V")
+            //?}
+            at = @At("HEAD")
     )
-    private void vanillahud$textShadowComponent(GuiGraphicsExtractor graphics, Font font, Component str, int x, int y,
-                                                int color, Operation<Void> original) {
-        graphics.text(font, str, x, y, color, Huds.INSTANCE.getTabList().getTextType() != 0);
+    private void vanillahud$pushTextShadow(CallbackInfo ci) {
+        TextShadowHook.push(Huds.INSTANCE.getTabList().getTextType() != 0);
     }
 
-    @WrapOperation(
+    @Inject(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
             method = "extractRenderState",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)V")
+            //?}
+            at = @At("RETURN")
     )
-    private void vanillahud$textShadowSequence(GuiGraphicsExtractor graphics, Font font, FormattedCharSequence str,
-                                               int x, int y, int color, Operation<Void> original) {
-        graphics.text(font, str, x, y, color, Huds.INSTANCE.getTabList().getTextType() != 0);
+    private void vanillahud$popTextShadow(CallbackInfo ci) {
+        TextShadowHook.pop();
     }
-    //?}
 
     @ModifyVariable(
             //? if <26 {
@@ -285,10 +287,10 @@ public abstract class PlayerTabOverlayMixin {
                 graphics.drawString(this.minecraft.font, str, fullX, yo, color);
             } else {
                 PoseStack pose = graphics.pose();
-                pose.pushPose();
+                pose.pushMatrix();
                 pose.scale(0.5f, 0.5f, 1.0f);
                 graphics.drawString(this.minecraft.font, str, scaledX, scaledY, color);
-                pose.popPose();
+                pose.popMatrix();
             }
             *///?}
             ci.cancel();

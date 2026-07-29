@@ -34,6 +34,7 @@
         "elements.GuiMixinClosedCaptions",
         "elements.GuiMixinStatusEffects",
         "elements.PlayerTabOverlayMixin",
+        "elements.TextShadowMixin",
         "elements.GuiMixinTabList",
         "elements.GuiMixinTitle"
     ]
