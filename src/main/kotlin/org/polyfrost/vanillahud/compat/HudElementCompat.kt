@@ -73,7 +73,7 @@ object HudElementCompat {
         layers.replaceLayer(id) { original ->
             IdentifiedLayer.of(original.id()) { context, tickCounter ->
                 val element = hud()
-                if (element.shouldRender()) {
+                if (element.shouldDraw()) {
                     HudTransform.begin(context, element)
                     original.render(context, tickCounter)
                     HudTransform.end(context)
