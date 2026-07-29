@@ -1,2 +1,2 @@
-## 3.4.1
-- Updated to support OneConfig 1.0.12
+## 3.4.2
+- Fix example HUD position
