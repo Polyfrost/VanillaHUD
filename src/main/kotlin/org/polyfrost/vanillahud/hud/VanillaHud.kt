@@ -8,10 +8,10 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IGui
 
 abstract class VanillaHud(
-    id: String,
+    val hudId: String,
     title: String,
     category: Category,
-) : LegacyHud(id, title, category) {
+) : LegacyHud(hudId, title, category) {
     init {
         locked = true
     }
@@ -155,9 +155,16 @@ abstract class VanillaHud(
      * measured size changes - the editor swapping live data for example data, most of all - the same stored
      * offset resolves to a different spot. Re-deriving it from the origin every frame keeps the editor's
      * outline and handles on top of what is actually being drawn.
+     *
+     * [screenWidth] / [screenHeight] are the dimensions the HUD is being drawn against, but [placeAt] stores
+     * through `relativeX`/`relativeY`, which divide by [HudManager.guiScreenWidth] / [HudManager.guiScreenHeight].
+     * The editor screen only refreshes those during its own render, so for the frame after a window resize the
+     * two disagree - and writing a new-size origin into old-size grid units bakes in an offset that then reads
+     * as "the user moved this", permanently unpinning the HUD. Wait for them to line up instead.
      */
     fun pinToVanillaOrigin(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale) {
         if (tree == null) return
+        if (HudManager.guiScreenWidth.toInt() != screenWidth || HudManager.guiScreenHeight.toInt() != screenHeight) return
         syncRenderedSize()
         try {
             placeAt(scaledOriginX(screenWidth, screenHeight, scale), scaledOriginY(screenWidth, screenHeight, scale))

@@ -1,43 +1,65 @@
 package org.polyfrost.vanillahud.util
 
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.hud.Huds
+import org.polyfrost.vanillahud.hud.VanillaHud
 import java.nio.file.Files
+import java.nio.file.Path
 
 object ForceDefaultPosition {
-    private val marker get() = ConfigManager.active().folder.resolve("vanillahud-unlocked")
+    private const val FILE = "vanillahud-customized"
 
-    private var optedOutCache: Boolean? = null
-    private var wasInWorld = false
+    private val file: Path get() = ConfigManager.active().folder.resolve(FILE)
 
-    val optedOut: Boolean
-        get() = optedOutCache ?: Files.exists(marker).also { optedOutCache = it }
+    private var cache: MutableSet<String>? = null
+
+    /** Ids queued this launch, so each HUD is only forced once per profile. */
+    private val forced = HashSet<String>()
+
+    private val customized: MutableSet<String>
+        get() = cache ?: read().also { cache = it }
 
     fun invalidate() {
-        optedOutCache = null
+        cache = null
+        forced.clear()
     }
 
-    private fun markOptedOut() {
-        if (optedOut) return
-        optedOutCache = true
-        try {
-            Files.createDirectories(marker.parent)
-            if (!Files.exists(marker)) Files.createFile(marker)
-        } catch (_: Throwable) {
-        }
+    fun isCustomized(hud: VanillaHud): Boolean = customized.contains(hud.hudId)
+
+    private fun markCustomized(hud: VanillaHud) {
+        if (!customized.add(hud.hudId)) return
+        hud.cancelForceDefault()
+        write()
     }
 
     fun tick() {
-        if (!optedOut && Huds.all.any { !it.locked }) {
-            markOptedOut()
-            for (hud in Huds.all) hud.cancelForceDefault()
+        for (hud in Huds.all) {
+            if (!hud.locked) {
+                markCustomized(hud)
+                continue
+            }
+            if (isCustomized(hud)) continue
+            if (forced.add(hud.hudId)) hud.queueForceDefault()
         }
+    }
 
-        val inWorld = try { mc.level != null } catch (_: Throwable) { false }
-        if (inWorld && !wasInWorld && !optedOut) {
-            for (hud in Huds.all) hud.queueForceDefault()
+    private fun read(): MutableSet<String> = try {
+        val p = file
+        if (Files.isRegularFile(p)) {
+            Files.readAllLines(p).mapNotNullTo(LinkedHashSet()) { it.trim().ifEmpty { null } }
+        } else {
+            LinkedHashSet()
         }
-        wasInWorld = inWorld
+    } catch (_: Throwable) {
+        LinkedHashSet()
+    }
+
+    private fun write() {
+        try {
+            val p = file
+            Files.createDirectories(p.parent)
+            Files.write(p, customized.sorted())
+        } catch (_: Throwable) {
+        }
     }
 }

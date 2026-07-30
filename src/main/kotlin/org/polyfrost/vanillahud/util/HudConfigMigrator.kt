@@ -13,6 +13,9 @@ object HudConfigMigrator {
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
+    private const val LEGACY_UNLOCKED_FILE = "vanillahud-unlocked"
+    private const val CUSTOMIZED_FILE = "vanillahud-customized"
+
     private const val SUBTITLES_FILE = "vanillahud-subtitles.json"
     private const val CLOSED_CAPTIONS_FILE = "vanillahud-closedcaptions.json"
 
@@ -95,22 +98,20 @@ object HudConfigMigrator {
 
     private fun resetPositions(folder: Path) {
         try {
-            var touched = false
             val hudsDir = folder.resolve("huds")
             if (Files.isDirectory(hudsDir)) {
                 Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { stream ->
                     for (p in stream) {
                         if (!Files.isRegularFile(p)) continue
-                        if (resetFile(p)) touched = true
+                        resetFile(p)
                     }
                 }
             }
-
-            if (touched) {
-                try { Files.deleteIfExists(folder.resolve("vanillahud-unlocked")) } catch (_: Throwable) {}
-            }
         } catch (_: Throwable) {
         }
+
+        try { Files.deleteIfExists(folder.resolve(LEGACY_UNLOCKED_FILE)) } catch (_: Throwable) {}
+        try { Files.deleteIfExists(folder.resolve(CUSTOMIZED_FILE)) } catch (_: Throwable) {}
     }
 
     private fun dropCustomScoreboard(folder: Path) {
