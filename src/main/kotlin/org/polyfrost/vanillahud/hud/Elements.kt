@@ -150,6 +150,8 @@ class ExperienceLevelHud : VanillaHud("vanillahud-experience-level.json", "Exper
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
+
+    override val positionAnchorX get() = 0f
 }
 
 class HealthHud : VanillaHud("vanillahud-health.json", "Health", Category.PLAYER) {
@@ -643,6 +645,9 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
     override val anchorX get() = 0.5f
     override val anchorY get() = 0.5f
+
+    // the title's top edge sits a fixed distance above the screen centre; the subtitle only grows downwards
+    override val positionAnchorY get() = 0f
 
     private class Size(val width: Float, val height: Float)
 

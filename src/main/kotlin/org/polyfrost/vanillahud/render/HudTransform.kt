@@ -35,6 +35,10 @@ object HudTransform {
         }
         val anchored = hud?.anchorsToVanillaOrigin() ?: false
         val s = hud?.effectiveScale ?: 1f
+        // while editing, OneConfig draws the outline and handles from the stored position, so keep it in
+        // step with the origin the element is actually drawn at. dragging moves it off default, which ends
+        // the pinning.
+        if (anchored && HudManager.isEditing) hud?.pinToVanillaOrigin(w, h, s)
          val ox = provider.vanillaOriginX(w, h)
         val oy = provider.vanillaOriginY(w, h)
         val gx = if (anchored) provider.scaledOriginX(w, h, s) else (hud?.x ?: ox)

@@ -1,2 +1,2 @@
-## 3.4.2
-- Fix example HUD position
+## 3.4.3
+- Fix HUD positions

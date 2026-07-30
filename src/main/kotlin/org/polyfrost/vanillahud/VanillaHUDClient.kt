@@ -12,7 +12,9 @@ object VanillaHUDClient : ClientModInitializer {
     override fun onInitializeClient() {
         HudConfigMigrator.migrate()
 
-        HudManager.register(*Huds.all)
+        Huds.all.forEach {
+            HudManager.register(it, "vanillahud", "/assets/vanillahud/vanillahud_dark.svg")
+        }
 
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
             ForceDefaultPosition.tick()
