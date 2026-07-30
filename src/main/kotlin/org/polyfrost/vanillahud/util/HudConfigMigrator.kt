@@ -9,7 +9,7 @@ import java.nio.file.Path
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 4
+    private const val SCHEMA_VERSION = 5
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -68,9 +68,9 @@ object HudConfigMigrator {
         val from = readStamp(stamp)
         if (from >= SCHEMA_VERSION) return
 
-        if (from < 1) resetPositions(folder)
         if (from < 3) dropCustomScoreboard(folder)
         if (from < 4) renameSubtitles(folder)
+        if (from < 5) resetPositions(folder)
 
         writeStamp(stamp)
     }
