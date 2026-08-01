@@ -170,13 +170,13 @@ public abstract class PlayerTabOverlayMixin {
         return 0;
     }
 
-    @ModifyConstant(
+    @ModifyExpressionValue(
             //? if <26 {
             /*method = "render",
             *///?} else {
             method = "extractRenderState",
             //?}
-            constant = @Constant(intValue = 13))
+            at = @At(value = "CONSTANT", args = "intValue=13"))
     private int vanillahud$pingReserveWidth(int original) {
         int reserve = vanillahud$pingReserve();
         return reserve > 0 ? Math.max(original, reserve) : original;
@@ -260,7 +260,7 @@ public abstract class PlayerTabOverlayMixin {
             boolean full = hud.getPingType() == 1;
             int fullX = xo + slotWidth - w - 1;
             int scaledX = 2 * (xo + slotWidth) - w - 2;
-            int scaledY = 2 * yo + 2;
+            int scaledY = 2 * yo + 4;
             //? if >=26 {
             Component text = Component.literal(str);
             if (full) {
