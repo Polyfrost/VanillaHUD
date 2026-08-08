@@ -19,7 +19,7 @@ Adds in a load of customization to a few native UI elements such as the bossbar,
 - Toggle
 - Scale
 - Text color
-- Text type
+- Text shadow
 - Show in chat, debug (F3), GUIs
 - Background (with rounded corners, borders, color customization)
 

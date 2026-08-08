@@ -305,7 +305,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     )
     var backgroundImagePath: String = ""
 
-    @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
+    @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
     var textType: Int = 0
 
     val titleBgColor: Int get() = titleColor.argb
@@ -429,7 +429,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     )
     var animationDuration = 400f
 
-    @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
+    @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
     var textType: Int = 1
 
     @Switch(title = "Show Header")
@@ -728,7 +728,7 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
     )
     var captionBgColor = PolyColor(0xCC000000.toInt())
 
-    @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow"])
+    @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
     var textType: Int = 1
 
     val captionBgArgb: Int get() = captionBgColor.argb
