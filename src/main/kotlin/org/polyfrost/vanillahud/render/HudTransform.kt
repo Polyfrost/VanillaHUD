@@ -35,9 +35,6 @@ object HudTransform {
         }
         val anchored = hud?.anchorsToVanillaOrigin() ?: false
         val s = hud?.effectiveScale ?: 1f
-        // while editing, OneConfig draws the outline and handles from the stored position, so keep it in
-        // step with the origin the element is actually drawn at. dragging moves it off default, which ends
-        // the pinning.
         if (anchored && HudManager.isEditing) hud?.pinToVanillaOrigin(w, h, s)
          val ox = provider.vanillaOriginX(w, h)
         val oy = provider.vanillaOriginY(w, h)
@@ -49,8 +46,10 @@ object HudTransform {
         if (tab != null && tab.animation && !HudManager.isEditing) {
             val frac = tab.clipFraction()
             if (frac < 1f) {
-                val clipH = (hud?.height ?: provider.height) * frac * s
-                graphics.enableScissor(0, floor(gy).toInt(), w, ceil(gy + clipH).toInt())
+                val foreign = if (frac > 0f) tab.foreignBounds() else null
+                val top = if (foreign != null) gy + (foreign.top - oy) * s else gy - tab.backgroundTop * s
+                val clipH = (foreign?.height ?: (hud?.height ?: provider.height)) * s
+                graphics.enableScissor(0, floor(top).toInt(), w, ceil(top + clipH * frac).toInt())
                 scissored = true
             }
         }

@@ -10,6 +10,7 @@ import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.compat.TabListCompat
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.mixin.access.ISubtitle
@@ -513,6 +514,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     override val anchorX get() = 0.5f
     override val anchorY get() = 0f
 
+    val backgroundTop get() = 1f
+
     private var animOpen = false
     private var animStart = 0L
     private var animFrom = 0f
@@ -539,6 +542,26 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 
     fun isRendering(): Boolean = animOpen || clipFraction() > 0.001f
+
+    fun foreignBounds(): TabListCompat.Bounds? {
+        if (previewing) return null
+        return try {
+            val overlay = tabOverlay()
+            TabListCompat.bounds(overlay?.header, overlay?.footer)
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    private fun tabOverlay(): IPlayerTabOverlay? = try {
+        //? if >=26.2 {
+        mc.gui.hud.tabList as IPlayerTabOverlay
+        //?} else {
+        /*mc.gui.tabList as IPlayerTabOverlay
+        *///?}
+    } catch (_: Throwable) {
+        null
+    }
 
     private fun players(): List<PlayerInfo> = try {
         val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
@@ -594,15 +617,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var width = slotWidth * columns + (columns - 1) * 5
         var height = rows * line
 
-        val overlay: IPlayerTabOverlay? = try {
-            //? if >=26.2 {
-            mc.gui.hud.tabList as IPlayerTabOverlay
-            //?} else {
-            /*mc.gui.tabList as IPlayerTabOverlay
-            *///?}
-        } catch (_: Throwable) {
-            null
-        }
+        val overlay = tabOverlay()
         val header = tabText("Tab List", { overlay?.header }, showHeader)
         val footer = tabText("VanillaHUD", { overlay?.footer }, showFooter)
         if (header != null) {
