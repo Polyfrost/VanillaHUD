@@ -661,7 +661,7 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     override val anchorX get() = 0.5f
     override val anchorY get() = 0.5f
 
-    // the title's top edge sits a fixed distance above the screen centre; the subtitle only grows downwards
+    // title top edge sits a fixed distance above screen centre and the subtitle only grows downwards
     override val positionAnchorY get() = 0f
 
     private class Size(val width: Float, val height: Float)

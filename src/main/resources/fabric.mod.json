@@ -1,8 +1,8 @@
 {
     "schemaVersion": 1,
-    "id": "${id}",
-    "name": "${name}",
-    "version": "${version}",
+    "id": "${mod_id}",
+    "name": "${mod_name}",
+    "version": "${mod_version}",
     "description": "Adds in a load of customization to a few native UI elements such as the bossbar, scoreboard, etc.",
     "authors": [
         "Polyfrost"
@@ -25,9 +25,9 @@
         "mixins.vanillahud.json"
     ],
     "depends": {
-        "minecraft": "${minecraft}",
-        "fabricloader": ">=0.15.11",
-        "oneconfigv1": ">=1.0.12",
+        "minecraft": "${minecraft_version_range}",
+        "fabricloader": ">=${loader_version}",
+        "oneconfigv1": ">=${oneconfig_version}",
         "fabric-api": "*"
     }
 }

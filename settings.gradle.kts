@@ -2,22 +2,21 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.fabricmc.net")
-        maven("https://maven.kikugie.dev/snapshots")
-        maven("https://maven.kikugie.dev/releases")
-        maven("https://jitpack.io/")
+        maven("https://maven.fabricmc.net/")
+        maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
+        maven("https://maven.kikugie.dev/snapshots") { name = "KikuGie Snapshots" }
         maven("https://maven.deftu.dev/releases")
         maven("https://maven.deftu.dev/snapshots")
         maven("https://maven.architectury.dev")
         maven("https://repo.polyfrost.org/releases")
         maven("https://repo.polyfrost.org/snapshots")
-        mavenLocal()
+        maven("https://jitpack.io/")
     }
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.9.6"
-    id("dev.kikugie.loom-back-compat") version "0.3"
+    id("dev.kikugie.stonecutter") version "0.9.7"
+    id("dev.kikugie.loom-back-compat") version "0.4.2"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 

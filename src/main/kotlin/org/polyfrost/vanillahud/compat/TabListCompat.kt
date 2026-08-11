@@ -10,7 +10,7 @@ object TabListCompat {
 
     private val providers: List<Provider> by lazy {
         buildList {
-            // SkyHanni cancels the whole tab list layer, so it wins over SkyCubed when both are on
+            // SkyHanni cancels the whole tab list layer so it wins over SkyCubed when both are on
             if (isLoaded("skyhanni")) add(SkyHanni)
             if (isLoaded("skycubed")) add(SkyCubed)
         }

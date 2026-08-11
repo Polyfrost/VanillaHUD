@@ -182,7 +182,7 @@ public abstract class PlayerTabOverlayMixin {
         return reserve > 0 ? Math.max(original, reserve) : original;
     }
 
-    // Capture each slot's right edge so the name clip below knows where the ping sits.
+    // captures each slot's right edge so the name clip below knows where the ping sits
     @WrapOperation(
             //? if <26 {
             /*method = "render",
@@ -199,7 +199,7 @@ public abstract class PlayerTabOverlayMixin {
         original.call(graphics, x1, y1, x2, y2, color);
     }
 
-    // At clamped GUI scales names overflow their column into the numeric ping. Clip them.
+    // at clamped GUI scales names overflow their column into the numeric ping so clip them
     @WrapOperation(
             //? if <1.21.6 {
             /*method = "render",

@@ -13,7 +13,7 @@ object ForceDefaultPosition {
 
     private var cache: MutableSet<String>? = null
 
-    /** Ids queued this launch, so each HUD is only forced once per profile. */
+    /** ids queued this launch so each HUD is only forced once per profile */
     private val forced = HashSet<String>()
 
     private val customized: MutableSet<String>

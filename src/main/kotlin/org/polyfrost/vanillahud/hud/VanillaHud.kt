@@ -25,14 +25,8 @@ abstract class VanillaHud(
     protected open val anchorY: Float get() = 0f
 
     /**
-     * How much of this HUD's own measured size [vanillaOriginX] / [vanillaOriginY] subtracts:
-     * `0` for an origin fixed to the left / top, `0.5` for a centered one, `1` for an origin fixed to the
-     * right / bottom.
-     *
-     * This picks the [Section] the position is stored relative to. It has to match the origin formula,
-     * otherwise the stored relative position only reproduces the vanilla origin at the size it was captured
-     * at: a HUD measured against live data (a full tab list) would jump when the editor measures the same
-     * HUD against its smaller example data.
+     * Fraction of the measured size the vanilla origin subtracts and so the [Section] the position is
+     * stored in it has to match the origin formula or the HUD jumps when its measured size changes
      */
     protected open val positionAnchorX: Float get() = anchorX
     protected open val positionAnchorY: Float get() = anchorY
@@ -57,13 +51,8 @@ abstract class VanillaHud(
         }
 
     /**
-     * Stores [absX] / [absY] in [preferredSection], instead of letting the section be inferred from
-     * whichever third of the screen the HUD happens to sit in.
-     *
-     * Only for positions derived from the vanilla origin. A position the user dragged to has to keep the
-     * inferred section: [relativeX] / [relativeY] are clamped to a couple of grid units from the section's
-     * own edge, so forcing a spot the user picked into a far-away section clamps it and lands somewhere else
-     * entirely.
+     * Stores in [preferredSection] instead of the inferred section only safe for vanilla origin positions
+     * since [relativeX] / [relativeY] are clamped near a section's own edge
      */
     private fun placeAt(absX: Float, absY: Float) {
         section = preferredSection
@@ -71,7 +60,7 @@ abstract class VanillaHud(
         y = absY
     }
 
-    /** [capturePositionDefaults], but placing through [placeAt]. */
+    /** [capturePositionDefaults] but placing through [placeAt] */
     private fun captureDefaults() {
         if (tree == null) return
         val (dx, dy) = defaultPosition()
@@ -148,19 +137,8 @@ abstract class VanillaHud(
         locked && isAtDefaultPosition(fallback = true)
 
     /**
-     * Snaps the stored position back onto the vanilla origin.
-     *
-     * A HUD that has never been moved has to draw at the vanilla origin, so it must not be routed through
-     * `relativeX`/`relativeY`: those are read back against [renderedW]/[renderedH], and the moment the
-     * measured size changes - the editor swapping live data for example data, most of all - the same stored
-     * offset resolves to a different spot. Re-deriving it from the origin every frame keeps the editor's
-     * outline and handles on top of what is actually being drawn.
-     *
-     * [screenWidth] / [screenHeight] are the dimensions the HUD is being drawn against, but [placeAt] stores
-     * through `relativeX`/`relativeY`, which divide by [HudManager.guiScreenWidth] / [HudManager.guiScreenHeight].
-     * The editor screen only refreshes those during its own render, so for the frame after a window resize the
-     * two disagree - and writing a new-size origin into old-size grid units bakes in an offset that then reads
-     * as "the user moved this", permanently unpinning the HUD. Wait for them to line up instead.
+     * Re-derives the stored position from the vanilla origin every frame since relative coords drift
+     * when the measured size changes the early return waits for [HudManager] to catch up after a resize
      */
     fun pinToVanillaOrigin(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale) {
         if (tree == null) return
