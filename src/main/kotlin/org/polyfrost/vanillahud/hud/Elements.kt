@@ -39,48 +39,6 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
     }
 }
 
-class AirHud : VanillaHud("vanillahud-air.json", "Air", Category.PLAYER) {
-    @Checkbox(title = "Link with health")
-    var healthLink = false
-
-    @Checkbox(title = "Link with mount health")
-    var mountLink = true
-
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
-    override val anchorX get() = 1f
-    override val anchorY get() = 1f
-
-    override fun linkTarget() = when {
-        mountLink -> Huds.mountHealth
-        healthLink -> Huds.health
-        else -> null
-    }
-}
-
-class ArmorHud : VanillaHud("vanillahud-armor.json", "Armor", Category.PLAYER) {
-    @Checkbox(title = "Link with health")
-    var healthLink = true
-
-    @Checkbox(title = "Link with mount health")
-    var mountLink = false
-
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 49f
-    override val anchorX get() = 0f
-    override val anchorY get() = 1f
-
-    override fun linkTarget() = when {
-        mountLink -> Huds.mountHealth
-        healthLink -> Huds.health
-        else -> null
-    }
-}
-
 class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.COMBAT) {
     @Switch(title = "Render Text")
     var renderText = true
@@ -135,49 +93,14 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
     }
 }
 
-class ExperienceBarHud : VanillaHud("vanillahud-experience.json", "Experience Bar", Category.PLAYER) {
-    override val naturalWidth get() = 182f
-    override val naturalHeight get() = 5f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
-    override val anchorX get() = 0f
-    override val anchorY get() = 1f
-}
-
-class ExperienceLevelHud : VanillaHud("vanillahud-experience-level.json", "Experience Level", Category.PLAYER) {
-    override val naturalWidth get() = 16f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 8f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
-    override val anchorX get() = 0.5f
-    override val anchorY get() = 1f
-
-    override val positionAnchorX get() = 0f
-}
-
-class HealthHud : VanillaHud("vanillahud-health.json", "Health", Category.PLAYER) {
-    @Checkbox(title = "Link with mount health")
-    var mountLink = false
-
-    @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
-    var animation = true
-
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
-    override val anchorX get() = 0f
-    override val anchorY get() = 1f
-
-    override fun linkTarget() = if (mountLink) Huds.mountHealth else null
-
-    @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
-    var hardcoreHearts = 0
-}
-
+/** the whole bottom cluster as one element so it keeps its vanilla internal layout and moves as a unit */
 class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER) {
-    @Dropdown(title = "Mode", options = ["Horizontal", "Vertical"])
-    var hotbarMode = 0
+    @Dropdown(
+        title = "Side",
+        description = "Which screen edge the cluster docks against. Left and Right rotate it a quarter turn.",
+        options = ["Bottom", "Left", "Top", "Right"]
+    )
+    var side = BOTTOM
 
     @Switch(
         title = "Animation",
@@ -185,54 +108,58 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
     )
     var animation = false
 
-    val vertical get() = hotbarMode == 1
+    @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
+    var healthAnimation = true
 
-    override val naturalWidth get() = if (vertical) 22f else 182f
-    override val naturalHeight get() = if (vertical) 182f else 22f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
-        if (vertical) 4f else screenWidth / 2f - 91f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
-        if (vertical) screenHeight / 2f - 91f else screenHeight - 22f
-    override val anchorX get() = 0f
-    override val anchorY get() = if (vertical) 0.5f else 1f
-}
-
-class HungerHud : VanillaHud("vanillahud-hunger.json", "Hunger", Category.PLAYER) {
-    @Checkbox(title = "Link with health")
-    var healthLink: Boolean = false
-
-    @Checkbox(title = "Link with mount health")
-    var mountLink: Boolean = false
+    @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
+    var hardcoreHearts = 0
 
     @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
-    var animation = true
+    var hungerAnimation = true
 
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
-    override val anchorX get() = 1f
-    override val anchorY get() = 1f
+    override val quarterTurns get() = side.coerceIn(BOTTOM, RIGHT)
 
-    override fun linkTarget() = when {
-        mountLink -> Huds.mountHealth
-        healthLink -> Huds.health
-        else -> null
+    override val naturalWidth get() = 182f
+
+    override val naturalHeight get() = 49f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - naturalHeight
+
+    override fun defaultOriginX(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
+        LEFT -> 0f
+        RIGHT -> screenWidth - naturalHeight
+        else -> screenWidth / 2f - naturalWidth / 2f
     }
-}
 
-class MountHealthHud : VanillaHud("vanillahud-mount.json", "Mount Health", Category.PLAYER) {
-    @Checkbox(title = "Link with health")
-    var healthLink: Boolean = false
+    override fun defaultOriginY(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
+        TOP -> 0f
+        BOTTOM -> screenHeight - naturalHeight
+        else -> screenHeight / 2f - naturalWidth / 2f
+    }
 
-    override val naturalWidth get() = 81f
-    override val naturalHeight get() = 9f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f + 10f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 39f
-    override val anchorX get() = 1f
-    override val anchorY get() = 1f
+    // pinned against the docked edge and centred along the free axis
+    override val anchorX get() = when (quarterTurns) {
+        LEFT -> 0f
+        RIGHT -> 1f
+        else -> 0.5f
+    }
 
-    override fun linkTarget() = if (healthLink) Huds.health else null
+    override val anchorY get() = when (quarterTurns) {
+        TOP -> 0f
+        BOTTOM -> 1f
+        else -> 0.5f
+    }
+
+    companion object {
+        const val BOTTOM = 0
+        const val LEFT = 1
+        const val TOP = 2
+        const val RIGHT = 3
+
+        /** vanilla centres the experience level this far above the bottom of the screen */
+        const val LEVEL_CENTER_Y = 30.5f
+    }
 }
 
 class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
@@ -805,13 +732,6 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
 object Huds {
     val hotbar = HotbarHud()
-    val health = HealthHud()
-    val armor = ArmorHud()
-    val hunger = HungerHud()
-    val air = AirHud()
-    val mountHealth = MountHealthHud()
-    val experienceBar = ExperienceBarHud()
-    val experienceLevel = ExperienceLevelHud()
     val actionBar = ActionBarHud()
     val heldItemTooltip = HeldItemTooltipHud()
     val title = TitleHud()
@@ -823,8 +743,7 @@ object Huds {
 
     val all: Array<VanillaHud>
         get() = arrayOf(
-            hotbar, health, armor, hunger, air, mountHealth,
-            experienceBar, experienceLevel, actionBar, heldItemTooltip,
+            hotbar, actionBar, heldItemTooltip,
             title, scoreboard, tabList, bossBar, statusEffects, closedCaptions,
         )
 }

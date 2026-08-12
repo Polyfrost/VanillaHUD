@@ -9,9 +9,22 @@ import java.nio.file.Path
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 5
+    private const val SCHEMA_VERSION = 6
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
+
+    private const val HOTBAR_FILE = "vanillahud-hotbar.json"
+
+    /** hud files folded into [HOTBAR_FILE] mapped to the keys they hand over */
+    private val MERGED_INTO_HOTBAR = mapOf(
+        "vanillahud-health.json" to mapOf("animation" to "healthAnimation", "hardcoreHearts" to "hardcoreHearts"),
+        "vanillahud-hunger.json" to mapOf("animation" to "hungerAnimation"),
+        "vanillahud-armor.json" to emptyMap(),
+        "vanillahud-air.json" to emptyMap(),
+        "vanillahud-mount.json" to emptyMap(),
+        "vanillahud-experience.json" to emptyMap(),
+        "vanillahud-experience-level.json" to emptyMap(),
+    )
 
     private const val LEGACY_UNLOCKED_FILE = "vanillahud-unlocked"
     private const val CUSTOMIZED_FILE = "vanillahud-customized"
@@ -74,6 +87,7 @@ object HudConfigMigrator {
         if (from < 3) dropCustomScoreboard(folder)
         if (from < 4) renameSubtitles(folder)
         if (from < 5) resetPositions(folder)
+        if (from < 6) mergeHotbarCluster(folder)
 
         writeStamp(stamp)
     }
@@ -112,6 +126,54 @@ object HudConfigMigrator {
 
         try { Files.deleteIfExists(folder.resolve(LEGACY_UNLOCKED_FILE)) } catch (_: Throwable) {}
         try { Files.deleteIfExists(folder.resolve(CUSTOMIZED_FILE)) } catch (_: Throwable) {}
+    }
+
+    /** folds the old status bar and experience settings onto the hotbar and drops its now stale position */
+    private fun mergeHotbarCluster(folder: Path) {
+        try {
+            val hudsDir = folder.resolve("huds")
+            if (!Files.isDirectory(hudsDir)) return
+
+            val carried = JsonObject()
+            for ((file, keys) in MERGED_INTO_HOTBAR) {
+                val path = hudsDir.resolve(file)
+                if (keys.isNotEmpty()) {
+                    readObject(path)?.let { old ->
+                        for ((from, to) in keys) old.get(from)?.let { carried.add(to, it) }
+                    }
+                }
+                try { Files.deleteIfExists(path) } catch (_: Throwable) {}
+            }
+
+            val hotbar = hudsDir.resolve(HOTBAR_FILE)
+            val obj = readObject(hotbar) ?: JsonObject().apply { addProperty("id", HOTBAR_FILE) }
+            for ((key, value) in carried.entrySet()) obj.add(key, value)
+            // the old mode became the side dropdown where Vertical already lines up with Left
+            obj.remove("hotbarMode")?.let { obj.add("side", it) }
+            for (key in POSITION_KEYS) obj.remove(key)
+            Files.newBufferedWriter(hotbar).use { gson.toJson(obj, it) }
+        } catch (_: Throwable) {
+        }
+
+        unmarkCustomized(folder, HOTBAR_FILE)
+    }
+
+    /** lets [ForceDefaultPosition] re-seed the hud from its new origin on the next tick */
+    private fun unmarkCustomized(folder: Path, hudId: String) {
+        try {
+            val path = folder.resolve(CUSTOMIZED_FILE)
+            if (!Files.isRegularFile(path)) return
+            val kept = Files.readAllLines(path).filter { it.trim() != hudId }
+            Files.write(path, kept)
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun readObject(path: Path): JsonObject? = try {
+        if (!Files.isRegularFile(path)) null
+        else Files.newBufferedReader(path).use { JsonParser.parseReader(it) }.takeIf { it.isJsonObject }?.asJsonObject
+    } catch (_: Throwable) {
+        null
     }
 
     private fun dropCustomScoreboard(folder: Path) {

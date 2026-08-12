@@ -34,15 +34,15 @@ public class GuiMixinHealth {
             int heartOffsetIndex, float maxHealth, int currentHealth, int oldHealth,
             int absorption, boolean blink, Operation<Void> original) {
         //? if <=1.21.6 {
-        /*if (!Huds.INSTANCE.getHealth().shouldDraw()) return;
-        HudTransform.begin(graphics, Huds.INSTANCE.getHealth());
+        /*if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
+        HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
         *///?}
 
         original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
-                currentHealth, oldHealth, absorption, blink && Huds.INSTANCE.getHealth().getAnimation());
+                currentHealth, oldHealth, absorption, blink && Huds.INSTANCE.getHotbar().getHealthAnimation());
 
         //? if <=1.21.6 {
-        /*HudTransform.end(graphics);
+        /*HudTransform.endIcons(graphics);
         *///?}
     }
 
@@ -54,8 +54,8 @@ public class GuiMixinHealth {
             *///?}
     )
     private boolean setAlwaysHardcoreHearts(boolean isHardcore) {
-        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 1) return true;
-        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 2) return false;
+        if (Huds.INSTANCE.getHotbar().getHardcoreHearts() == 1) return true;
+        if (Huds.INSTANCE.getHotbar().getHardcoreHearts() == 2) return false;
         return isHardcore;
     }
 }

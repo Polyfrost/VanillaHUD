@@ -29,11 +29,11 @@ public class GuiMixinHunger {
     /*@WrapMethod(method = "renderFood")
     private void vanillahud$hunger(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int xRight, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHunger().shouldDraw()) return;
+        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
 
-        HudTransform.begin(graphics, Huds.INSTANCE.getHunger());
+        HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics, player, yLineBase, xRight);
-        HudTransform.end(graphics);
+        HudTransform.endIcons(graphics);
     }
     *///?}
 
@@ -46,6 +46,6 @@ public class GuiMixinHunger {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextInt(I)I")
     )
     private int vanillahud$hungerShake(int original) {
-        return Huds.INSTANCE.getHunger().getAnimation() ? original : 1;
+        return Huds.INSTANCE.getHotbar().getHungerAnimation() ? original : 1;
     }
 }

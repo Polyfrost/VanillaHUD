@@ -6,6 +6,7 @@ import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IGui
+import org.polyfrost.vanillahud.render.HudTransform
 
 abstract class VanillaHud(
     val hudId: String,
@@ -18,16 +19,24 @@ abstract class VanillaHud(
 
     abstract val naturalWidth: Float
     abstract val naturalHeight: Float
+
+    /** top left of the unrotated content in the coordinates vanilla actually draws it at */
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
+
+    /** top left of the rotated bounding box at rest which differs from the vanilla origin only when [quarterTurns] is set */
+    open fun defaultOriginX(screenWidth: Int, screenHeight: Int): Float = vanillaOriginX(screenWidth, screenHeight)
+    open fun defaultOriginY(screenWidth: Int, screenHeight: Int): Float = vanillaOriginY(screenWidth, screenHeight)
+
+    /** clockwise quarter turns applied to the whole element from 0 to 3 */
+    open val quarterTurns: Int get() = 0
+
+    private val turned: Boolean get() = quarterTurns % 2 != 0
 
     protected open val anchorX: Float get() = 0f
     protected open val anchorY: Float get() = 0f
 
-    /**
-     * Fraction of the measured size the vanilla origin subtracts and so the [Section] the position is
-     * stored in it has to match the origin formula or the HUD jumps when its measured size changes
-     */
+    /** fraction of the measured size the origin subtracts so the stored [Section] must match the origin formula */
     protected open val positionAnchorX: Float get() = anchorX
     protected open val positionAnchorY: Float get() = anchorY
 
@@ -50,10 +59,7 @@ abstract class VanillaHud(
             }
         }
 
-    /**
-     * Stores in [preferredSection] instead of the inferred section only safe for vanilla origin positions
-     * since [relativeX] / [relativeY] are clamped near a section's own edge
-     */
+    /** stores in [preferredSection] rather than the inferred one since [relativeX] and [relativeY] clamp near a section edge */
     private fun placeAt(absX: Float, absY: Float) {
         section = preferredSection
         x = absX
@@ -80,21 +86,20 @@ abstract class VanillaHud(
     }
 
     fun scaledOriginX(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
-        vanillaOriginX(screenWidth, screenHeight) + (1f - scale) * width * anchorX
+        defaultOriginX(screenWidth, screenHeight) + (1f - scale) * width * anchorX
 
     fun scaledOriginY(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
-        vanillaOriginY(screenWidth, screenHeight) + (1f - scale) * height * anchorY
+        defaultOriginY(screenWidth, screenHeight) + (1f - scale) * height * anchorY
 
     override fun multipleInstancesAllowed() = false
     override fun deletable() = false
     override fun showByDefault() = true
 
-    open fun linkTarget(): VanillaHud? = null
-
     private var seededWidth = -1
     private var seededHeight = -1
     private var seededHudWidth = -1f
     private var seededHudHeight = -1f
+    private var seededTurns = -1
     private var forcePending = false
 
     fun queueForceDefault() {
@@ -136,10 +141,7 @@ abstract class VanillaHud(
     fun anchorsToVanillaOrigin(): Boolean =
         locked && isAtDefaultPosition(fallback = true)
 
-    /**
-     * Re-derives the stored position from the vanilla origin every frame since relative coords drift
-     * when the measured size changes the early return waits for [HudManager] to catch up after a resize
-     */
+    /** re-derives the stored position each frame since relative coords drift when the measured size changes */
     fun pinToVanillaOrigin(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale) {
         if (tree == null) return
         if (HudManager.guiScreenWidth.toInt() != screenWidth || HudManager.guiScreenHeight.toInt() != screenHeight) return
@@ -156,13 +158,16 @@ abstract class VanillaHud(
         val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
         val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
         if (w != mc.window.guiScaledWidth || h != mc.window.guiScaledHeight) return
+        // a half turn leaves the size alone but still moves the default so turns belongs in the key
         if (w == seededWidth && h == seededHeight &&
-            renderedW == seededHudWidth && renderedH == seededHudHeight
+            renderedW == seededHudWidth && renderedH == seededHudHeight &&
+            quarterTurns == seededTurns
         ) return
         seededWidth = w
         seededHeight = h
         seededHudWidth = renderedW
         seededHudHeight = renderedH
+        seededTurns = quarterTurns
         try {
             val wasDefault = isAtDefaultPosition()
             captureDefaults()
@@ -172,18 +177,6 @@ abstract class VanillaHud(
             }
         } catch (_: Throwable) {
         }
-    }
-
-    fun applyLink() {
-        val target = linkTarget() ?: return
-        if (target === this || target.linkTarget() === this) return
-        target.applyLink()
-        target.syncRenderedSize()
-        val w = HudManager.guiScreenWidth.toInt().coerceAtLeast(1)
-        val h = HudManager.guiScreenHeight.toInt().coerceAtLeast(1)
-        val offX = scaledOriginX(w, h) - target.scaledOriginX(w, h)
-        val offY = scaledOriginY(w, h) - target.scaledOriginY(w, h)
-        setAbsolutePosition(target.x + offX, target.y + offY)
     }
 
     val previewing: Boolean get() = previewing(this)
@@ -202,8 +195,12 @@ abstract class VanillaHud(
 
     protected open val exampleText: String? get() = null
 
-    override val width: Float get() = measuredWidth()
-    override val height: Float get() = measuredHeight()
+    /** content size before [quarterTurns] is applied which is what the render transform works in */
+    val unrotatedWidth: Float get() = measuredWidth()
+    val unrotatedHeight: Float get() = measuredHeight()
+
+    override val width: Float get() = if (turned) measuredHeight() else measuredWidth()
+    override val height: Float get() = if (turned) measuredWidth() else measuredHeight()
 
     private fun syncRenderedSize() {
         val scale = effectiveScale
@@ -272,6 +269,7 @@ abstract class VanillaHud(
         @JvmStatic
         fun beginFrame() {
             frame++
+            HudTransform.resetIcons()
         }
 
         @JvmStatic

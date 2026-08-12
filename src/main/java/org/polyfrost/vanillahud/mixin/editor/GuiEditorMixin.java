@@ -76,7 +76,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getArmorValue()I"))
     private static int vanillahud$forceArmor(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getArmor()) && original <= 0 ? 20 : original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) && original <= 0 ? 20 : original;
     }
 
     @Inject(
@@ -161,10 +161,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;canHurtPlayer()Z"))
     private boolean vanillahud$forceHealthHungerAir(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth())
-                || vanillahud$editing(Huds.INSTANCE.getHunger())
-                || vanillahud$editing(Huds.INSTANCE.getAir())
-                || original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
     }
 
     @ModifyExpressionValue(
@@ -177,18 +174,18 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAirSupply()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getAir()) ? 200 : original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 200 : original;
     }
 
     //? if <=1.21.5 {
     /*@ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpLevelVisible(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
     }
 
     @ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) && original <= 0 ? 30 : original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) && original <= 0 ? 30 : original;
     }
     *///?} else {
     @ModifyExpressionValue(
@@ -199,9 +196,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
     private boolean vanillahud$forceXpHasExperience(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel())
-                || vanillahud$editing(Huds.INSTANCE.getExperienceBar())
-                || original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
     }
 
     @ModifyExpressionValue(
@@ -212,19 +207,19 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) && original <= 0 ? 30 : original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) && original <= 0 ? 30 : original;
     }
     //?}
 
     //? if <=1.21.5 {
     /*@ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
     }
     *///?} else {
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
     }
     //?}
 

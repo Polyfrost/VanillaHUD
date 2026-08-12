@@ -25,11 +25,11 @@ public class GuiMixinMountHealth {
     //? if <1.21.6 {
     /*@WrapMethod(method = "renderVehicleHealth")
     private void vanillahud$mount(GuiGraphicsExtractor graphics, Operation<Void> original) {
-        if (!Huds.INSTANCE.getMountHealth().shouldDraw()) return;
+        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
 
-        HudTransform.begin(graphics, Huds.INSTANCE.getMountHealth());
+        HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics);
-        HudTransform.end(graphics);
+        HudTransform.endIcons(graphics);
     }
     *///?}
 }

@@ -182,7 +182,7 @@ public abstract class PlayerTabOverlayMixin {
         return reserve > 0 ? Math.max(original, reserve) : original;
     }
 
-    // captures each slot's right edge so the name clip below knows where the ping sits
+    // captures each slot right edge so the name clip below knows where the ping sits
     @WrapOperation(
             //? if <26 {
             /*method = "render",

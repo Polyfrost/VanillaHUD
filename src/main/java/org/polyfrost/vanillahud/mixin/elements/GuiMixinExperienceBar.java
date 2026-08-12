@@ -25,9 +25,9 @@ public class GuiMixinExperienceBar {
     //? if <=1.21.5 {
     /*@WrapMethod(method = "renderExperienceBar")
     private void vanillahud$xpBar(GuiGraphicsExtractor graphics, int xpBarX, Operation<Void> original) {
-        if (!Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
+        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
 
-        HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar());
+        HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics, xpBarX);
         HudTransform.end(graphics);
     }

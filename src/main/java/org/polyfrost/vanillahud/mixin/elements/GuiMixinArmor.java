@@ -27,11 +27,11 @@ public class GuiMixinArmor {
     /*@WrapMethod(method = "renderArmor")
     private static void vanillahud$armor(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int numHealthRows, int healthRowHeight, int xLeft, Operation<Void> original) {
-        if (!Huds.INSTANCE.getArmor().shouldDraw()) return;
+        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
 
-        HudTransform.begin(graphics, Huds.INSTANCE.getArmor());
+        HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics, player, yLineBase, numHealthRows, healthRowHeight, xLeft);
-        HudTransform.end(graphics);
+        HudTransform.endIcons(graphics);
     }
     *///?}
 }
