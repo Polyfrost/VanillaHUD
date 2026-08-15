@@ -32,6 +32,8 @@ object HudConfigMigrator {
     private const val SUBTITLES_FILE = "vanillahud-subtitles.json"
     private const val CLOSED_CAPTIONS_FILE = "vanillahud-closedcaptions.json"
 
+    private val LEGACY_CAPTION_IDS = setOf(SUBTITLES_FILE, "vanillahud/subtitles.json")
+
     private val POSITION_KEYS = arrayOf("relativeX", "relativeY", "section")
 
     private val gson = GsonBuilder().setPrettyPrinting().create()
@@ -79,13 +81,13 @@ object HudConfigMigrator {
         if (!Files.isDirectory(folder)) return
 
         moveLegacyFolder(folder)
+        renameSubtitles(folder)
 
         val stamp = folder.resolve("vanillahud-migration")
         val from = readStamp(stamp)
         if (from >= SCHEMA_VERSION) return
 
         if (from < 3) dropCustomScoreboard(folder)
-        if (from < 4) renameSubtitles(folder)
         if (from < 5) resetPositions(folder)
         if (from < 6) mergeHotbarCluster(folder)
 
@@ -100,9 +102,11 @@ object HudConfigMigrator {
             Files.newDirectoryStream(legacyDir).use { stream ->
                 for (p in stream) {
                     if (!Files.isRegularFile(p)) continue
-                    val target = hudsDir.resolve("vanillahud-${p.fileName}")
+                    val name = "vanillahud-${p.fileName}"
+                    val target = hudsDir.resolve(name)
                     if (Files.exists(target)) continue
                     Files.move(p, target)
+                    retagId(target, name)
                 }
             }
             try { Files.deleteIfExists(legacyDir) } catch (_: Throwable) {}
@@ -146,7 +150,8 @@ object HudConfigMigrator {
             }
 
             val hotbar = hudsDir.resolve(HOTBAR_FILE)
-            val obj = readObject(hotbar) ?: JsonObject().apply { addProperty("id", HOTBAR_FILE) }
+            val obj = readObject(hotbar) ?: JsonObject()
+            obj.addProperty("id", HOTBAR_FILE)
             for ((key, value) in carried.entrySet()) obj.add(key, value)
             // the old mode became the side dropdown where Vertical already lines up with Left
             obj.remove("hotbarMode")?.let { obj.add("side", it) }
@@ -186,26 +191,23 @@ object HudConfigMigrator {
     private fun renameSubtitles(folder: Path) {
         try {
             val hudsDir = folder.resolve("huds")
-            val old = hudsDir.resolve(SUBTITLES_FILE)
-            if (!Files.isRegularFile(old)) return
             val target = hudsDir.resolve(CLOSED_CAPTIONS_FILE)
-            if (Files.exists(target)) {
-                Files.deleteIfExists(old)
-                return
+            val old = hudsDir.resolve(SUBTITLES_FILE)
+            if (Files.isRegularFile(old)) {
+                if (Files.exists(target)) Files.deleteIfExists(old) else Files.move(old, target)
             }
-            Files.move(old, target)
-            retagId(target)
+            if (Files.isRegularFile(target)) retagId(target, CLOSED_CAPTIONS_FILE)
         } catch (_: Throwable) {
         }
     }
 
-    private fun retagId(path: Path) {
+    private fun retagId(path: Path, id: String) {
         try {
-            val json = Files.newBufferedReader(path).use { JsonParser.parseReader(it) }
-            if (!json.isJsonObject) return
-            val obj = json.asJsonObject
-            if (obj.get("id")?.asString != SUBTITLES_FILE) return
-            obj.addProperty("id", CLOSED_CAPTIONS_FILE)
+            val obj = readObject(path) ?: return
+            val current = try { obj.get("id")?.asString } catch (_: Throwable) { null } ?: return
+            if (current == id) return
+            if (path.fileName.toString() == CLOSED_CAPTIONS_FILE && current !in LEGACY_CAPTION_IDS) return
+            obj.addProperty("id", id)
             Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
         } catch (_: Throwable) {
         }
