@@ -511,10 +511,34 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         return PlayerTeam.formatNameForTeam(info.team, Component.literal(name))
     }
 
-    private fun tabText(editing: String, live: () -> Component?, show: Boolean): Component? {
+    private fun tabText(editing: Component, live: () -> Component?, show: Boolean): Component? {
         if (!show) return null
-        if (previewing) return Component.literal(editing)
+        if (previewing) return editing
         return try { live() } catch (_: Throwable) { null }
+    }
+
+    private var hfHeader: Component? = null
+    private var hfFooter: Component? = null
+    private var hfScreenWidth = -1
+    private var hfWidth = 0
+    private var hfHeight = 0
+
+    private fun measureHeaderFooter(header: Component?, footer: Component?, screenWidth: Int) {
+        if (header === hfHeader && footer === hfFooter && screenWidth == hfScreenWidth) return
+        val font = mc.font
+        var width = 0
+        var height = 0
+        for (text in arrayOf(header, footer)) {
+            if (text == null) continue
+            val lines = font.split(text, screenWidth - 50)
+            for (l in lines) width = maxOf(width, font.width(l))
+            height += lines.size * font.lineHeight + 1
+        }
+        hfHeader = header
+        hfFooter = footer
+        hfScreenWidth = screenWidth
+        hfWidth = width
+        hfHeight = height
     }
 
     private fun size(): Pair<Float, Float>? = measureOnce { measureSize() }
@@ -545,18 +569,11 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var height = rows * line
 
         val overlay = tabOverlay()
-        val header = tabText("Tab List", { overlay?.header }, showHeader)
-        val footer = tabText("VanillaHUD", { overlay?.footer }, showFooter)
-        if (header != null) {
-            val lines = font.split(header, screenWidth - 50)
-            for (l in lines) width = maxOf(width, font.width(l))
-            height += lines.size * line + 1
-        }
-        if (footer != null) {
-            val lines = font.split(footer, screenWidth - 50)
-            for (l in lines) width = maxOf(width, font.width(l))
-            height += lines.size * line + 1
-        }
+        val header = tabText(PREVIEW_HEADER, { overlay?.header }, showHeader)
+        val footer = tabText(PREVIEW_FOOTER, { overlay?.footer }, showFooter)
+        measureHeaderFooter(header, footer, screenWidth)
+        width = maxOf(width, hfWidth)
+        height += hfHeight
 
         return (width + 2).toFloat() to (height + 2).toFloat()
     }
@@ -571,6 +588,12 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         size()?.second ?: naturalHeight
     } catch (_: Throwable) {
         naturalHeight
+    }
+
+    private companion object {
+        // Stable instances so the identity-keyed cache also hits while previewing.
+        val PREVIEW_HEADER: Component = Component.literal("Tab List")
+        val PREVIEW_FOOTER: Component = Component.literal("VanillaHUD")
     }
 }
 
