@@ -1,2 +1,2 @@
-## 3.4.6
-- Fixes older configs not migrating properly
+## 3.4.7
+- Fix caching issues with tab
