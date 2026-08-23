@@ -1,2 +1,2 @@
-## 3.4.7
-- Fix caching issues with tab
+## 3.4.8
+- Fix default positions with OneConfig 1.1.10
