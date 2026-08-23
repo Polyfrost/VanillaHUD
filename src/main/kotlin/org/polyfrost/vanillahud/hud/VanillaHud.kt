@@ -204,8 +204,8 @@ abstract class VanillaHud(
 
     private fun syncRenderedSize() {
         val scale = effectiveScale
-        renderedW = width * scale
-        renderedH = height * scale
+        renderedW = (width * scale).coerceAtLeast(1f)
+        renderedH = (height * scale).coerceAtLeast(1f)
     }
 
     protected val hudAccessor: IGui?

@@ -1,7 +1,7 @@
 package org.polyfrost.vanillahud.util
 
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
-import org.polyfrost.vanillahud.hud.Huds
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.VanillaHud
 import java.nio.file.Files
 import java.nio.file.Path
@@ -33,7 +33,7 @@ object ForceDefaultPosition {
     }
 
     fun tick() {
-        for (hud in Huds.all) {
+        for (hud in HudManager.activeInstances.filterIsInstance<VanillaHud>()) {
             if (!hud.locked) {
                 markCustomized(hud)
                 continue
