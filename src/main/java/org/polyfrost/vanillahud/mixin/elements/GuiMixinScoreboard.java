@@ -45,6 +45,12 @@ public class GuiMixinScoreboard {
     @Unique
     private int vanillahud$titleX0, vanillahud$titleX1, vanillahud$titleY1;
 
+    @Unique
+    private static void vanillahud$fill(Operation<Void> original, GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color) {
+        if ((color >>> 24) == 0) return;
+        original.call(graphics, x0, y0, x1, y1, color);
+    }
+
     //? if <1.21.4 {
     /*@WrapMethod(method = "renderScoreboardSidebar")
     private void vanillahud$scoreboard(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
@@ -102,7 +108,7 @@ public class GuiMixinScoreboard {
             this.vanillahud$titleY1 = y1;
             return;
         }
-        original.call(graphics, x0, y0, x1, y1, hud.getTitleBgColor());
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, hud.getTitleBgColor());
     }
 
     @WrapOperation(
@@ -124,11 +130,11 @@ public class GuiMixinScoreboard {
             int top = hasTitle ? this.vanillahud$scoreboardTop : y0;
             boolean drew = ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath());
             if (hasTitle && (hud.getKeepBackgroundColor() || !drew)) {
-                original.call(graphics, this.vanillahud$titleX0, top, this.vanillahud$titleX1, this.vanillahud$titleY1, hud.getTitleBgColor());
+                vanillahud$fill(original, graphics, this.vanillahud$titleX0, top, this.vanillahud$titleX1, this.vanillahud$titleY1, hud.getTitleBgColor());
             }
             if (drew && !hud.getKeepBackgroundColor()) return;
         }
-        original.call(graphics, x0, y0, x1, y1, hud.getBodyBgColor());
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, hud.getBodyBgColor());
     }
 
     @WrapOperation(
