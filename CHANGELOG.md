@@ -1,2 +1,2 @@
-## 3.4.8
-- Fix default positions with OneConfig 1.1.10
+## 3.4.9
+- Fixed bug where 0% opacity in scoreboard was still visible
