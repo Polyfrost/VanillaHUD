@@ -34,6 +34,9 @@ object HudConfigMigrator {
 
     private val LEGACY_CAPTION_IDS = setOf(SUBTITLES_FILE, "vanillahud/subtitles.json")
 
+    private const val LEGACY_CAPTIONS_CLASS = "org.polyfrost.vanillahud.hud.SubtitlesHud"
+    private const val CLOSED_CAPTIONS_CLASS = "org.polyfrost.vanillahud.hud.ClosedCaptionsHud"
+
     private val POSITION_KEYS = arrayOf("relativeX", "relativeY", "section")
 
     private val gson = GsonBuilder().setPrettyPrinting().create()
@@ -194,9 +197,30 @@ object HudConfigMigrator {
             val target = hudsDir.resolve(CLOSED_CAPTIONS_FILE)
             val old = hudsDir.resolve(SUBTITLES_FILE)
             if (Files.isRegularFile(old)) {
-                if (Files.exists(target)) Files.deleteIfExists(old) else Files.move(old, target)
+                val legacy = readObject(old)
+                if (legacy != null) {
+                    val merged = readObject(target) ?: JsonObject()
+                    for (key in POSITION_KEYS) legacy.remove(key)
+                    for ((key, value) in legacy.entrySet()) merged.add(key, value)
+                    Files.newBufferedWriter(target).use { gson.toJson(merged, it) }
+                }
+                try { Files.deleteIfExists(old) } catch (_: Throwable) {}
             }
-            if (Files.isRegularFile(target)) retagId(target, CLOSED_CAPTIONS_FILE)
+            if (Files.isRegularFile(target)) {
+                retagId(target, CLOSED_CAPTIONS_FILE)
+                retagCaptionClass(target)
+            }
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun retagCaptionClass(path: Path) {
+        try {
+            val obj = readObject(path) ?: return
+            val current = try { obj.get("hudClass")?.asString } catch (_: Throwable) { null }
+            if (current != null && current != LEGACY_CAPTIONS_CLASS) return
+            obj.addProperty("hudClass", CLOSED_CAPTIONS_CLASS)
+            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
         } catch (_: Throwable) {
         }
     }
