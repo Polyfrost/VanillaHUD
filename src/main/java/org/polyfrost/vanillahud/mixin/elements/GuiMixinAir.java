@@ -37,7 +37,10 @@ public class GuiMixinAir {
             cancellable = true
     )
     private void vanillahud$air(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw()) ci.cancel();
+        if (!Huds.INSTANCE.getHotbar().shouldDraw()) {
+            ci.cancel();
+            return;
+        }
 
         HudTransform.beginIcons(guiGraphics, Huds.INSTANCE.getHotbar());
     }

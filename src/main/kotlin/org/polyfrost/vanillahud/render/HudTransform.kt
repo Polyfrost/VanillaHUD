@@ -13,11 +13,27 @@ import kotlin.math.floor
 *///?}
 
 object HudTransform {
-    private var scissored = false
+    private var depth = 0
+
+    private val scissors = ArrayDeque<Boolean>()
 
     /** quarter turns to undo per icon while an icon layer draws */
     private var iconTurns = 0
     private var iconDepth = 0
+
+    private fun push(graphics: GuiGraphicsExtractor) {
+        graphics.pose().pushMatrix()
+        depth++
+    }
+
+    private fun pop(graphics: GuiGraphicsExtractor) {
+        if (depth <= 0) return
+        depth--
+        try {
+            graphics.pose().popMatrix()
+        } catch (_: RuntimeException) {
+        }
+    }
 
     private fun resolve(provider: VanillaHud): VanillaHud? {
         for (h in HudManager.activeInstances) {
@@ -49,7 +65,7 @@ object HudTransform {
         val gx = if (anchored) defX else (hud?.x ?: defX)
         val gy = if (anchored) defY else (hud?.y ?: defY)
 
-        scissored = false
+        var scissored = false
         val tab = (hud ?: provider) as? TabListHud
         if (tab != null && tab.animation && !HudManager.isEditing) {
             val frac = tab.clipFraction()
@@ -61,6 +77,7 @@ object HudTransform {
                 scissored = true
             }
         }
+        scissors.addLast(scissored)
 
         // rotate about the content centre then shift so the rotated bounding box lands on gx gy
         val turns = provider.quarterTurns
@@ -70,8 +87,8 @@ object HudTransform {
         val rotH = provider.height
         val theta = turns * (PI.toFloat() / 2f)
 
+        push(graphics)
         val pose = graphics.pose()
-        pose.pushMatrix()
         //? if <=1.21.5 {
         /*pose.translate(gx, gy, 0f)
         pose.scale(s, s, 1f)
@@ -102,11 +119,12 @@ object HudTransform {
         if (iconDepth++ == 0) iconTurns = provider.quarterTurns
     }
 
-    /** clears the icon scope each frame so a layer that threw cannot leave it stuck on */
     @JvmStatic
-    fun resetIcons() {
+    fun resetFrame() {
         iconDepth = 0
         iconTurns = 0
+        depth = 0
+        scissors.clear()
     }
 
     @JvmStatic
@@ -124,8 +142,8 @@ object HudTransform {
         val theta = -iconTurns * (PI.toFloat() / 2f)
         val cx = x + width / 2f
         val cy = y + height / 2f
+        push(graphics)
         val pose = graphics.pose()
-        pose.pushMatrix()
         //? if <=1.21.5 {
         /*pose.translate(cx, cy, 0f)
         pose.mulPose(Axis.ZP.rotation(theta))
@@ -142,8 +160,8 @@ object HudTransform {
     @JvmStatic
     fun beginUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud, cx: Float, cy: Float) {
         val turns = provider.quarterTurns
+        push(graphics)
         val pose = graphics.pose()
-        pose.pushMatrix()
         if (turns == 0) return
         val theta = -turns * (PI.toFloat() / 2f)
         //? if <=1.21.5 {
@@ -159,15 +177,12 @@ object HudTransform {
 
     @JvmStatic
     fun endUpright(graphics: GuiGraphicsExtractor) {
-        graphics.pose().popMatrix()
+        pop(graphics)
     }
 
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {
-        graphics.pose().popMatrix()
-        if (scissored) {
-            graphics.disableScissor()
-            scissored = false
-        }
+        pop(graphics)
+        if (scissors.removeLastOrNull() == true) graphics.disableScissor()
     }
 }

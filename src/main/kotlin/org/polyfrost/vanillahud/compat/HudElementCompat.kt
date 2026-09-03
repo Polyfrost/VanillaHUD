@@ -70,12 +70,15 @@ object HudElementCompat {
                 val element = hud()
                 if (element.shouldDraw()) {
                     begin(context, element)
-                    //? if >=26 {
-                    original.extractRenderState(context, tickCounter)
-                    //?} else {
-                    /*original.render(context, tickCounter)
-                    *///?}
-                    end(context)
+                    try {
+                        //? if >=26 {
+                        original.extractRenderState(context, tickCounter)
+                        //?} else {
+                        /*original.render(context, tickCounter)
+                        *///?}
+                    } finally {
+                        end(context)
+                    }
                 }
             }
         }
@@ -127,8 +130,11 @@ object HudElementCompat {
                 val element = hud()
                 if (element.shouldDraw()) {
                     begin(context, element)
-                    original.render(context, tickCounter)
-                    end(context)
+                    try {
+                        original.render(context, tickCounter)
+                    } finally {
+                        end(context)
+                    }
                 }
             }
         }

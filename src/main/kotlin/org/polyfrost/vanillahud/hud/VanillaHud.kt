@@ -269,7 +269,7 @@ abstract class VanillaHud(
         @JvmStatic
         fun beginFrame() {
             frame++
-            HudTransform.resetIcons()
+            HudTransform.resetFrame()
         }
 
         @JvmStatic
