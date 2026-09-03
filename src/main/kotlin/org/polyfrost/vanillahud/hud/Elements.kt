@@ -524,7 +524,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     private var hfHeight = 0
 
     private fun measureHeaderFooter(header: Component?, footer: Component?, screenWidth: Int) {
-        if (header === hfHeader && footer === hfFooter && screenWidth == hfScreenWidth) return
+        if (header == hfHeader && footer == hfFooter && screenWidth == hfScreenWidth) return
         val font = mc.font
         var width = 0
         var height = 0
@@ -591,7 +591,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 
     private companion object {
-        // Stable instances so the identity-keyed cache also hits while previewing.
+        // Stable instances so the header/footer measure cache also hits while previewing.
         val PREVIEW_HEADER: Component = Component.literal("Tab List")
         val PREVIEW_FOOTER: Component = Component.literal("VanillaHUD")
     }
