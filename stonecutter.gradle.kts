@@ -2,7 +2,7 @@ plugins {
     id("dev.kikugie.stonecutter")
 }
 
-stonecutter active "26.2" /* [SC] DO NOT EDIT */
+stonecutter active "26.3" /* [SC] DO NOT EDIT */
 
 stonecutter parameters {
     swaps["mod_version"] = "\"${property("mod.version")}\";"
@@ -31,6 +31,11 @@ stonecutter parameters {
 
         string(current.parsed >= "26.2") {
             replace("ContextualBarRenderer", "ContextualBar")
+        }
+
+        string(current.parsed >= "26.3") {
+            replace("com.mojang.blaze3d.pipeline.RenderPipeline", "com.mojang.renderpearl.api.pipeline.RenderPipeline")
+            replace("com/mojang/blaze3d/pipeline/RenderPipeline", "com/mojang/renderpearl/api/pipeline/RenderPipeline")
         }
     }
 }

@@ -13,6 +13,7 @@ val modid: String = sc.properties["mod.id"]
 val modname: String = sc.properties["mod.name"]
 val modversion: String = sc.properties["mod.version"]
 val mcversion: String = sc.current.version
+val mcDependencyVersion: String = sc.properties.getOrNull<String>("deps.minecraft") ?: mcversion
 val versionrange: String = sc.properties["mod.mc_compat"]
 val loaderversion: String = sc.properties["deps.fabric_loader"]
 val oneconfigversion: String = sc.properties["deps.oneconfig"]
@@ -40,6 +41,7 @@ repositories {
 
     mavenCentral()
     google()
+    mavenLocal { content { includeGroupByRegex("""org\.polyfrost.*""") } }
     maven("https://repo.polyfrost.org/releases") { name = "Polyfrost Releases" }
     maven("https://repo.polyfrost.org/snapshots") { name = "Polyfrost Snapshots" }
     maven("https://central.sonatype.com/repository/maven-snapshots") {
@@ -59,12 +61,18 @@ repositories {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:$mcversion")
+    minecraft("com.mojang:minecraft:$mcDependencyVersion")
     loomx.applyMojangMappings()
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiversion")
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion")
+    // This is a library, not a traditional mod. It must not use modImplementation,
+    // or it does not get properly loaded into the test environment on 1.21.x.
+    implementation("net.fabricmc:fabric-language-kotlin:${sc.properties.get<String>("deps.fabric_language_kotlin")}")
+    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion") {
+        // Loom strips the nested Kotlin jars from a remapped copy, so the plain copy above must stay the only candidate
+        exclude(group = "net.fabricmc", module = "fabric-language-kotlin")
+    }
     for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "ui", "utils", "hud")) {
         implementation("org.polyfrost.oneconfig:$module:$oneconfigversion")
     }

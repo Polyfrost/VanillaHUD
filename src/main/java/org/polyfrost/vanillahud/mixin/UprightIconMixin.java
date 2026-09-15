@@ -8,7 +8,7 @@ import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if >=1.21.6 {
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 //?}
 //? if >=1.21.2 <1.21.6 {
 /*import net.minecraft.client.renderer.RenderType;
@@ -19,7 +19,7 @@ import java.util.function.Function;
 public class UprightIconMixin {
     @WrapMethod(method = "blitSprite(" +
             //? if >=1.21.6 {
-            "Lcom/mojang/blaze3d/pipeline/RenderPipeline;" +
+            "Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;" +
             //?} else if >=1.21.2 {
             /*"Ljava/util/function/Function;" +
             *///?}
