@@ -12,3 +12,6 @@ versions/*/mods/
 .idea/
 _legacy_reference/
 .kotlin/
+versions/*/config/
+versions/*/oneconfig/
+versions/*/profiles/

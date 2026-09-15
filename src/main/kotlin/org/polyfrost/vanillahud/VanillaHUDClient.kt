@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.compat.HudElementCompat
 import org.polyfrost.vanillahud.hud.Huds
+import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import org.polyfrost.vanillahud.util.HudConfigMigrator
 
@@ -18,6 +19,7 @@ object VanillaHUDClient : ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
             ForceDefaultPosition.tick()
+            if (HudManager.isEditing) VanillaHud.refreshAll()
         })
 
         HudElementCompat.init()

@@ -278,7 +278,11 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     override val naturalHeight get() = 90f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
-        val s = size() ?: return screenHeight / 2f - naturalHeight / 2f
+        val s = try {
+            size()
+        } catch (_: Throwable) {
+            null
+        } ?: return screenHeight / 2f - naturalHeight / 2f
         return screenHeight / 2f - s.scores * 6f - if (s.title) 10f else 1f
     }
     override val anchorX get() = 1f
@@ -613,6 +617,8 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
 
     // title top edge sits a fixed distance above screen centre and the subtitle only grows downwards
     override val positionAnchorY get() = 0f
+
+    override val sectionAnchorY get() = 0.5f
 
     private class Size(val width: Float, val height: Float)
 

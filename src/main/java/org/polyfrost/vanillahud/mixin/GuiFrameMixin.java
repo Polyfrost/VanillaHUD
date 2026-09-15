@@ -28,6 +28,6 @@ public class GuiFrameMixin {
             //?}
             at = @At("HEAD"))
     private void vanillahud$beginFrame(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
-        VanillaHud.beginFrame();
+        VanillaHud.beginFrame(graphics);
     }
 }

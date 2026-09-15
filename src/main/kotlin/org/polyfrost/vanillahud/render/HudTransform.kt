@@ -49,11 +49,6 @@ object HudTransform {
         val hud = resolve(provider)
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
-        if (!HudManager.isEditing) {
-            HudManager.guiScreenWidth = w.toFloat()
-            HudManager.guiScreenHeight = h.toFloat()
-        }
-        hud?.applyForceDefault()
         hud?.reseedDefaultForScreen()
         val anchored = hud != null && hud.anchorsToVanillaOrigin()
         val s = hud?.effectiveScale ?: 1f
