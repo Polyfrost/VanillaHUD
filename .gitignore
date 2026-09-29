@@ -15,3 +15,6 @@ _legacy_reference/
 versions/*/config/
 versions/*/oneconfig/
 versions/*/profiles/
+.project
+.classpath
+.settings/
