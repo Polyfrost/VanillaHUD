@@ -23,6 +23,9 @@ public interface IGui {
     @Accessor("subtitle")
     Component getSubtitle();
 
+    @Accessor("titleTime")
+    int getTitleTime();
+
     @Accessor("overlayMessageString")
     Component getOverlay();
 

@@ -474,7 +474,9 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     fun isRendering(): Boolean = animOpen || clipFraction() > 0.001f
 
-    override fun shouldShow() = isRendering()
+    // the open state only updates partway through vanilla's render, after the transform has already measured,
+    // so the held key covers the frame the list opens on
+    override fun shouldShow() = previewing || isRendering() || mc.options.keyPlayerList.isDown
 
     fun foreignBounds(): TabListCompat.Bounds? {
         if (previewing) return null
@@ -547,7 +549,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         hfHeight = height
     }
 
-    private fun size(): Pair<Float, Float>? = measureOnce { measureSize() }
+    private fun size(): Pair<Float, Float>? = measureOnce { if (shouldShow()) measureSize() else null }
 
     private fun measureSize(): Pair<Float, Float>? {
         val list = players()
@@ -622,11 +624,11 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
 
     override val sectionAnchorY get() = 0.5f
 
-    override fun shouldShow() = hudAccessor?.title != null
+    override fun shouldShow() = previewing || hudAccessor?.let { it.title != null && it.titleTime > 0 } == true
 
     private class Size(val width: Float, val height: Float)
 
-    private fun size(): Size? = measureOnce { measureSize() }
+    private fun size(): Size? = measureOnce { if (shouldShow()) measureSize() else null }
 
     private fun measureSize(): Size {
         val gui = if (previewing) null else hudAccessor
