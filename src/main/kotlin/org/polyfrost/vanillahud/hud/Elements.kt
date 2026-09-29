@@ -474,6 +474,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     fun isRendering(): Boolean = animOpen || clipFraction() > 0.001f
 
+    override fun shouldShow() = isRendering()
+
     fun foreignBounds(): TabListCompat.Bounds? {
         if (previewing) return null
         return try {
@@ -619,6 +621,8 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     override val positionAnchorY get() = 0f
 
     override val sectionAnchorY get() = 0.5f
+
+    override fun shouldShow() = hudAccessor?.title != null
 
     private class Size(val width: Float, val height: Float)
 
