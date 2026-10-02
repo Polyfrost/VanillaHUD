@@ -29,6 +29,12 @@ public interface IGui {
     @Accessor("overlayMessageString")
     Component getOverlay();
 
+    @Accessor("overlayMessageTime")
+    int getOverlayMessageTime();
+
+    @Accessor("toolHighlightTimer")
+    int getToolHighlightTimer();
+
     @Accessor("lastToolHighlight")
     ItemStack getLastToolHighlight();
 

@@ -17,7 +17,10 @@ import kotlin.math.floor
 object HudTransform {
     private var depth = 0
 
-    private val scissors = ArrayDeque<Boolean>()
+    private val scissors = ArrayDeque<Int>()
+    private const val PUSHED = 0
+    private const val SCISSORED = 1
+    private const val SKIPPED = 2
 
     /** quarter turns to undo per icon while an icon layer draws */
     private var iconTurns = 0
@@ -69,9 +72,13 @@ object HudTransform {
 
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
+        val editing = HudManager.isEditing
+        if (!editing && !provider.hasContent()) {
+            scissors.addLast(SKIPPED)
+            return
+        }
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
-        val editing = HudManager.isEditing
         val turns = provider.quarterTurns
         val natW = provider.unrotatedWidth
         val natH = provider.unrotatedHeight
@@ -124,7 +131,7 @@ object HudTransform {
                 scissored = true
             }
         }
-        scissors.addLast(scissored)
+        scissors.addLast(if (scissored) SCISSORED else PUSHED)
 
         // rotate about the content centre then shift so the rotated bounding box lands on gx gy
         val rotW = if (turns % 2 != 0) natH else natW
@@ -226,7 +233,9 @@ object HudTransform {
 
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {
+        val state = scissors.removeLastOrNull()
+        if (state == SKIPPED) return
         pop(graphics)
-        if (scissors.removeLastOrNull() == true) graphics.disableScissor()
+        if (state == SCISSORED) graphics.disableScissor()
     }
 }

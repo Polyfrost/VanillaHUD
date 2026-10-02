@@ -275,6 +275,8 @@ abstract class VanillaHud(
         return true
     }
 
+    open fun hasContent(): Boolean = true
+
     protected open val exampleText: String? get() = null
 
     /** content size before [quarterTurns] is applied which is what the render transform works in */

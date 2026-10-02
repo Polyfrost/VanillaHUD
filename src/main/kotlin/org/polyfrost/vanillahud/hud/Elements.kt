@@ -33,6 +33,9 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
 
+    override fun hasContent() =
+        previewing || hudAccessor?.let { it.overlay != null && it.overlayMessageTime > 0 } ?: true
+
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
         return measureOnce({ mix(0L, hudAccessor?.overlay) }) { textWidth { hudAccessor?.overlay?.string } }
@@ -67,6 +70,8 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
         if (previewing) return DemoData.demoBossEvents()
         return live
     }
+
+    override fun hasContent() = bossEvents().isNotEmpty()
 
     private class Size(val width: Float, val height: Float)
 
@@ -182,6 +187,10 @@ class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item 
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
 
+    override fun hasContent() = previewing || hudAccessor?.let {
+        !it.lastToolHighlight.isEmpty && (!fadeOut || it.toolHighlightTimer > 0)
+    } ?: true
+
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
         return measureOnce({ mix(0L, hudAccessor?.lastToolHighlight) }) {
@@ -294,6 +303,14 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     }
     override val anchorX get() = 1f
     override val anchorY get() = 0.5f
+
+    override fun hasContent(): Boolean {
+        if (previewing) return true
+        val scoreboard = mc.level?.scoreboard ?: return true
+        val player = mc.player ?: return true
+        return scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) != null ||
+            scoreboard.getPlayersTeam(player.scoreboardName) != null
+    }
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
@@ -492,6 +509,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     // so the held key covers the frame the list opens on
     override fun shouldShow() = previewing || isRendering() || mc.options.keyPlayerList.isDown
 
+    override fun hasContent() = shouldShow()
+
     fun foreignBounds(): TabListCompat.Bounds? {
         if (previewing) return null
         return try {
@@ -661,6 +680,8 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
 
     override fun shouldShow() = previewing || hudAccessor?.let { it.title != null && it.titleTime > 0 } == true
 
+    override fun hasContent() = shouldShow()
+
     private class Size(val width: Float, val height: Float)
 
     private fun size(): Size? = measureOnce({
@@ -700,6 +721,8 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 1f
     override val anchorX get() = 1f
     override val anchorY get() = 0f
+
+    override fun hasContent() = previewing || mc.player?.activeEffects?.isNotEmpty() ?: true
 
     private class Counts(val beneficial: Int, val harmful: Int)
 
