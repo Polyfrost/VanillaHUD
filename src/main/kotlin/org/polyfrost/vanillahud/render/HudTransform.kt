@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
+import java.util.IdentityHashMap
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -44,21 +45,45 @@ object HudTransform {
         return null
     }
 
+    private class Placement {
+        var frame = -1L
+        var hud: VanillaHud? = null
+        var s = 1f
+        var ox = 0f
+        var oy = 0f
+        var gx = 0f
+        var gy = 0f
+    }
+
+    private val placements = IdentityHashMap<VanillaHud, Placement>()
+
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
-        val hud = resolve(provider)
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
-        hud?.reseedDefaultForScreen()
-        val anchored = hud != null && hud.anchorsToVanillaOrigin()
-        val s = hud?.effectiveScale ?: 1f
-        if (anchored && HudManager.isEditing) hud.pinToVanillaOrigin(w, h, s)
-        val ox = provider.vanillaOriginX(w, h)
-        val oy = provider.vanillaOriginY(w, h)
-        val defX = provider.scaledOriginX(w, h, s)
-        val defY = provider.scaledOriginY(w, h, s)
-        val gx = if (anchored) defX else (hud?.x ?: defX)
-        val gy = if (anchored) defY else (hud?.y ?: defY)
+        val p = placements.getOrPut(provider) { Placement() }
+        if (p.frame != VanillaHud.frame || HudManager.isEditing) {
+            val hud = resolve(provider)
+            hud?.reseedDefaultForScreen()
+            val anchored = hud != null && hud.anchorsToVanillaOrigin()
+            val s = hud?.effectiveScale ?: 1f
+            if (anchored && HudManager.isEditing) hud.pinToVanillaOrigin(w, h, s)
+            val defX = provider.scaledOriginX(w, h, s)
+            val defY = provider.scaledOriginY(w, h, s)
+            p.hud = hud
+            p.s = s
+            p.ox = provider.vanillaOriginX(w, h)
+            p.oy = provider.vanillaOriginY(w, h)
+            p.gx = if (anchored) defX else (hud?.x ?: defX)
+            p.gy = if (anchored) defY else (hud?.y ?: defY)
+            p.frame = if (HudManager.isEditing) -1L else VanillaHud.frame
+        }
+        val hud = p.hud
+        val s = p.s
+        val ox = p.ox
+        val oy = p.oy
+        val gx = p.gx
+        val gy = p.gy
 
         var scissored = false
         val tab = (hud ?: provider) as? TabListHud

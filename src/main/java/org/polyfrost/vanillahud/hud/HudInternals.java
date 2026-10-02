@@ -6,6 +6,12 @@ public final class HudInternals {
     private HudInternals() {
     }
 
+    public static int scoreboardRevision;
+
+    public static void bumpScoreboardRevision() {
+        scoreboardRevision++;
+    }
+
     public static boolean systemReposition() {
         return HudManager.systemReposition;
     }

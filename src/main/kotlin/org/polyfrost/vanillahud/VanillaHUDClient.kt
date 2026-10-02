@@ -19,6 +19,7 @@ object VanillaHUDClient : ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
             ForceDefaultPosition.tick()
+            VanillaHud.markRefreshDue()
             if (HudManager.isEditing) VanillaHud.refreshAll()
         })
 

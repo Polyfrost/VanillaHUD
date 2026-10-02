@@ -35,7 +35,8 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
-        return textWidth { hudAccessor?.overlay?.string }
+        return measureOnce({ mix(0L, hudAccessor?.overlay) }) { textWidth { hudAccessor?.overlay?.string } }
+            ?: naturalWidth
     }
 }
 
@@ -69,7 +70,11 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
 
     private class Size(val width: Float, val height: Float)
 
-    private fun size(): Size? = measureOnce { measureSize() }
+    private fun size(): Size? = measureOnce({
+        var h = mix(0L, renderText)
+        for (e in bossEvents()) h = mix(mix(h, e), e.name)
+        h
+    }) { measureSize() }
 
     private fun measureSize(): Size {
         val events = bossEvents()
@@ -179,7 +184,9 @@ class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item 
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
-        return textWidth { hudAccessor?.lastToolHighlight?.takeUnless { s -> s.isEmpty }?.hoverName?.string }
+        return measureOnce({ mix(0L, hudAccessor?.lastToolHighlight) }) {
+            textWidth { hudAccessor?.lastToolHighlight?.takeUnless { s -> s.isEmpty }?.hoverName?.string }
+        } ?: naturalWidth
     }
 }
 
@@ -290,7 +297,14 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
-    private fun size(): Size? = measureOnce { measureSize() }
+    private fun size(): Size? = measureOnce({
+        var h = HudInternals.scoreboardRevision.toLong()
+        h = mix(h, mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR))
+        h = mix(h, scoreboardPoints)
+        h = mix(h, hideRepeatingScores)
+        h = mix(h, scoreboardTitle)
+        mix(h, persistentTitle)
+    }) { measureSize() }
 
     private fun measureSize(): Size? {
         val objective = (if (previewing) DemoData.demoScoreboardObjective()
@@ -549,7 +563,28 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         hfHeight = height
     }
 
-    private fun size(): Pair<Float, Float>? = measureOnce { if (shouldShow()) measureSize() else null }
+    private fun size(): Pair<Float, Float>? = measureOnce({ sizeKey() }) { if (shouldShow()) measureSize() else null }
+
+    private fun sizeKey(): Long {
+        if (!shouldShow()) return Long.MIN_VALUE
+        var h = HudInternals.scoreboardRevision.toLong()
+        val overlay = tabOverlay()
+        h = mix(h, overlay?.header)
+        h = mix(h, overlay?.footer)
+        var n = 0
+        for (p in mc.connection?.listedOnlinePlayers ?: emptyList()) {
+            if (n++ >= playerLimit) break
+            h = mix(mix(h, p), p.tabListDisplayName)
+        }
+        h = mix(h, n)
+        h = mix(h, playerLimit)
+        h = mix(h, showHead)
+        h = mix(h, showPing)
+        h = mix(h, numberPing)
+        h = mix(h, pingType)
+        h = mix(h, showHeader)
+        return mix(h, showFooter)
+    }
 
     private fun measureSize(): Pair<Float, Float>? {
         val list = players()
@@ -628,7 +663,10 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
 
     private class Size(val width: Float, val height: Float)
 
-    private fun size(): Size? = measureOnce { if (shouldShow()) measureSize() else null }
+    private fun size(): Size? = measureOnce({
+        if (!shouldShow()) Long.MIN_VALUE
+        else hudAccessor.let { mix(mix(0L, it?.title), it?.subtitle) }
+    }) { if (shouldShow()) measureSize() else null }
 
     private fun measureSize(): Size {
         val gui = if (previewing) null else hudAccessor
@@ -665,7 +703,7 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 
     private class Counts(val beneficial: Int, val harmful: Int)
 
-    private fun counts(): Counts? = measureOnce { measureCounts() }
+    private fun counts(): Counts? = measureOnce({ frame }) { measureCounts() }
 
     private fun measureCounts(): Counts? {
         val real = mc.player?.activeEffects ?: emptyList()
@@ -737,7 +775,12 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
     private class Size(val width: Float, val height: Float)
 
-    private fun size(): Size? = measureOnce { measureSize() }
+    private fun size(): Size? = measureOnce({
+        var h = 0L
+        val overlay = hudAccessor?.subtitleOverlay as? ISubtitleOverlay
+        for (s in overlay?.audibleSubtitles ?: emptyList()) h = mix(h, (s as? ISubtitle)?.subtitleText)
+        mix(h, overlay?.audibleSubtitles?.size ?: 0)
+    }) { measureSize() }
 
     private fun measureSize(): Size {
         val texts = texts()

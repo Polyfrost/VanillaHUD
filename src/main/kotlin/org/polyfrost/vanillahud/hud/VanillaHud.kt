@@ -158,10 +158,13 @@ abstract class VanillaHud(
         seededHudHeight = -1f
         seededTurns = -1
         seededAnchor = null
+        measuredValid = false
+        measuredFrame = -1L
     }
 
     fun queueForceDefault() {
         forcePending = true
+        refreshDue = true
     }
 
     fun cancelForceDefault() {
@@ -226,6 +229,13 @@ abstract class VanillaHud(
             growthAnchor == seededAnchor
         if (screenSame && !measure) return
         try {
+            val scale = effectiveScale
+            if (screenSame && (width * scale).coerceAtLeast(1f) == seededHudWidth &&
+                (height * scale).coerceAtLeast(1f) == seededHudHeight
+            ) {
+                measureOwed = false
+                return
+            }
             syncRenderedSize()
             if (screenSame && renderedW == seededHudWidth && renderedH == seededHudHeight) return
             val wasDefault = isAtDefaultPosition()
@@ -303,19 +313,36 @@ abstract class VanillaHud(
     protected open fun measuredHeight(): Float = naturalHeight
 
     private var measuredFrame = -1L
-    private var measuredKey = 0
+    private var measuredBase = 0
+    private var measuredStamp = 0L
+    private var measuredEpoch = 0L
+    private var measuredValid = false
     private var measured: Any? = null
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T : Any> measureOnce(measure: () -> T?): T? {
-        val key = measureKey()
-        if (measuredFrame == frame && measuredKey == key) return measured as T?
-        val value = measure()
-        measured = value
+    protected fun <T : Any> measureOnce(key: () -> Long, measure: () -> T?): T? {
+        val base = measureKey()
+        if (measuredFrame == frame && measuredBase == base) return measured as T?
+        val stamp = key()
+        val epoch = System.currentTimeMillis() shr 10
+        if (!measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp ||
+            measuredEpoch != epoch
+        ) {
+            measured = measure()
+            measuredValid = true
+            measuredStamp = stamp
+            measuredEpoch = epoch
+        }
+        measuredBase = base
         measuredFrame = frame
-        measuredKey = key
-        return value
+        return measured as T?
     }
+
+    protected fun mix(h: Long, o: Any?): Long = h * 31 + System.identityHashCode(o)
+
+    protected fun mix(h: Long, v: Int): Long = h * 31 + v
+
+    protected fun mix(h: Long, v: Boolean): Long = h * 31 + if (v) 1 else 0
 
     private fun measureKey(): Int = HudManager.guiScreenWidth.toInt() * 31 + if (previewing) 1 else 0
 
@@ -333,9 +360,19 @@ abstract class VanillaHud(
     companion object {
         private var currentSchema: Int? = null
 
-        private var frame = 0L
+        internal var frame = 0L
+            private set
 
         private var seenRevision = HudManager.revision
+
+        private var refreshDue = true
+        private var refreshedWidth = -1f
+        private var refreshedHeight = -1f
+
+        @JvmStatic
+        fun markRefreshDue() {
+            refreshDue = true
+        }
 
         @JvmStatic
         fun beginFrame(graphics: GuiGraphicsExtractor) {
@@ -344,12 +381,17 @@ abstract class VanillaHud(
                 HudManager.guiScreenWidth = graphics.guiWidth().toFloat()
                 HudManager.guiScreenHeight = graphics.guiHeight().toFloat()
             }
-            refreshAll()
+            if (refreshDue || HudManager.isEditing || HudManager.guiScreenWidth != refreshedWidth ||
+                HudManager.guiScreenHeight != refreshedHeight || HudManager.revision != seenRevision
+            ) refreshAll() else frame++
         }
 
         @JvmStatic
         internal fun refreshAll() {
             frame++
+            refreshDue = false
+            refreshedWidth = HudManager.guiScreenWidth
+            refreshedHeight = HudManager.guiScreenHeight
             val revision = HudManager.revision
             if (revision != seenRevision) {
                 try {

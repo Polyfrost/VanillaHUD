@@ -84,7 +84,7 @@ class HudPositionTest {
     }
 
     @Test
-    fun `a refresh pass retires the measure the pass before it cached`() {
+    fun `later passes reuse the measure until its content key changes`() {
         val hud = MeasureCountHud()
         HudManager.guiScreenWidth = MEASURE_SCREEN_W
         HudManager.guiScreenHeight = MEASURE_SCREEN_H
@@ -95,10 +95,15 @@ class HudPositionTest {
         assertEquals(1f, hud.unrotatedWidth, 0f)
         assertEquals(1, hud.measures, "and a second read inside the same pass has to be the cache")
 
+        VanillaHud.refreshAll()
+        assertEquals(1f, hud.unrotatedWidth, 0f)
+        assertEquals(1, hud.measures, "a new frame with unchanged content must not measure again")
+
         hud.next = 2f
+        hud.key = 1L
         VanillaHud.refreshAll()
         assertEquals(2f, hud.unrotatedWidth, 0f)
-        assertEquals(2, hud.measures, "a pass the client tick drove has to retire the cached measure")
+        assertEquals(2, hud.measures, "a changed content key has to retire the cached measure")
     }
 
     @Test
@@ -165,13 +170,14 @@ class HudPositionTest {
     private class MeasureCountHud : VanillaHud("vanillahud-measure-probe.json", "Measure Probe", Hud.Category.INFO) {
         var measures = 0
         var next = 1f
+        var key = 0L
 
         override val naturalWidth get() = 0f
         override val naturalHeight get() = 0f
         override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = 0f
         override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 0f
 
-        override fun measuredWidth(): Float = measureOnce {
+        override fun measuredWidth(): Float = measureOnce({ key }) {
             measures++
             next
         } ?: 0f

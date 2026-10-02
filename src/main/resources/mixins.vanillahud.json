@@ -11,6 +11,7 @@
         "GuiFrameMixin",
         "UprightIconMixin",
         "PlayerFaceRendererMixin",
+        "ScoreboardRevisionMixin",
         "access.IBossHealthOverlay",
         "access.IGui",
         "access.IPlayerTabOverlay",
