@@ -27,6 +27,7 @@ class HudPositionTest {
     fun rememberScreen() {
         hadScreenW = HudManager.guiScreenWidth
         hadScreenH = HudManager.guiScreenHeight
+        VanillaHud.clock = { 0L }
     }
 
     @AfterEach
@@ -34,6 +35,7 @@ class HudPositionTest {
         HudManager.guiScreenWidth = hadScreenW
         HudManager.guiScreenHeight = hadScreenH
         HudManager.isConfigUiOpen = false
+        VanillaHud.clock = System::currentTimeMillis
     }
 
     @Test

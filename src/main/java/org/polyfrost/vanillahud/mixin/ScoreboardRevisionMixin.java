@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.mixin;
 
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import org.polyfrost.vanillahud.hud.HudInternals;
@@ -30,11 +31,15 @@ public class ScoreboardRevisionMixin {
             require = 12
     )
     private void vanillahud$bump(CallbackInfo ci) {
-        HudInternals.bumpScoreboardRevision();
+        bump();
     }
 
     @Inject(method = "addPlayerToTeam", at = @At("HEAD"))
     private void vanillahud$bumpMembership(String player, PlayerTeam team, CallbackInfoReturnable<Boolean> cir) {
-        HudInternals.bumpScoreboardRevision();
+        bump();
+    }
+
+    private void bump() {
+        if (!((Object) this instanceof ServerScoreboard)) HudInternals.bumpScoreboardRevision();
     }
 }

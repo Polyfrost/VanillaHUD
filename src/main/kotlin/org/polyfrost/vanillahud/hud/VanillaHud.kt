@@ -326,7 +326,7 @@ abstract class VanillaHud(
         val base = measureKey()
         if (measuredFrame == frame && measuredBase == base) return measured as T?
         val stamp = key()
-        val epoch = System.currentTimeMillis() shr 10
+        val epoch = clock() shr 10
         if (!measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp ||
             measuredEpoch != epoch
         ) {
@@ -367,6 +367,8 @@ abstract class VanillaHud(
 
         internal var positionRevision = 0
             private set
+
+        internal var clock: () -> Long = System::currentTimeMillis
 
         private var seenRevision = HudManager.revision
 
