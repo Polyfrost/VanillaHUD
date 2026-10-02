@@ -1,2 +1,2 @@
-## 3.5.2
-- Improved performance by caching HUD sizes and only re-measuring the scoreboard, boss bar, action bar, tab list, title, subtitles and held item name when their content changes, instead of every frame
+## 3.5.3
+- Bump version properly
