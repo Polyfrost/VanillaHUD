@@ -359,6 +359,8 @@ abstract class VanillaHud(
 
     override fun render(mcCtx: GuiGraphicsExtractor) {}
 
+    override fun shouldShow() = false
+
     companion object {
         private var currentSchema: Int? = null
 

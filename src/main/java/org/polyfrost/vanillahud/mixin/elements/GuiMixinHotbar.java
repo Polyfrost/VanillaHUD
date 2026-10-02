@@ -58,7 +58,7 @@ public abstract class GuiMixinHotbar {
     @Invoker("getCameraPlayer")
     abstract Player vanillahud$getCameraPlayer();
 
-    @Unique private static final String VANILLAHUD$SELECTION = "minecraft:hud/hotbar_selection";
+    @Unique private static final Identifier VANILLAHUD$SELECTION = Identifier.withDefaultNamespace("hud/hotbar_selection");
 
     /** half an item icon so the counter rotation can pivot on the icon centre */
     @Unique private static final float VANILLAHUD$ITEM_HALF = 8f;
@@ -116,7 +116,7 @@ public abstract class GuiMixinHotbar {
             *///?}
             Identifier sprite,
             int x, int y, int width, int height, Operation<Void> original) {
-        if (vanillahud$active && sprite.toString().equals(VANILLAHUD$SELECTION)) {
+        if (vanillahud$active && VANILLAHUD$SELECTION.equals(sprite)) {
             x = graphics.guiWidth() / 2 - 92 + Math.round(vanillahud$animSlot * 20f);
         }
         original.call(graphics,
