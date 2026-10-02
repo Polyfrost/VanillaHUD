@@ -264,7 +264,7 @@ abstract class VanillaHud(
     val previewing: Boolean get() = previewing(this)
 
     fun shouldDraw(): Boolean {
-        if (hidden && !HudManager.isEditing) return false
+        if (!HudManager.isEditing && hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false
         if (!HudManager.overrideShowInScreens && !HudManager.isEditing) {
