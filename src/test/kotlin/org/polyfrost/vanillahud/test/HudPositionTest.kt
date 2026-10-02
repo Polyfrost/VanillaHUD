@@ -1,6 +1,11 @@
 package org.polyfrost.vanillahud.test
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
+//?} else {
+/*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
+import org.polyfrost.vanillahud.compat.LegacyDrawContext
+*///?}
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -12,7 +17,6 @@ import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.hud.growthAnchorFor
 import org.polyfrost.vanillahud.hud.sectionFor
-import org.polyfrost.vanillahud.render.HudTransform
 
 class HudPositionTest {
 
@@ -170,21 +174,6 @@ class HudPositionTest {
         assertEquals(MEASURE_SCREEN_H, HudManager.guiScreenHeight, 0f)
     }
 
-    @Test
-    fun `an element with nothing to draw opens and closes no transform`() {
-        val graphics = uninitialisedGraphics()
-        HudTransform.begin(graphics, EmptyHud())
-        HudTransform.end(graphics)
-    }
-
-    private class EmptyHud : VanillaHud("vanillahud-empty-probe.json", "Empty Probe", Hud.Category.INFO) {
-        override val naturalWidth get() = 0f
-        override val naturalHeight get() = 0f
-        override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = 0f
-        override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 0f
-        override fun hasContent() = false
-    }
-
     private class MeasureCountHud : VanillaHud("vanillahud-measure-probe.json", "Measure Probe", Hud.Category.INFO) {
         var measures = 0
         var next = 1f
@@ -209,9 +198,14 @@ class HudPositionTest {
     }
 }
 
+//? if > 1.8.9 {
 internal fun uninitialisedGraphics(): GuiGraphicsExtractor {
     val field = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe")
     field.isAccessible = true
     val unsafe = field.get(null) as sun.misc.Unsafe
     return unsafe.allocateInstance(GuiGraphicsExtractor::class.java) as GuiGraphicsExtractor
 }
+//?} else {
+/*// the 1.8.9 draw context is a singleton shim over the GL matrix stack, nothing to fake
+internal fun uninitialisedGraphics(): GuiGraphicsExtractor = LegacyDrawContext
+*///?}

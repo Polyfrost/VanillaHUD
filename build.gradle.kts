@@ -1,9 +1,12 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import net.ornithemc.ploceus.api.PloceusGradleExtensionApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("dev.kikugie.loom-back-compat")
+    id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT" apply false
+    id("ploceus") version "1.17.4" apply false
     id("org.jetbrains.kotlin.jvm") version "2.4.10"
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
@@ -17,7 +20,17 @@ val mcDependencyVersion: String = sc.properties.getOrNull<String>("deps.minecraf
 val versionrange: String = sc.properties["mod.mc_compat"]
 val loaderversion: String = sc.properties["deps.fabric_loader"]
 val oneconfigversion: String = sc.properties["deps.oneconfig"]
-val fapiversion: String = sc.properties["deps.fabric_api"]
+val fapiversion: String? = sc.properties.getOrNull("deps.fabric_api")
+val isOrnithe = mcversion == "1.8.9"
+
+// Ornithe is a separate toolchain to Fabric proper, so the 1.8.9 node swaps loom out for
+// loom-remap + ploceus instead of the loom-back-compat/Mojmap path the Fabric nodes use
+val ploceus = if (isOrnithe) {
+    pluginManager.apply("net.fabricmc.fabric-loom-remap")
+    pluginManager.apply("ploceus")
+    configurations.configureEach { exclude(group = "org.lwjgl.lwjgl") }
+    extensions.getByType<PloceusGradleExtensionApi>().apply { setIntermediaryGeneration(2) }
+} else null
 
 version = "$modversion+$mcversion"
 base.archivesName = modid
@@ -27,7 +40,7 @@ val requiredJava: JavaVersion = when {
     sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
     sc.current.parsed >= "1.18" -> JavaVersion.VERSION_17
     sc.current.parsed >= "1.17" -> JavaVersion.VERSION_16
-    else -> JavaVersion.VERSION_1_8
+    else -> JavaVersion.VERSION_25
 }
 
 val compatibleVersions: List<String> = sc.properties.rawOrNull("mod", "mc_releases")
@@ -41,12 +54,17 @@ repositories {
 
     mavenCentral()
     google()
+    maven("https://maven.ornithemc.net/releases") { name = "OrnitheMC" }
     mavenLocal { content { includeGroupByRegex("""org\.polyfrost.*""") } }
     maven("https://repo.polyfrost.org/releases") { name = "Polyfrost Releases" }
     maven("https://repo.polyfrost.org/snapshots") { name = "Polyfrost Snapshots" }
     maven("https://central.sonatype.com/repository/maven-snapshots") {
         name = "Sonatype Snapshots"
         content { includeGroup("net.kyori") }
+    }
+    maven("https://maven.cloverclient.com/releases") {
+        name = "CloverClient"
+        content { includeGroup("pl.tomgirl") }
     }
     strictMaven("https://maven.deftu.dev/releases", "Deftu", "dev.deftu")
     strictMaven("https://maven.terraformersmc.com/", "TerraformersMC", "com.terraformersmc")
@@ -62,14 +80,27 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$mcDependencyVersion")
-    loomx.applyMojangMappings()
+    if (isOrnithe) {
+        mappings(ploceus!!.layeredMappings {
+            mappings(
+                "net.ornithemc:feather-gen2:$mcversion+build.${sc.properties.get<String>("deps.feather_build")}:v2"
+            ) {
+                containsUnpick()
+            }
+            mappings(rootProject.file("mappings/feather-overrides.tiny"))
+        })
+        ploceus.dependOsl(sc.properties.get<String>("deps.osl_version"))
+    } else {
+        loomx.applyMojangMappings()
+    }
 
     modImplementation("net.fabricmc:fabric-loader:$loaderversion")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiversion")
+    if (!isOrnithe) modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiversion")
     // This is a library, not a traditional mod. It must not use modImplementation,
     // or it does not get properly loaded into the test environment on 1.21.x.
     implementation("net.fabricmc:fabric-language-kotlin:${sc.properties.get<String>("deps.fabric_language_kotlin")}")
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion") {
+    val loader = if (isOrnithe) "ornithe" else "fabric"
+    modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion") {
         // Loom strips the nested Kotlin jars from a remapped copy, so the plain copy above must stay the only candidate
         exclude(group = "net.fabricmc", module = "fabric-language-kotlin")
     }
@@ -85,6 +116,8 @@ dependencies {
 
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json")
+    // Ornithe's equivalent of an access widener
+    if (isOrnithe) accessWidenerPath = rootProject.file("src/main/resources/vanillahud.classtweaker")
 
     decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1")
@@ -148,7 +181,18 @@ tasks {
 
         inputs.properties(props)
 
-        filesMatching("fabric.mod.json") { expand(props) }
+        filesMatching("fabric.mod.json") {
+            expand(props)
+            // the Fabric nodes have neither a class tweaker nor Fabric API on 1.8.9's side
+            filter { line ->
+                when {
+                    !isOrnithe && "\"accessWidener\"" in line -> ""
+                    isOrnithe && "\"fabric-api\"" in line -> ""
+                    else -> line
+                }
+            }
+        }
+        if (!isOrnithe) exclude("vanillahud.classtweaker")
         filesMatching("mixins.$modid.json") { expand("java" to "JAVA_${requiredJava.majorVersion}") }
     }
 
@@ -199,7 +243,7 @@ publishMods {
     changelog = changelogs
     type = STABLE
 
-    modLoaders.add("fabric")
+    modLoaders.add(if (isOrnithe) "ornithe" else "fabric")
 
     dryRun = modrinthId == null || modrinthToken == null
 
@@ -211,7 +255,7 @@ publishMods {
             minecraftVersions.addAll(compatibleVersions.ifEmpty { listOf(mcversion) })
 
             requires("oneconfig")
-            requires("fabric-api")
+            if (!isOrnithe) requires("fabric-api")
             requires("fabric-language-kotlin")
         }
     }

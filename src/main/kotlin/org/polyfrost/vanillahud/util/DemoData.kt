@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.util
 
+//? if > 1.8.9 {
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.components.LerpingBossEvent
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
@@ -121,3 +122,61 @@ object DemoData {
         )
     )
 }
+//?} else {
+/*import net.minecraft.scoreboard.Scoreboard
+import net.minecraft.scoreboard.ScoreboardObjective
+import net.minecraft.scoreboard.criterion.ScoreboardCriterion
+import net.minecraft.text.LiteralText
+import net.minecraft.text.Text
+
+// 1.8.9 has no subtitles and no HUD status effects, so only the scoreboard and the boss bar
+// have anything to preview. Its scoreboard is addressed by owner name and its display names
+// are legacy formatted strings rather than components.
+object DemoData {
+    private const val YELLOW = "\u00a7e"
+    private const val GREEN = "\u00a7a"
+    private const val RED = "\u00a7c"
+    private const val AQUA = "\u00a7b"
+    private const val GOLD = "\u00a76"
+    private const val LIGHT_PURPLE = "\u00a7d"
+
+    private var scoreboardObjective: ScoreboardObjective? = null
+
+    @JvmStatic
+    fun demoScoreboardObjective(): ScoreboardObjective? {
+        scoreboardObjective?.let { return it }
+        return try {
+            val scoreboard = Scoreboard()
+            val objective = scoreboard.createObjective("vanillahud_demo", ScoreboardCriterion.DUMMY)
+            objective.displayName = YELLOW + "VanillaHUD"
+            putScore(scoreboard, objective, GREEN + "Kills", 7)
+            putScore(scoreboard, objective, RED + "Deaths", 2)
+            putScore(scoreboard, objective, AQUA + "K/D", 3)
+            putScore(scoreboard, objective, GOLD + "Coins", 1337)
+            putScore(scoreboard, objective, LIGHT_PURPLE + "Rank", 1)
+            scoreboardObjective = objective
+            objective
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    private fun putScore(scoreboard: Scoreboard, objective: ScoreboardObjective, name: String, value: Int) {
+        scoreboard.getScore(name, objective).set(value)
+    }
+
+    /** the 1.8.9 boss bar is a single bar of static state, so the preview is just its name */
+    @JvmStatic
+    fun demoBossName(): String = "Boss Bar"
+
+    // stable instances so the measure cache and the renderer agree on the previewed header
+    private val tabHeader: Text = LiteralText("Tab List")
+    private val tabFooter: Text = LiteralText("VanillaHUD")
+
+    @JvmStatic
+    fun demoTabHeader(): Text = tabHeader
+
+    @JvmStatic
+    fun demoTabFooter(): Text = tabFooter
+}
+*///?}

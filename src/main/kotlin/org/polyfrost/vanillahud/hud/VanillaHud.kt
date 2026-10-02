@@ -1,6 +1,10 @@
 package org.polyfrost.vanillahud.hud
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
+//?} else {
+/*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
+*///?}
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
@@ -287,10 +291,14 @@ abstract class VanillaHud(
     override val height: Float get() = if (turned) measuredWidth() else measuredHeight()
 
     private fun syncRenderedSize() {
-        positionRevision++
         val scale = effectiveScale
-        renderedW = (width * scale).coerceAtLeast(1f)
-        renderedH = (height * scale).coerceAtLeast(1f)
+        val w = (width * scale).coerceAtLeast(1f)
+        val h = (height * scale).coerceAtLeast(1f)
+        if (w != renderedW || h != renderedH) {
+            positionRevision++
+            renderedW = w
+            renderedH = h
+        }
         measureOwed = false
     }
 
@@ -359,9 +367,11 @@ abstract class VanillaHud(
         return Pair(scaledOriginX(w, h), scaledOriginY(w, h))
     }
 
+    //? if > 1.8.9 {
     override fun render(mcCtx: GuiGraphicsExtractor) {}
+    //?} else
+    //override fun render() {}
 
-    override fun shouldShow() = false
 
     companion object {
         private var currentSchema: Int? = null
@@ -432,11 +442,17 @@ abstract class VanillaHud(
             }
         }
 
+        /**
+         * Whether [hud] should be drawing demo content instead of whatever the game has.
+         *
+         * The editor and the settings page both want it. The settings page used to be gated on
+         * `hud.locked == false`, but [locked] means "still pinned to the vanilla origin" here, so
+         * it is true for every element until the user drags that one somewhere else: previews
+         * were off on the settings page for exactly the elements nobody had touched yet.
+         */
         @JvmStatic
-        fun previewing(hud: VanillaHud?): Boolean {
-            if (HudManager.isEditorOpen) return true
-            return HudManager.isConfigUiOpen && hud?.locked == false
-        }
+        @Suppress("UNUSED_PARAMETER")
+        fun previewing(hud: VanillaHud?): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen
     }
 }
 

@@ -13,6 +13,7 @@
     },
     "license": "GPL-3.0",
     "environment": "client",
+    "accessWidener": "vanillahud.classtweaker",
     "entrypoints": {
         "client": [
             {
@@ -27,7 +28,7 @@
     "depends": {
         "minecraft": "${minecraft_version_range}",
         "fabricloader": ">=${loader_version}",
-        "oneconfigv1": ">=${oneconfig_version}",
-        "fabric-api": "*"
+        "fabric-api": "*",
+        "oneconfigv1": ">=${oneconfig_version}"
     }
 }

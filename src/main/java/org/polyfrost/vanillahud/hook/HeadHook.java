@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.hook;
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >= 26.1 {
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
@@ -16,3 +17,8 @@ public interface HeadHook {
     void vanillahud$draw(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, int color,
                          boolean hatVisible, boolean flip);
 }
+//?} else {
+/*// nothing implements this on 1.8.9
+public interface HeadHook {
+}
+*///?}

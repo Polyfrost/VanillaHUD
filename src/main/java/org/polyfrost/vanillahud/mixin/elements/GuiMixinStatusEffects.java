@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
+//? if > 1.8.9 {
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if <26 {
@@ -13,14 +14,18 @@ import org.polyfrost.vanillahud.render.HudTransform;
 
 //? if >=26.2 {
 import net.minecraft.client.gui.Hud;
-//?} else {
+//?} elif > 1.8.9 {
 /*import net.minecraft.client.gui.Gui;
+*///?} else {
+/*import net.minecraft.client.gui.GameGui;
 *///?}
 
 //? if >=26.2 {
 @Mixin(Hud.class)
-//?} else {
+//?} elif > 1.8.9 {
 /*@Mixin(Gui.class)
+*///?} else {
+/*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinStatusEffects {
     //? if <26 {
@@ -34,3 +39,12 @@ public class GuiMixinStatusEffects {
     }
     *///?}
 }
+//?} else {
+/*// 1.8.9 has no status effect icons on the HUD
+import net.minecraft.client.gui.GameGui;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(GameGui.class)
+public class GuiMixinStatusEffects {
+}
+*///?}
