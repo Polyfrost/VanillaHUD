@@ -252,7 +252,7 @@ public abstract class PlayerTabOverlayMixin {
         }
         if (hud.getNumberPing()) {
             int ping = info.getLatency();
-            if (hud.getHideFalsePing() && (ping <= 1 || ping >= 999)) {
+            if (hud.hidesPing(ping)) {
                 ci.cancel();
                 return;
             }
@@ -331,13 +331,14 @@ public abstract class PlayerTabOverlayMixin {
 // 0 = header background, 1 = body background, 2 = the per slot widget, 3 = footer background,
 // and the player cap is the literal 80 it clamps the sorted list to.
 //
-// The head toggle, the better hat layer and name clipping hang off locals and draw calls that
-// 1.8.9 shapes differently, so those options do not apply here yet.
+// The head toggle and name clipping hang off locals that 1.8.9 shapes differently, so those
+// options do not apply here yet.
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.gui.overlay.PlayerTabOverlay;
 import net.minecraft.client.network.PlayerInfo;
 import net.minecraft.text.Text;
@@ -435,7 +436,7 @@ public abstract class PlayerTabOverlayMixin {
         if (!hud.getNumberPing()) return;
 
         int ping = info.getPing();
-        if (hud.getHideFalsePing() && (ping <= 1 || ping >= 999)) {
+        if (hud.hidesPing(ping)) {
             ci.cancel();
             return;
         }
@@ -453,6 +454,27 @@ public abstract class PlayerTabOverlayMixin {
             LegacyDrawContext.INSTANCE.pose().popMatrix();
         }
         ci.cancel();
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 0))
+    private void vanillahud$head(int x, int y, float u, float v, int regionWidth, int regionHeight,
+                                 int width, int height, float texWidth, float texHeight,
+                                 Operation<Void> original) {
+        original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
+        if (!Huds.INSTANCE.getTabList().getBetterHatLayer()) return;
+        LegacyDrawContext.INSTANCE.pose().translate(-0.5F, -0.5F);
+        GuiElement.drawTexture(x, y, 40.0F, v, regionWidth, regionHeight, 9, 9, texWidth, texHeight);
+        LegacyDrawContext.INSTANCE.pose().translate(0.5F, 0.5F);
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
+    private void vanillahud$vanillaHatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight,
+                                            int width, int height, float texWidth, float texHeight,
+                                            Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getBetterHatLayer()) return;
+        original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
     }
 }
 *///?}

@@ -30,6 +30,7 @@ import net.minecraft.scoreboard.ScoreboardScore;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.polyfrost.vanillahud.render.ScoreboardBackground;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
 //? if > 1.8.9 {
@@ -212,13 +213,39 @@ public class GuiMixinScoreboard {
     // and draws the title in the last iteration. Read off the bytecode, the calls in there are:
     //   fill   0 = row background, 1 = title background, 2 = the strip between title and rows
     //   draw   0 = entry name,     1 = score points,     2 = title
+    @Unique
+    private boolean vanillahud$drewBackground;
+
     @WrapMethod(method = "renderScoreboardObjective")
     private void vanillahud$scoreboard(ScoreboardObjective objective, Window window, Operation<Void> original) {
-        if (!Huds.INSTANCE.getScoreboard().shouldDraw()) return;
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (!hud.shouldDraw()) return;
 
-        HudTransform.begin(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getScoreboard());
+        HudTransform.begin(LegacyDrawContext.INSTANCE, hud);
+        this.vanillahud$drewBackground = vanillahud$backgroundImage(hud);
         original.call(objective, window);
         HudTransform.end(LegacyDrawContext.INSTANCE);
+    }
+
+    @Unique
+    private static boolean vanillahud$backgroundImage(ScoreboardHud hud) {
+        if (!hud.getHasCustomBackground()) return false;
+        int screenWidth = LegacyDrawContext.INSTANCE.guiWidth();
+        int screenHeight = LegacyDrawContext.INSTANCE.guiHeight();
+        int x0 = (int) hud.vanillaOriginX(screenWidth, screenHeight);
+        int y0 = (int) hud.vanillaOriginY(screenWidth, screenHeight);
+        return ScoreboardBackground.render(
+                LegacyDrawContext.INSTANCE,
+                x0, y0,
+                x0 + (int) hud.getUnrotatedWidth(),
+                y0 + (int) hud.getUnrotatedHeight(),
+                hud.getBackgroundImagePath()
+        );
+    }
+
+    @Unique
+    private boolean vanillahud$solidHidden(ScoreboardHud hud) {
+        return this.vanillahud$drewBackground && !hud.getKeepBackgroundColor();
     }
 
     @Unique
@@ -249,20 +276,26 @@ public class GuiMixinScoreboard {
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GameGui;fill(IIIII)V", ordinal = 0))
     private void vanillahud$rowBackground(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getBodyBgColor());
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (vanillahud$solidHidden(hud)) return;
+        vanillahud$fill(original, x0, y0, x1, y1, hud.getBodyBgColor());
     }
 
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GameGui;fill(IIIII)V", ordinal = 1))
     private void vanillahud$titleBackground(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return;
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getTitleBgColor());
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (!hud.getScoreboardTitle()) return;
+        if (vanillahud$solidHidden(hud)) return;
+        vanillahud$fill(original, x0, y0, x1, y1, hud.getTitleBgColor());
     }
 
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GameGui;fill(IIIII)V", ordinal = 2))
     private void vanillahud$titleGap(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getBodyBgColor());
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        if (vanillahud$solidHidden(hud)) return;
+        vanillahud$fill(original, x0, y0, x1, y1, hud.getBodyBgColor());
     }
 
     // vanilla folds ": <score>" into every row when it sizes the sidebar, so hiding the score

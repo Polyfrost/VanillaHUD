@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
-import java.util.IdentityHashMap
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -52,11 +51,10 @@ object HudTransform {
 
     private val MISSING = Any()
 
-    /** the mixins hand in the registered template, so every lookup walks to the live instance once a frame */
-    private val resolved = IdentityHashMap<VanillaHud, Any>()
+    private val resolved = HashMap<Class<out VanillaHud>, Any>()
 
     private fun resolveCached(provider: VanillaHud): VanillaHud? =
-        resolved.getOrPut(provider) { resolve(provider) ?: MISSING } as? VanillaHud
+        resolved.getOrPut(provider.javaClass) { resolve(provider) ?: MISSING } as? VanillaHud
 
     /**
      * The HUD the options actually live on.
@@ -66,7 +64,9 @@ object HudTransform {
      * settings land on that copy, so anything option shaped has to be read off it rather than off
      * the template, or it reads back as the field default.
      */
-    private fun live(provider: VanillaHud): VanillaHud = resolveCached(provider) ?: provider
+    @JvmStatic
+    @Suppress("UNCHECKED_CAST")
+    fun <T : VanillaHud> live(provider: T): T = (resolveCached(provider) ?: provider) as T
 
     private class Placement {
         var frame = -1L
@@ -78,14 +78,14 @@ object HudTransform {
         var gy = 0f
     }
 
-    private val placements = IdentityHashMap<VanillaHud, Placement>()
+    private val placements = HashMap<Class<out VanillaHud>, Placement>()
 
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
         val src = live(provider)
-        val p = placements.getOrPut(provider) { Placement() }
+        val p = placements.getOrPut(provider.javaClass) { Placement() }
         if (p.frame != VanillaHud.frame || HudManager.isEditing) {
             val hud = resolveCached(provider)
             hud?.reseedDefaultForScreen()

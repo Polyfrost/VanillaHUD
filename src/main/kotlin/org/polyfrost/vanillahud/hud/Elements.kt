@@ -23,6 +23,7 @@ import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.mixin.access.ISubtitle
 import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
+import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
 
@@ -324,6 +325,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     fun showScorePoints(scores: Collection<PlayerScoreEntry>): Boolean {
     //?} else
     //fun showScorePoints(scores: Collection<ScoreboardScore>): Boolean {
+        if (previewing) return scoreboardPoints == 2
         if (hideRepeatingScores && areScoresRepeating(scores)) return false
         return scoreboardPoints == 2 || (scoreboardPoints == 1 && !areScoresConsecutive(scores))
     }
@@ -579,6 +581,11 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     val headerBgArgb: Int get() = headerBgColor.argb
     val bodyBgArgb: Int get() = bodyBgColor.argb
     val footerBgArgb: Int get() = footerBgColor.argb
+
+    fun hidesPing(ping: Int): Boolean {
+        if (previewing) return false
+        return hideFalsePing && (ping <= 1 || ping >= 999)
+    }
 
     fun pingColor(ping: Int): Int = when {
         ping >= 400 -> pingLevelSix
@@ -1012,28 +1019,41 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 //?}
 
 object Huds {
-    val hotbar = HotbarHud()
-    val actionBar = ActionBarHud()
-    val heldItemTooltip = HeldItemTooltipHud()
-    val title = TitleHud()
-    val scoreboard = ScoreboardHud()
-    val tabList = TabListHud()
-    val bossBar = BossBarHud()
+    private val hotbarProvider = HotbarHud()
+    private val actionBarProvider = ActionBarHud()
+    private val heldItemTooltipProvider = HeldItemTooltipHud()
+    private val titleProvider = TitleHud()
+    private val scoreboardProvider = ScoreboardHud()
+    private val tabListProvider = TabListHud()
+    private val bossBarProvider = BossBarHud()
     //? if > 1.8.9 {
-    val statusEffects = StatusEffectsHud()
-    val closedCaptions = ClosedCaptionsHud()
+    private val statusEffectsProvider = StatusEffectsHud()
+    private val closedCaptionsProvider = ClosedCaptionsHud()
+    //?}
+
+    val hotbar: HotbarHud get() = HudTransform.live(hotbarProvider)
+    val actionBar: ActionBarHud get() = HudTransform.live(actionBarProvider)
+    val heldItemTooltip: HeldItemTooltipHud get() = HudTransform.live(heldItemTooltipProvider)
+    val title: TitleHud get() = HudTransform.live(titleProvider)
+    val scoreboard: ScoreboardHud get() = HudTransform.live(scoreboardProvider)
+    val tabList: TabListHud get() = HudTransform.live(tabListProvider)
+    val bossBar: BossBarHud get() = HudTransform.live(bossBarProvider)
+    //? if > 1.8.9 {
+    val statusEffects: StatusEffectsHud get() = HudTransform.live(statusEffectsProvider)
+    val closedCaptions: ClosedCaptionsHud get() = HudTransform.live(closedCaptionsProvider)
     //?}
 
     val all: Array<VanillaHud>
         //? if > 1.8.9 {
         get() = arrayOf(
-            hotbar, actionBar, heldItemTooltip,
-            title, scoreboard, tabList, bossBar, statusEffects, closedCaptions,
+            hotbarProvider, actionBarProvider, heldItemTooltipProvider, titleProvider,
+            scoreboardProvider, tabListProvider, bossBarProvider, statusEffectsProvider,
+            closedCaptionsProvider,
         )
         //?} else {
         /*get() = arrayOf(
-            hotbar, actionBar, heldItemTooltip,
-            title, scoreboard, tabList, bossBar,
+            hotbarProvider, actionBarProvider, heldItemTooltipProvider,
+            titleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
         )
         *///?}
 }
