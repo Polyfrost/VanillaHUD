@@ -96,6 +96,7 @@ abstract class VanillaHud(
     }
 
     private inline fun restoringPosition(keepOnSuccess: Boolean, block: () -> Unit) {
+        positionRevision++
         val curSection = section
         val curAnchor = growthAnchor
         val curX = relativeX
@@ -284,6 +285,7 @@ abstract class VanillaHud(
     override val height: Float get() = if (turned) measuredWidth() else measuredHeight()
 
     private fun syncRenderedSize() {
+        positionRevision++
         val scale = effectiveScale
         renderedW = (width * scale).coerceAtLeast(1f)
         renderedH = (height * scale).coerceAtLeast(1f)
@@ -363,6 +365,9 @@ abstract class VanillaHud(
         internal var frame = 0L
             private set
 
+        internal var positionRevision = 0
+            private set
+
         private var seenRevision = HudManager.revision
 
         private var refreshDue = true
@@ -415,6 +420,7 @@ abstract class VanillaHud(
         }
 
         fun forgetProfileStateAll() {
+            positionRevision++
             for (hud in HudManager.activeInstances) {
                 if (hud is VanillaHud) hud.forgetProfileState()
             }
