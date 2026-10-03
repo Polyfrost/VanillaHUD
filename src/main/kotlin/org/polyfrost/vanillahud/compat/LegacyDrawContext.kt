@@ -49,9 +49,9 @@ object LegacyDrawContext {
  * backed by the legacy GL matrix stack.
  */
 object LegacyPose {
-    fun pushMatrix() = GL11.glPushMatrix()
+    fun pushMatrix() = GlStateManager.pushMatrix()
 
-    fun popMatrix() = GL11.glPopMatrix()
+    fun popMatrix() = GlStateManager.popMatrix()
 
     fun translate(x: Float, y: Float) = GlStateManager.translatef(x, y, 0f)
 
