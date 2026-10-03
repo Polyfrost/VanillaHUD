@@ -452,6 +452,7 @@ abstract class VanillaHud(
          * were off on the settings page for exactly the elements nobody had touched yet.
          */
         @JvmStatic
+        // the per-element call sites in the mixins still hand in their HUD
         @Suppress("UNUSED_PARAMETER")
         fun previewing(hud: VanillaHud?): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen
     }

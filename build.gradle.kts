@@ -81,6 +81,7 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:$mcDependencyVersion")
     if (isOrnithe) {
+        // ploceus is only null on the Fabric nodes
         mappings(ploceus!!.layeredMappings {
             mappings(
                 "net.ornithemc:feather-gen2:$mcversion+build.${sc.properties.get<String>("deps.feather_build")}:v2"
