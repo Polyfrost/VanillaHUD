@@ -17,6 +17,7 @@ import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.hud.growthAnchorFor
 import org.polyfrost.vanillahud.hud.sectionFor
+import org.polyfrost.vanillahud.render.HudTransform
 
 class HudPositionTest {
 
@@ -172,6 +173,21 @@ class HudPositionTest {
 
         assertEquals(MEASURE_SCREEN_W, HudManager.guiScreenWidth, 0f, "the editor's screen width is not the frame's to restate")
         assertEquals(MEASURE_SCREEN_H, HudManager.guiScreenHeight, 0f)
+    }
+
+    @Test
+    fun `an element with nothing to draw opens and closes no transform`() {
+        val graphics = uninitialisedGraphics()
+        HudTransform.begin(graphics, EmptyHud())
+        HudTransform.end(graphics)
+    }
+
+    private class EmptyHud : VanillaHud("vanillahud-empty-probe.json", "Empty Probe", Hud.Category.INFO) {
+        override val naturalWidth get() = 0f
+        override val naturalHeight get() = 0f
+        override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = 0f
+        override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 0f
+        override fun hasContent() = false
     }
 
     private class MeasureCountHud : VanillaHud("vanillahud-measure-probe.json", "Measure Probe", Hud.Category.INFO) {

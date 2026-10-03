@@ -96,7 +96,7 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
         if (previewing) return listOf(DemoData.demoBossName())
         return try {
             val name = BossBar.name
-            if (name.isNullOrEmpty() || BossBar.timer <= 0) emptyList() else listOf(name)
+            if (name == null || BossBar.timer <= 0) emptyList() else listOf(name)
         } catch (_: Throwable) {
             emptyList()
         }
