@@ -1,7 +1,10 @@
 package org.polyfrost.vanillahud.render
 
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHudMarker
+import org.polyfrost.oneconfig.api.hud.v1.hudStateRevision
 import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
@@ -60,6 +63,9 @@ object HudTransform {
         var scoreboardRev = 0
         var huds = 0
         var schema = 0
+        var anchored = false
+        var compatAnchored = false
+        var stateRev = 0
         var hud: VanillaHud? = null
         var s = 1f
         var ox = 0f
@@ -69,6 +75,16 @@ object HudTransform {
     }
 
     private val placements = IdentityHashMap<VanillaHud, Placement>()
+
+    private fun followsCompat(hud: Hud?): Boolean {
+        var parent = hud?.effectiveAnchorParent
+        var depth = 0
+        while (parent != null && depth++ < 16) {
+            if (parent.hasExternalGeometry || parent is LegacyHudMarker && parent !is VanillaHud) return true
+            parent = parent.effectiveAnchorParent
+        }
+        return false
+    }
 
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
@@ -86,7 +102,7 @@ object HudTransform {
         if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns ||
             p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
             p.huds != HudManager.activeInstances.size || p.schema != (p.hud?.posSchema ?: 0) ||
-            p.hud?.effectiveAnchorParent != null
+            (p.compatAnchored || p.stateRev != hudStateRevision && (p.anchored || p.hud?.effectiveAnchorParent != null))
         ) {
             val hud = resolve(provider)
             hud?.reseedDefaultForScreen()
@@ -111,6 +127,9 @@ object HudTransform {
             p.scoreboardRev = HudInternals.scoreboardRevision
             p.huds = HudManager.activeInstances.size
             p.schema = hud?.posSchema ?: 0
+            p.anchored = hud?.effectiveAnchorParent != null
+            p.compatAnchored = followsCompat(hud)
+            p.stateRev = hudStateRevision
         }
         val hud = p.hud
         val s = p.s
