@@ -22,8 +22,7 @@ import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.world.scores.Objective;
 //?} else {
-/*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import net.minecraft.client.gui.GameGui;
+/*import net.minecraft.client.gui.GameGui;
 import net.minecraft.client.render.Window;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardScore;
@@ -216,15 +215,20 @@ public class GuiMixinScoreboard {
     @Unique
     private boolean vanillahud$drewBackground;
 
-    @WrapMethod(method = "renderScoreboardObjective")
-    private void vanillahud$scoreboard(ScoreboardObjective objective, Window window, Operation<Void> original) {
+    // wraps the call so argentum's deferred batch still draws inside the transform
+    @WrapOperation(method = "render", order = 2000, at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GameGui;renderScoreboardObjective(Lnet/minecraft/scoreboard/ScoreboardObjective;Lnet/minecraft/client/render/Window;)V"))
+    private void vanillahud$scoreboard(GameGui gui, ScoreboardObjective objective, Window window, Operation<Void> original) {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         if (!hud.shouldDraw()) return;
 
         HudTransform.begin(LegacyDrawContext.INSTANCE, hud);
         this.vanillahud$drewBackground = vanillahud$backgroundImage(hud);
-        original.call(objective, window);
-        HudTransform.end(LegacyDrawContext.INSTANCE);
+        try {
+            original.call(gui, objective, window);
+        } finally {
+            HudTransform.end(LegacyDrawContext.INSTANCE);
+        }
     }
 
     @Unique
