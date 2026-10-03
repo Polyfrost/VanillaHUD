@@ -116,8 +116,6 @@ dependencies {
 
 loom {
     fabricModJsonPath = rootProject.file("src/main/resources/fabric.mod.json")
-    // Ornithe's equivalent of an access widener
-    if (isOrnithe) accessWidenerPath = rootProject.file("src/main/resources/vanillahud.classtweaker")
 
     decompilerOptions.named("vineflower") {
         options.put("mark-corresponding-synthetics", "1")
@@ -183,16 +181,9 @@ tasks {
 
         filesMatching("fabric.mod.json") {
             expand(props)
-            // the Fabric nodes have neither a class tweaker nor Fabric API on 1.8.9's side
-            filter { line ->
-                when {
-                    !isOrnithe && "\"accessWidener\"" in line -> ""
-                    isOrnithe && "\"fabric-api\"" in line -> ""
-                    else -> line
-                }
-            }
+            // there is no Fabric API on 1.8.9
+            if (isOrnithe) filter { line -> if ("\"fabric-api\"" in line) "" else line }
         }
-        if (!isOrnithe) exclude("vanillahud.classtweaker")
         filesMatching("mixins.$modid.json") { expand("java" to "JAVA_${requiredJava.majorVersion}") }
     }
 

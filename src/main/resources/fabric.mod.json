@@ -13,7 +13,6 @@
     },
     "license": "GPL-3.0",
     "environment": "client",
-    "accessWidener": "vanillahud.classtweaker",
     "entrypoints": {
         "client": [
             {
