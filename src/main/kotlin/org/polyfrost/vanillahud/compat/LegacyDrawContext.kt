@@ -19,21 +19,20 @@ object LegacyDrawContext {
 
     private fun window(): Window = Window(mc)
 
-    fun guiWidth(): Int = window().scaledWidth.toInt()
+    fun guiWidth(): Int = window().width
 
-    fun guiHeight(): Int = window().scaledHeight.toInt()
+    fun guiHeight(): Int = window().height
 
     fun pose(): LegacyPose = LegacyPose
 
     fun enableScissor(x0: Int, y0: Int, x1: Int, y1: Int) {
         val window = window()
         val factor = window.scale.coerceAtLeast(1)
-        val height = window.scaledHeight.toInt()
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
         // glScissor works in physical pixels measured from the bottom left
         GL11.glScissor(
             x0 * factor,
-            (height - y1) * factor,
+            mc.height - y1 * factor,
             ((x1 - x0) * factor).coerceAtLeast(0),
             ((y1 - y0) * factor).coerceAtLeast(0),
         )
