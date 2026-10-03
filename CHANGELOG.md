@@ -1,3 +1,4 @@
-## Unreleased changes
-- Fixed stuff on 1.8.9
-- 1.8.9: Improved HUD rendering performance
+## 3.5.5
+- Fix scaling issues
+- Fix tab animation
+- Improve performance (1.8)
