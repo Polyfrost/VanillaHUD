@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.test
 
+//? if > 1.8.9
 import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
 import org.junit.jupiter.api.Assertions
@@ -19,8 +20,11 @@ class MixinTest {
         @JvmStatic
         @BeforeAll
         fun setupEnvironment() {
+            //? if > 1.8.9 {
             SharedConstants.tryDetectVersion()
             Bootstrap.bootStrap()
+            //?} else
+            //LegacyBootstrap.once()
         }
     }
 

@@ -1,5 +1,7 @@
 package org.polyfrost.vanillahud.mixin;
 
+//? if > 1.8.9 {
+//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >= 26.1 {
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
@@ -47,3 +49,12 @@ public class PlayerFaceRendererMixin implements HeadHook {
         }
     }
 }
+//?} else {
+/*// 1.8.9 has no PlayerFaceRenderer; heads are drawn inline by the tab list
+import net.minecraft.client.gui.GameGui;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(GameGui.class)
+public class PlayerFaceRendererMixin {
+}
+*///?}

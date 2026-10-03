@@ -1,0 +1,17 @@
+tiny	2	0	intermediary	named
+# Feather names 1.8.9 in its own scheme; these entries rename the handful of classes and
+# members the shared source refers to by their modern names, so the 1.8.9 node needs no
+# extra branch for them.
+c	net/minecraft/client/Minecraft	net/minecraft/client/Minecraft
+	f	Lnet/minecraft/unmapped/C_23014920;	f_21497584	font
+	f	Lnet/minecraft/unmapped/C_34399650;	f_26407825	level
+c	net/minecraft/unmapped/C_23014920	net/minecraft/client/gui/Font
+	f	I	f_30706543	lineHeight
+	m	(Ljava/lang/String;)I	m_09235706	width
+	m	(Ljava/lang/String;I)Ljava/util/List;	m_99776868	split
+c	net/minecraft/unmapped/C_22168528	net/minecraft/resources/ResourceLocation
+c	net/minecraft/unmapped/C_40996800	net/minecraft/world/entity/player/Player
+c	net/minecraft/unmapped/C_57778754	net/minecraft/client/player/LocalPlayer
+c	net/minecraft/unmapped/C_88708284	net/minecraft/world/item/ItemStack
+	m	()Ljava/lang/String;	m_33380262	getLegacyHoverName
+c	net/minecraft/unmapped/C_32220415	net/minecraft/server/Bootstrap

@@ -1,2 +1,2 @@
-## 3.5.3
-- Bump version properly
+## 3.5.4
+- Fixed stuff on 1.8.9

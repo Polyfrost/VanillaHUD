@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
+//? if > 1.8.9 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -7,6 +8,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -250,7 +252,7 @@ public abstract class PlayerTabOverlayMixin {
         }
         if (hud.getNumberPing()) {
             int ping = info.getLatency();
-            if (hud.getHideFalsePing() && (ping <= 1 || ping >= 999)) {
+            if (hud.hidesPing(ping)) {
                 ci.cancel();
                 return;
             }
@@ -324,3 +326,155 @@ public abstract class PlayerTabOverlayMixin {
         }
     }
 }
+//?} else {
+/*// 1.8.9 draws the whole list in PlayerTabOverlay.render. Read off the bytecode, its fills are
+// 0 = header background, 1 = body background, 2 = the per slot widget, 3 = footer background,
+// and the player cap is the literal 80 it clamps the sorted list to.
+//
+// The head toggle and name clipping hang off locals that 1.8.9 shapes differently, so those
+// options do not apply here yet.
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiElement;
+import net.minecraft.client.gui.overlay.PlayerTabOverlay;
+import net.minecraft.client.network.PlayerInfo;
+import net.minecraft.text.Text;
+import org.objectweb.asm.Opcodes;
+import org.polyfrost.vanillahud.compat.LegacyDrawContext;
+import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.TabListHud;
+import org.polyfrost.vanillahud.util.DemoData;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(value = PlayerTabOverlay.class, priority = 1100)
+public abstract class PlayerTabOverlayMixin {
+    @Unique
+    private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color) {
+        if ((color >>> 24) == 0) return;
+        original.call(x0, y0, x1, y1, color);
+    }
+
+    @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "intValue=80"))
+    private int vanillahud$playerLimit(int original) {
+        return Huds.INSTANCE.getTabList().getPlayerLimit();
+    }
+
+    @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
+            target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;header:Lnet/minecraft/text/Text;",
+            opcode = Opcodes.GETFIELD))
+    private Text vanillahud$header(Text original) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (!hud.getShowHeader()) return null;
+        return hud.getPreviewing() ? DemoData.demoTabHeader() : original;
+    }
+
+    @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
+            target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;footer:Lnet/minecraft/text/Text;",
+            opcode = Opcodes.GETFIELD))
+    private Text vanillahud$footer(Text original) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (!hud.getShowFooter()) return null;
+        return hud.getPreviewing() ? DemoData.demoTabFooter() : original;
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 0))
+    private void vanillahud$headerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getHeaderBgArgb());
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 1))
+    private void vanillahud$bodyBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getBodyBgArgb());
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 2))
+    private void vanillahud$widget(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getTabWidgetArgb());
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 3))
+    private void vanillahud$footerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb());
+    }
+
+    @Unique
+    private int vanillahud$pingReserve() {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getShowPing() && hud.getNumberPing() && hud.getPingType() == 1) {
+            return Minecraft.getInstance().font.width("999") + 3;
+        }
+        return 0;
+    }
+
+    // vanilla reserves a flat 13 per slot for the ping bars, which a full size number overruns.
+    // It is the only 13 in the method, verified against the bytecode.
+    @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "intValue=13"))
+    private int vanillahud$pingReserveWidth(int original) {
+        int reserve = vanillahud$pingReserve();
+        return reserve > 0 ? Math.max(original, reserve) : original;
+    }
+
+    // 1.8.9 draws the bars from renderPing, so the numeric ping replaces that call outright
+    @Inject(method = "renderPing", at = @At("HEAD"), cancellable = true)
+    private void vanillahud$ping(int slotWidth, int xo, int yo, PlayerInfo info, CallbackInfo ci) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (!hud.getShowPing()) {
+            ci.cancel();
+            return;
+        }
+        if (!hud.getNumberPing()) return;
+
+        int ping = info.getPing();
+        if (hud.hidesPing(ping)) {
+            ci.cancel();
+            return;
+        }
+
+        Font font = Minecraft.getInstance().font;
+        String str = String.valueOf(ping);
+        int width = font.width(str);
+        int color = hud.pingColor(ping);
+        if (hud.getPingType() == 1) {
+            font.drawWithShadow(str, (float) (xo + slotWidth - width - 1), (float) yo, color);
+        } else {
+            LegacyDrawContext.INSTANCE.pose().pushMatrix();
+            LegacyDrawContext.INSTANCE.pose().scale(0.5F, 0.5F);
+            font.drawWithShadow(str, (float) (2 * (xo + slotWidth) - width - 2), (float) (2 * yo + 4), color);
+            LegacyDrawContext.INSTANCE.pose().popMatrix();
+        }
+        ci.cancel();
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 0))
+    private void vanillahud$head(int x, int y, float u, float v, int regionWidth, int regionHeight,
+                                 int width, int height, float texWidth, float texHeight,
+                                 Operation<Void> original) {
+        original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
+        if (!Huds.INSTANCE.getTabList().getBetterHatLayer()) return;
+        LegacyDrawContext.INSTANCE.pose().translate(-0.5F, -0.5F);
+        GuiElement.drawTexture(x, y, 40.0F, v, regionWidth, regionHeight, 9, 9, texWidth, texHeight);
+        LegacyDrawContext.INSTANCE.pose().translate(0.5F, 0.5F);
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
+    private void vanillahud$vanillaHatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight,
+                                            int width, int height, float texWidth, float texHeight,
+                                            Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getBetterHatLayer()) return;
+        original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
+    }
+}
+*///?}

@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.test
 
+//? if > 1.8.9
 import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
 import org.junit.jupiter.api.AfterEach
@@ -42,8 +43,11 @@ class TitlePositionTest {
         @JvmStatic
         @BeforeAll
         fun boot() {
+            //? if > 1.8.9 {
             SharedConstants.tryDetectVersion()
             Bootstrap.bootStrap()
+            //?} else
+            //LegacyBootstrap.once()
             clearStoredTrees()
             HudConfigMigrator.migrate()
             clearStoredTrees()
@@ -2178,16 +2182,19 @@ class TitlePositionTest {
     }
 
     @Test
-    fun `an unlocked hud measures its demo content only while the ui is up`() {
+    fun `a hud measures its demo content while the config ui is up`() {
         val hud = VisibilityHud()
-        hud.locked = false
-        assertFalse(hud.previewing, "an unlocked hud in game has nothing to preview")
+        assertFalse(hud.previewing, "a hud in game has nothing to preview")
 
         HudManager.isConfigUiOpen = true
         try {
             assertTrue(hud.previewing, "and previews once the config ui is up")
             hud.locked = true
-            assertFalse(hud.previewing, "a hud nobody has hold of has nothing to preview either")
+            assertTrue(
+                hud.previewing,
+                "still sitting at its vanilla origin is not a reason to stop previewing: locked is " +
+                    "true for every element until someone drags that one, so gating on it meant no previews at all",
+            )
         } finally {
             HudManager.isConfigUiOpen = false
         }

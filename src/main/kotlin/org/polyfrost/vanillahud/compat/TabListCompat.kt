@@ -1,5 +1,6 @@
 package org.polyfrost.vanillahud.compat
 
+//? if > 1.8.9 {
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.network.chat.Component
 import java.lang.reflect.Field
@@ -161,3 +162,14 @@ object TabListCompat {
         }
     }
 }
+//?} else {
+/*import net.minecraft.text.Text
+
+object TabListCompat {
+    class Bounds(val top: Float, val height: Float)
+
+    // SkyHanni and SkyCubed are the only mods that reshape the tab list and neither exists on
+    // 1.8.9, so there is nothing to measure against here
+    fun bounds(header: Text?, footer: Text?): Bounds? = null
+}
+*///?}
