@@ -1,4 +1,2 @@
-## 3.5.5
-- Fix scaling issues
-- Fix tab animation
-- Improve performance (1.8)
+## 3.5.6
+- Fix scaling issues (again)
