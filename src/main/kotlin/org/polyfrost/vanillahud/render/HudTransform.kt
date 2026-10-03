@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
@@ -16,11 +17,13 @@ import kotlin.math.floor
 /*import com.mojang.math.Axis
 *///?}
 
-
 object HudTransform {
     private var depth = 0
 
-    private val scissors = ArrayDeque<Boolean>()
+    private val scissors = ArrayDeque<Int>()
+    private const val PUSHED = 0
+    private const val SCISSORED = 1
+    private const val SKIPPED = 2
 
     /** quarter turns to undo per icon while an icon layer draws */
     private var iconTurns = 0
@@ -65,11 +68,21 @@ object HudTransform {
      * the template, or it reads back as the field default.
      */
     @JvmStatic
+    // resolve only hands back instances of the provider's own class
     @Suppress("UNCHECKED_CAST")
     fun <T : VanillaHud> live(provider: T): T = (resolveCached(provider) ?: provider) as T
 
     private class Placement {
-        var frame = -1L
+        var valid = false
+        var w = 0
+        var h = 0
+        var natW = 0f
+        var natH = 0f
+        var turns = 0
+        var rev = 0
+        var scoreboardRev = 0
+        var huds = 0
+        var schema = 0
         var hud: VanillaHud? = null
         var s = 1f
         var ox = 0f
@@ -82,16 +95,28 @@ object HudTransform {
 
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
+        val editing = HudManager.isEditing
+        val src = live(provider)
+        if (!editing && !src.hasContent()) {
+            scissors.addLast(SKIPPED)
+            return
+        }
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
-        val src = live(provider)
+        val turns = src.quarterTurns
+        val natW = src.unrotatedWidth
+        val natH = src.unrotatedHeight
         val p = placements.getOrPut(provider.javaClass) { Placement() }
-        if (p.frame != VanillaHud.frame || HudManager.isEditing) {
+        if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns ||
+            p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
+            p.huds != HudManager.activeInstances.size || p.schema != (p.hud?.posSchema ?: 0) ||
+            p.hud?.effectiveAnchorParent != null
+        ) {
             val hud = resolveCached(provider)
             hud?.reseedDefaultForScreen()
             val anchored = hud != null && hud.anchorsToVanillaOrigin()
             val s = hud?.effectiveScale ?: 1f
-            if (anchored && HudManager.isEditing) hud.pinToVanillaOrigin(w, h, s)
+            if (anchored && editing) hud.pinToVanillaOrigin(w, h, s)
             val defX = src.scaledOriginX(w, h, s)
             val defY = src.scaledOriginY(w, h, s)
             p.hud = hud
@@ -100,7 +125,16 @@ object HudTransform {
             p.oy = src.vanillaOriginY(w, h)
             p.gx = if (anchored) defX else (hud?.x ?: defX)
             p.gy = if (anchored) defY else (hud?.y ?: defY)
-            p.frame = if (HudManager.isEditing) -1L else VanillaHud.frame
+            p.valid = !editing
+            p.w = w
+            p.h = h
+            p.natW = natW
+            p.natH = natH
+            p.turns = turns
+            p.rev = VanillaHud.positionRevision
+            p.scoreboardRev = HudInternals.scoreboardRevision
+            p.huds = HudManager.activeInstances.size
+            p.schema = hud?.posSchema ?: 0
         }
         val hud = p.hud
         val s = p.s
@@ -111,7 +145,7 @@ object HudTransform {
 
         var scissored = false
         val tab = src as? TabListHud
-        if (tab != null && tab.animation && !HudManager.isEditing) {
+        if (tab != null && tab.animation && !editing) {
             val frac = tab.clipFraction()
             if (frac < 1f) {
                 val foreign = if (frac > 0f) tab.foreignBounds() else null
@@ -121,14 +155,11 @@ object HudTransform {
                 scissored = true
             }
         }
-        scissors.addLast(scissored)
+        scissors.addLast(if (scissored) SCISSORED else PUSHED)
 
         // rotate about the content centre then shift so the rotated bounding box lands on gx gy
-        val turns = src.quarterTurns
-        val natW = src.unrotatedWidth
-        val natH = src.unrotatedHeight
-        val rotW = src.width
-        val rotH = src.height
+        val rotW = if (turns % 2 != 0) natH else natW
+        val rotH = if (turns % 2 != 0) natW else natH
         val theta = turns * (PI.toFloat() / 2f)
 
         push(graphics)
@@ -227,7 +258,9 @@ object HudTransform {
 
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {
+        val state = scissors.removeLastOrNull()
+        if (state == SKIPPED) return
         pop(graphics)
-        if (scissors.removeLastOrNull() == true) graphics.disableScissor()
+        if (state == SCISSORED) graphics.disableScissor()
     }
 }

@@ -372,6 +372,7 @@ abstract class VanillaHud(
     //?} else
     //override fun render() {}
 
+    override fun shouldShow() = false
 
     companion object {
         private var currentSchema: Int? = null
