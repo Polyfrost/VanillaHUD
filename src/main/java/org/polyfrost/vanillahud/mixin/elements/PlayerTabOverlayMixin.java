@@ -334,13 +334,20 @@ public abstract class PlayerTabOverlayMixin {
 // The head toggle and name clipping hang off locals that 1.8.9 shapes differently, so those
 // options do not apply here yet.
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.gui.overlay.PlayerTabOverlay;
 import net.minecraft.client.network.PlayerInfo;
+import net.minecraft.client.render.platform.GlStateManager;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.text.Text;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
@@ -456,25 +463,38 @@ public abstract class PlayerTabOverlayMixin {
         ci.cancel();
     }
 
-    @WrapOperation(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 0))
-    private void vanillahud$head(int x, int y, float u, float v, int regionWidth, int regionHeight,
-                                 int width, int height, float texWidth, float texHeight,
-                                 Operation<Void> original) {
-        original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
-        if (!Huds.INSTANCE.getTabList().getBetterHatLayer()) return;
-        LegacyDrawContext.INSTANCE.pose().translate(-0.5F, -0.5F);
-        GuiElement.drawTexture(x, y, 40.0F, v, regionWidth, regionHeight, 9, 9, texWidth, texHeight);
-        LegacyDrawContext.INSTANCE.pose().translate(0.5F, 0.5F);
+    @Unique
+    private final List<Runnable> vanillahud$hats = new ArrayList<>();
+
+    // queued until after render so argentum's deferred faces don't cover them
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
+    private void vanillahud$hatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight, int width, int height, float texWidth, float texHeight, Operation<Void> original, @Local PlayerInfo info) {
+        if (!Huds.INSTANCE.getTabList().getBetterHatLayer()) {
+            original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
+            return;
+        }
+        this.vanillahud$hats.add(() -> {
+            Minecraft.getInstance().getTextureManager().bind(info.getSkinTexture());
+            GuiElement.drawTexture(x, y, u, v, regionWidth, regionHeight, 9, 9, texWidth, texHeight);
+        });
     }
 
-    @WrapOperation(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
-    private void vanillahud$vanillaHatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight,
-                                            int width, int height, float texWidth, float texHeight,
-                                            Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().getBetterHatLayer()) return;
-        original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
+    @WrapMethod(method = "render", order = 2000)
+    private void vanillahud$drawHats(int width, Scoreboard scoreboard, ScoreboardObjective objective, Operation<Void> original) {
+        this.vanillahud$hats.clear();
+        try {
+            original.call(width, scoreboard, objective);
+        } finally {
+            if (!this.vanillahud$hats.isEmpty()) {
+                GlStateManager.enableBlend();
+                GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+                GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+                LegacyDrawContext.INSTANCE.pose().translate(-0.5F, -0.5F);
+                this.vanillahud$hats.forEach(Runnable::run);
+                LegacyDrawContext.INSTANCE.pose().translate(0.5F, 0.5F);
+                this.vanillahud$hats.clear();
+            }
+        }
     }
 }
 *///?}
