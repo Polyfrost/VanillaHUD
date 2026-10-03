@@ -69,6 +69,10 @@ public abstract class GuiEditorMixin {
     private boolean vanillahud$forcedItemName;
     @Unique
     private boolean vanillahud$forcedTitle;
+    @Unique
+    private Component vanillahud$savedTitle, vanillahud$savedSubtitle;
+    @Unique
+    private int vanillahud$savedTitleTime, vanillahud$savedFadeIn, vanillahud$savedStay, vanillahud$savedFadeOut;
 
     @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
@@ -146,6 +150,12 @@ public abstract class GuiEditorMixin {
     private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
         if (vanillahud$editing(Huds.INSTANCE.getTitle())) {
             if (!vanillahud$forcedTitle) {
+                vanillahud$savedTitle = title;
+                vanillahud$savedSubtitle = subtitle;
+                vanillahud$savedTitleTime = titleTime;
+                vanillahud$savedFadeIn = titleFadeInTime;
+                vanillahud$savedStay = titleStayTime;
+                vanillahud$savedFadeOut = titleFadeOutTime;
                 title = Component.literal("Title");
                 subtitle = Component.literal("Subtitle");
                 titleFadeInTime = 10;
@@ -155,7 +165,12 @@ public abstract class GuiEditorMixin {
             }
             titleTime = titleFadeOutTime + titleStayTime;
         } else if (vanillahud$forcedTitle) {
-            titleTime = 0;
+            title = vanillahud$savedTitle;
+            subtitle = vanillahud$savedSubtitle;
+            titleTime = vanillahud$savedTitleTime;
+            titleFadeInTime = vanillahud$savedFadeIn;
+            titleStayTime = vanillahud$savedStay;
+            titleFadeOutTime = vanillahud$savedFadeOut;
             vanillahud$forcedTitle = false;
         }
     }
@@ -322,6 +337,10 @@ public abstract class GuiEditorMixin {
     private boolean vanillahud$forcedItemName;
     @Unique
     private boolean vanillahud$forcedTitle;
+    @Unique
+    private String vanillahud$savedTitle, vanillahud$savedSubtitle;
+    @Unique
+    private int vanillahud$savedTitleTime, vanillahud$savedFadeIn, vanillahud$savedStay, vanillahud$savedFadeOut;
 
     @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
@@ -347,6 +366,12 @@ public abstract class GuiEditorMixin {
     private void vanillahud$forceTitle(float tickDelta, CallbackInfo ci) {
         if (vanillahud$editing(Huds.INSTANCE.getTitle())) {
             if (!vanillahud$forcedTitle) {
+                vanillahud$savedTitle = this.title;
+                vanillahud$savedSubtitle = this.subtitle;
+                vanillahud$savedTitleTime = this.titleTime;
+                vanillahud$savedFadeIn = this.titleFadeInTime;
+                vanillahud$savedStay = this.titleDuration;
+                vanillahud$savedFadeOut = this.titleFadeOutTime;
                 this.title = "Title";
                 this.subtitle = "Subtitle";
                 this.titleFadeInTime = 10;
@@ -356,7 +381,12 @@ public abstract class GuiEditorMixin {
             }
             this.titleTime = this.titleFadeOutTime + this.titleDuration;
         } else if (vanillahud$forcedTitle) {
-            this.titleTime = 0;
+            this.title = vanillahud$savedTitle;
+            this.subtitle = vanillahud$savedSubtitle;
+            this.titleTime = vanillahud$savedTitleTime;
+            this.titleFadeInTime = vanillahud$savedFadeIn;
+            this.titleDuration = vanillahud$savedStay;
+            this.titleFadeOutTime = vanillahud$savedFadeOut;
             vanillahud$forcedTitle = false;
         }
     }
