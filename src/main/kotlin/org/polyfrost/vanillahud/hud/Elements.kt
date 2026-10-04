@@ -637,6 +637,13 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         animStart = System.currentTimeMillis()
     }
 
+    fun resetOpen() {
+        animOpen = false
+        animFrom = 0f
+        animTo = 0f
+        animStart = 0L
+    }
+
     fun clipFraction(): Float {
         if (!animation) return if (animOpen) 1f else 0f
         val dur = animationDuration.coerceAtLeast(1f)

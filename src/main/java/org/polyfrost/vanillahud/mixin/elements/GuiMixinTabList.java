@@ -71,7 +71,7 @@ public class GuiMixinTabList {
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (hud.getPreviewing()) {
-            hud.updateOpen(true);
+            hud.resetOpen();
             return true;
         }
         boolean open;
@@ -98,7 +98,7 @@ public class GuiMixinTabList {
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (hud.getPreviewing()) {
-            hud.updateOpen(true);
+            hud.resetOpen();
             return true;
         }
         boolean open;

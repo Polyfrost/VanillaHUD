@@ -22,5 +22,8 @@ public interface ISubtitleOverlay {
     //? if > 1.8.9 {
     @Accessor("audibleSubtitles")
     List<?> getAudibleSubtitles();
+
+    @Accessor("subtitles")
+    List<Object> getSubtitles();
     //?}
 }
