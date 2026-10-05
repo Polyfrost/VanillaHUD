@@ -43,7 +43,7 @@ public class GuiMixinExperienceBar {
     //? if <=1.21.5 && >1.8.9 {
     /*@WrapMethod(method = "renderExperienceBar")
     private void vanillahud$xpBar(GuiGraphicsExtractor graphics, int xpBarX, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
+        if (!Huds.INSTANCE.getHotbar().shouldDraw() || !Huds.INSTANCE.getHotbar().getExperienceBar()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics, xpBarX);
@@ -73,11 +73,19 @@ public class GuiMixinExperienceBar {
         HudTransform.end(LegacyDrawContext.INSTANCE);
     }
 
+    @WrapOperation(method = "renderXpBar", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GameGui;drawTexture(IIIIII)V"))
+    private void vanillahud$xpBarSprite(GameGui self, int x, int y, int u, int v, int width, int height,
+                                        Operation<Void> original) {
+        if (Huds.INSTANCE.getHotbar().getExperienceBar()) original.call(self, x, y, u, v, width, height);
+    }
+
     // the level is one block of text, so each of its draws is counter rotated to stay readable
     @WrapOperation(method = "renderXpBar", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/Font;draw(Ljava/lang/String;III)I"))
     private int vanillahud$xpLevel(Font font, String text, int x, int y, int color,
                                    Operation<Integer> original) {
+        if (!Huds.INSTANCE.getHotbar().getExperienceLevel()) return 0;
         HudTransform.beginUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar(),
                 LegacyDrawContext.INSTANCE.guiWidth() / 2f,
                 LegacyDrawContext.INSTANCE.guiHeight() - HotbarHud.LEVEL_CENTER_Y);

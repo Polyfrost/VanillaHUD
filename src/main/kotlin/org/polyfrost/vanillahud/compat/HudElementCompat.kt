@@ -23,7 +23,9 @@ object HudElementCompat {
         replaceIcons(VanillaHudElements.FOOD_BAR) { Huds.hotbar }
         replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.hotbar }
         replace(VanillaHudElements.INFO_BAR) { Huds.hotbar }
-        replaceUpright(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.hotbar }, ::experienceLevelCenter)
+        replaceUpright(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.hotbar }, ::experienceLevelCenter) {
+            Huds.hotbar.experienceLevel
+        }
         replace(VanillaHudElements.HELD_ITEM_TOOLTIP) { Huds.heldItemTooltip }
         replace(VanillaHudElements.OVERLAY_MESSAGE) { Huds.actionBar }
         replace(VanillaHudElements.TITLE_AND_SUBTITLE) { Huds.title }
@@ -47,6 +49,7 @@ object HudElementCompat {
         id: Identifier,
         hud: () -> VanillaHud,
         center: (GuiGraphicsExtractor) -> Pair<Float, Float>,
+        visible: () -> Boolean,
     ) = wrap(id, hud, { ctx, element ->
         HudTransform.begin(ctx, element)
         val (cx, cy) = center(ctx)
@@ -54,7 +57,7 @@ object HudElementCompat {
     }, { ctx ->
         HudTransform.endUpright(ctx)
         HudTransform.end(ctx)
-    })
+    }, visible)
 
     private fun experienceLevelCenter(context: GuiGraphicsExtractor): Pair<Float, Float> =
         context.guiWidth() / 2f to context.guiHeight() - HotbarHud.LEVEL_CENTER_Y
@@ -64,11 +67,12 @@ object HudElementCompat {
         hud: () -> VanillaHud,
         begin: (GuiGraphicsExtractor, VanillaHud) -> Unit,
         end: (GuiGraphicsExtractor) -> Unit,
+        visible: () -> Boolean = { true },
     ) {
         HudElementRegistry.replaceElement(id) { original ->
             HudElement { context, tickCounter ->
                 val element = hud()
-                if (element.shouldDraw()) {
+                if (element.shouldDraw() && visible()) {
                     begin(context, element)
                     try {
                         //? if >=26 {
@@ -93,7 +97,7 @@ import org.polyfrost.vanillahud.render.HudTransform
 object HudElementCompat {
     fun init() {
         HudLayerRegistrationCallback.EVENT.register { layers ->
-            replaceUpright(layers, IdentifiedLayer.EXPERIENCE_LEVEL) { Huds.hotbar }
+            replaceUpright(layers, IdentifiedLayer.EXPERIENCE_LEVEL, { Huds.hotbar }) { Huds.hotbar.experienceLevel }
             replace(layers, IdentifiedLayer.OVERLAY_MESSAGE) { Huds.actionBar }
             replace(layers, IdentifiedLayer.TITLE_AND_SUBTITLE) { Huds.title }
             replace(layers, IdentifiedLayer.SCOREBOARD) { Huds.scoreboard }
@@ -106,7 +110,12 @@ object HudElementCompat {
     private fun replace(layers: LayeredDrawerWrapper, id: Identifier, hud: () -> VanillaHud) =
         wrap(layers, id, hud, HudTransform::begin, HudTransform::end)
 
-    private fun replaceUpright(layers: LayeredDrawerWrapper, id: Identifier, hud: () -> VanillaHud) =
+    private fun replaceUpright(
+        layers: LayeredDrawerWrapper,
+        id: Identifier,
+        hud: () -> VanillaHud,
+        visible: () -> Boolean,
+    ) =
         wrap(layers, id, hud, { ctx, element ->
             HudTransform.begin(ctx, element)
             HudTransform.beginUpright(
@@ -116,7 +125,7 @@ object HudElementCompat {
         }, { ctx ->
             HudTransform.endUpright(ctx)
             HudTransform.end(ctx)
-        })
+        }, visible)
 
     private fun wrap(
         layers: LayeredDrawerWrapper,
@@ -124,11 +133,12 @@ object HudElementCompat {
         hud: () -> VanillaHud,
         begin: (GuiGraphicsExtractor, VanillaHud) -> Unit,
         end: (GuiGraphicsExtractor) -> Unit,
+        visible: () -> Boolean = { true },
     ) {
         layers.replaceLayer(id) { original ->
             IdentifiedLayer.of(original.id()) { context, tickCounter ->
                 val element = hud()
-                if (element.shouldDraw()) {
+                if (element.shouldDraw() && visible()) {
                     begin(context, element)
                     try {
                         original.render(context, tickCounter)

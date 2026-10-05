@@ -31,7 +31,7 @@ public class GuiMixinExperienceLevel {
     //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "renderExperienceLevel")
     private void vanillahud$xpLevel(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
+        if (!Huds.INSTANCE.getHotbar().shouldDraw() || !Huds.INSTANCE.getHotbar().getExperienceLevel()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
         // the level is one block of text so counter rotating it whole keeps it readable

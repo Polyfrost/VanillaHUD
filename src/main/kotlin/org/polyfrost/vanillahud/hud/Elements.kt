@@ -175,6 +175,20 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
     @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
     var hungerAnimation = true
 
+    @Switch(title = "Render Experience Bar")
+    var experienceBar = true
+
+    @Switch(title = "Render Experience Level")
+    var experienceLevel = true
+
+    //? if >=1.21.6 {
+    @Switch(
+        title = "Overlay Locator Bar",
+        description = "Draw the locator bar's waypoints over the experience / jump bar instead of replacing it."
+    )
+    var overlayLocatorBar = false
+    //?}
+
     override val quarterTurns get() = side.coerceIn(BOTTOM, RIGHT)
 
     override val naturalWidth get() = 182f
