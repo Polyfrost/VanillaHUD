@@ -4,6 +4,7 @@
     "name": "${mod_name}",
     "version": "${mod_version}",
     "description": "Adds in a load of customization to a few native UI elements such as the bossbar, scoreboard, etc.",
+    "icon": "assets/vanillahud/icon.png",
     "authors": [
         "Polyfrost"
     ],
