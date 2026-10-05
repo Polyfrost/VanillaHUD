@@ -327,12 +327,7 @@ public abstract class PlayerTabOverlayMixin {
     }
 }
 //?} else {
-/*// 1.8.9 draws the whole list in PlayerTabOverlay.render. Read off the bytecode, its fills are
-// 0 = header background, 1 = body background, 2 = the per slot widget, 3 = footer background,
-// and the player cap is the literal 80 it clamps the sorted list to.
-//
-// The head toggle and name clipping hang off locals that 1.8.9 shapes differently, so those
-// options do not apply here yet.
+/*
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -415,6 +410,14 @@ public abstract class PlayerTabOverlayMixin {
         vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb());
     }
 
+    @ModifyExpressionValue(method = "render", at = {
+            @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"),
+            @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;isEncrypted()Z")
+    })
+    private boolean vanillahud$showHead(boolean original) {
+        return original && Huds.INSTANCE.getTabList().getShowHead();
+    }
+
     @Unique
     private int vanillahud$pingReserve() {
         TabListHud hud = Huds.INSTANCE.getTabList();
@@ -424,15 +427,12 @@ public abstract class PlayerTabOverlayMixin {
         return 0;
     }
 
-    // vanilla reserves a flat 13 per slot for the ping bars, which a full size number overruns.
-    // It is the only 13 in the method, verified against the bytecode.
     @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "intValue=13"))
     private int vanillahud$pingReserveWidth(int original) {
         int reserve = vanillahud$pingReserve();
         return reserve > 0 ? Math.max(original, reserve) : original;
     }
 
-    // 1.8.9 draws the bars from renderPing, so the numeric ping replaces that call outright
     @Inject(method = "renderPing", at = @At("HEAD"), cancellable = true)
     private void vanillahud$ping(int slotWidth, int xo, int yo, PlayerInfo info, CallbackInfo ci) {
         TabListHud hud = Huds.INSTANCE.getTabList();
@@ -455,18 +455,19 @@ public abstract class PlayerTabOverlayMixin {
         if (hud.getPingType() == 1) {
             font.drawWithShadow(str, (float) (xo + slotWidth - width - 1), (float) yo, color);
         } else {
-            LegacyDrawContext.INSTANCE.pose().pushMatrix();
-            LegacyDrawContext.INSTANCE.pose().scale(0.5F, 0.5F);
-            font.drawWithShadow(str, (float) (2 * (xo + slotWidth) - width - 2), (float) (2 * yo + 4), color);
-            LegacyDrawContext.INSTANCE.pose().popMatrix();
+            float x = (float) (2 * (xo + slotWidth) - width - 2);
+            float y = (float) (2 * yo + 4);
+            this.vanillahud$smallPings.add(() -> font.drawWithShadow(str, x, y, color));
         }
         ci.cancel();
     }
 
     @Unique
+    private final List<Runnable> vanillahud$smallPings = new ArrayList<>();
+
+    @Unique
     private final List<Runnable> vanillahud$hats = new ArrayList<>();
 
-    // queued until after render so argentum's deferred faces don't cover them
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
     private void vanillahud$hatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight, int width, int height, float texWidth, float texHeight, Operation<Void> original, @Local PlayerInfo info) {
         if (!Huds.INSTANCE.getTabList().getBetterHatLayer()) {
@@ -482,9 +483,17 @@ public abstract class PlayerTabOverlayMixin {
     @WrapMethod(method = "render", order = 2000)
     private void vanillahud$drawHats(int width, Scoreboard scoreboard, ScoreboardObjective objective, Operation<Void> original) {
         this.vanillahud$hats.clear();
+        this.vanillahud$smallPings.clear();
         try {
             original.call(width, scoreboard, objective);
         } finally {
+            if (!this.vanillahud$smallPings.isEmpty()) {
+                LegacyDrawContext.INSTANCE.pose().pushMatrix();
+                LegacyDrawContext.INSTANCE.pose().scale(0.5F, 0.5F);
+                this.vanillahud$smallPings.forEach(Runnable::run);
+                LegacyDrawContext.INSTANCE.pose().popMatrix();
+                this.vanillahud$smallPings.clear();
+            }
             if (!this.vanillahud$hats.isEmpty()) {
                 GlStateManager.enableBlend();
                 GlStateManager.blendFuncSeparate(770, 771, 1, 0);

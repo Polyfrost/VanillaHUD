@@ -149,9 +149,7 @@ public class BossHealthOverlayMixin {
         return DemoData.demoBossEvents();
     }
     //?} else {
-    /*// 1.8.9 keeps its single boss bar in GameGui.renderBossBars. Verified against the bytecode:
-    // the empty bar is drawn twice and the health fill is the third blit, and the boss name is
-    // the only shadowed string in the method.
+    /*
     @WrapMethod(method = "renderBossBars")
     private void vanillahud$boss(Operation<Void> original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
@@ -163,7 +161,7 @@ public class BossHealthOverlayMixin {
     }
 
     @WrapOperation(method = "renderBossBars", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GameGui;drawTexture(IIIIII)V", ordinal = 2))
+            target = "Lnet/minecraft/client/gui/GameGui;drawTexture(IIIIII)V"))
     private void vanillahud$bossHealth(GameGui self, int x, int y, int u, int v, int width, int height,
                                        Operation<Void> original) {
         if (!Huds.INSTANCE.getBossBar().getRenderHealth()) return;
