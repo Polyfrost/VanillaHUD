@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 /*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.render.Window;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
+import org.polyfrost.vanillahud.compat.LegacyIconBatch;
 import org.polyfrost.vanillahud.hud.HotbarHud;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
@@ -83,6 +84,7 @@ public class GuiMixinHealth {
 
         HudTransform.beginIcons(LegacyDrawContext.INSTANCE, hud);
         original.call(window);
+        LegacyIconBatch.draw();
         HudTransform.endIcons(LegacyDrawContext.INSTANCE);
     }
 
