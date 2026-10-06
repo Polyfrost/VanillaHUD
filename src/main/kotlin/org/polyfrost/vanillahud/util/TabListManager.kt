@@ -23,6 +23,8 @@ object TabListManager {
     private const val DEV_LIST_URL =
         "https://raw.githubusercontent.com/Polyfrost/VanillaHUD/main/tablist_uuids.json"
 
+    private const val UNKNOWN_NAME = "Player"
+
     private val mc: Minecraft = Minecraft.getInstance()
 
     private val fallbackUuids = listOf(
@@ -72,17 +74,19 @@ object TabListManager {
         //?} else
         //map { PlayerInfo(getProfile(it)) }
 
-    private fun getProfile(uuid: UUID): GameProfile =
-        try {
+    private fun getProfile(uuid: UUID): GameProfile {
+        val profile = try {
             //? if >=1.21.9 {
-            mc.services().sessionService.fetchProfile(uuid, true)?.profile() ?: GameProfile(uuid, null)
+            mc.services().sessionService.fetchProfile(uuid, true)?.profile()
             //?} elif > 1.8.9 {
-            /*mc.minecraftSessionService.fetchProfile(uuid, true)?.profile() ?: GameProfile(uuid, null)
+            /*mc.minecraftSessionService.fetchProfile(uuid, true)?.profile()
             *///?} else {
             /*// 1.8.9's authlib fills the profile in place rather than returning a result
-            mc.sessionService.fillProfileProperties(GameProfile(uuid, null), true) ?: GameProfile(uuid, null)
+            mc.sessionService.fillProfileProperties(GameProfile(uuid, null), true)
             *///?}
         } catch (_: Exception) {
-            GameProfile(uuid, null)
+            null
         }
+        return profile?.takeIf { it.name != null } ?: GameProfile(uuid, UNKNOWN_NAME)
+    }
 }
