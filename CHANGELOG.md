@@ -1,2 +1,3 @@
-## 3.5.8
-- Fixed a crash in the tab list preview when player profiles could not be fetched
+## 3.5.9
+- Properly restore HUD state after preview
+- Fixed rotated hotbar icons not working on 1.8.9 when paired with Argentum
