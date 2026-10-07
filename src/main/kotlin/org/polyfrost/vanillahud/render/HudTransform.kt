@@ -26,7 +26,9 @@ object HudTransform {
     private const val SKIPPED = 2
 
     /** quarter turns to undo per icon while an icon layer draws */
-    private var iconTurns = 0
+    @JvmStatic
+    var iconTurns = 0
+        private set
     private var iconDepth = 0
 
     private fun push(graphics: GuiGraphicsExtractor) {
