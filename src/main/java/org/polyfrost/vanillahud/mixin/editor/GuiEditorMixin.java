@@ -2,6 +2,8 @@ package org.polyfrost.vanillahud.mixin.editor;
 
 //? if > 1.8.9 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 //? if > 1.8.9
 import net.minecraft.client.DeltaTracker;
 //? if > 1.8.9
@@ -26,8 +28,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
 
@@ -64,17 +64,6 @@ public abstract class GuiEditorMixin {
     private int titleFadeOutTime;
 
     @Unique
-    private boolean vanillahud$forcedActionBar;
-    @Unique
-    private boolean vanillahud$forcedItemName;
-    @Unique
-    private boolean vanillahud$forcedTitle;
-    @Unique
-    private Component vanillahud$savedTitle, vanillahud$savedSubtitle;
-    @Unique
-    private int vanillahud$savedTitleTime, vanillahud$savedFadeIn, vanillahud$savedStay, vanillahud$savedFadeOut;
-
-    @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
         return VanillaHud.previewing(hud);
     }
@@ -90,43 +79,49 @@ public abstract class GuiEditorMixin {
         return vanillahud$editing(Huds.INSTANCE.getHotbar()) && original <= 0 ? 20 : original;
     }
 
-    @Inject(
+    @WrapMethod(
             //? if <26 {
-            /*method = "renderOverlayMessage",
+            /*method = "renderOverlayMessage"
             *///?} else {
-             method = "extractOverlayMessage",
+             method = "extractOverlayMessage"
             //?}
-            at = @At("HEAD"))
-    private void vanillahud$forceActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
-        if (vanillahud$editing(Huds.INSTANCE.getActionBar())) {
-            if (!vanillahud$forcedActionBar) {
-                overlayMessageString = Component.literal("Action Bar");
-                animateOverlayMessageColor = false;
-                vanillahud$forcedActionBar = true;
-            }
-            overlayMessageTime = 60;
-        } else if (vanillahud$forcedActionBar) {
-            overlayMessageTime = 0;
-            vanillahud$forcedActionBar = false;
+    )
+    private void vanillahud$forceActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!vanillahud$editing(Huds.INSTANCE.getActionBar())) {
+            original.call(graphics, delta);
+            return;
         }
+        Component message = overlayMessageString;
+        int time = overlayMessageTime;
+        boolean animated = animateOverlayMessageColor;
+        overlayMessageString = Component.literal("Action Bar");
+        overlayMessageTime = 60;
+        animateOverlayMessageColor = false;
+        original.call(graphics, delta);
+        overlayMessageString = message;
+        overlayMessageTime = time;
+        animateOverlayMessageColor = animated;
     }
 
-    @Inject(
+    @WrapMethod(
             //? if <26 {
-            /*method = "renderSelectedItemName",
+            /*method = "renderSelectedItemName"
             *///?} else {
-             method = "extractSelectedItemName",
+             method = "extractSelectedItemName"
             //?}
-            at = @At("HEAD"))
-    private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, CallbackInfo ci) {
-        if (vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip())) {
-            lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
-            vanillahud$forcedItemName = true;
-            toolHighlightTimer = 100;
-        } else if (vanillahud$forcedItemName) {
-            toolHighlightTimer = 0;
-            vanillahud$forcedItemName = false;
+    )
+    private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, Operation<Void> original) {
+        if (!vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip())) {
+            original.call(graphics);
+            return;
         }
+        ItemStack item = lastToolHighlight;
+        int timer = toolHighlightTimer;
+        lastToolHighlight = new ItemStack(Items.DIAMOND_SWORD);
+        toolHighlightTimer = 100;
+        original.call(graphics);
+        lastToolHighlight = item;
+        toolHighlightTimer = timer;
     }
 
     @ModifyExpressionValue(
@@ -140,39 +135,33 @@ public abstract class GuiEditorMixin {
         return vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip()) || original;
     }
 
-    @Inject(
+    @WrapMethod(
             //? if <26 {
-            /*method = "renderTitle",
+            /*method = "renderTitle"
             *///?} else {
-             method = "extractTitle",
+             method = "extractTitle"
             //?}
-            at = @At("HEAD"))
-    private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
-        if (vanillahud$editing(Huds.INSTANCE.getTitle())) {
-            if (!vanillahud$forcedTitle) {
-                vanillahud$savedTitle = title;
-                vanillahud$savedSubtitle = subtitle;
-                vanillahud$savedTitleTime = titleTime;
-                vanillahud$savedFadeIn = titleFadeInTime;
-                vanillahud$savedStay = titleStayTime;
-                vanillahud$savedFadeOut = titleFadeOutTime;
-                title = Component.literal("Title");
-                subtitle = Component.literal("Subtitle");
-                titleFadeInTime = 10;
-                titleStayTime = 70;
-                titleFadeOutTime = 20;
-                vanillahud$forcedTitle = true;
-            }
-            titleTime = titleFadeOutTime + titleStayTime;
-        } else if (vanillahud$forcedTitle) {
-            title = vanillahud$savedTitle;
-            subtitle = vanillahud$savedSubtitle;
-            titleTime = vanillahud$savedTitleTime;
-            titleFadeInTime = vanillahud$savedFadeIn;
-            titleStayTime = vanillahud$savedStay;
-            titleFadeOutTime = vanillahud$savedFadeOut;
-            vanillahud$forcedTitle = false;
+    )
+    private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
+        if (!vanillahud$editing(Huds.INSTANCE.getTitle())) {
+            original.call(graphics, delta);
+            return;
         }
+        Component realTitle = title, realSubtitle = subtitle;
+        int time = titleTime, fadeIn = titleFadeInTime, stay = titleStayTime, fadeOut = titleFadeOutTime;
+        title = Component.literal("Title");
+        subtitle = Component.literal("Subtitle");
+        titleFadeInTime = 10;
+        titleStayTime = 70;
+        titleFadeOutTime = 20;
+        titleTime = titleFadeOutTime + titleStayTime;
+        original.call(graphics, delta);
+        title = realTitle;
+        subtitle = realSubtitle;
+        titleTime = time;
+        titleFadeInTime = fadeIn;
+        titleStayTime = stay;
+        titleFadeOutTime = fadeOut;
     }
 
     @ModifyExpressionValue(
@@ -293,8 +282,8 @@ public abstract class GuiEditorMixin {
 }
 //?} else {
 /*// 1.8.9 has no extract pass: the action bar and the title are drawn inline in GameGui.render
-// and the rest hang off sub methods, so the demo state is pushed in at the head of the method
-// that draws each element and the expressions that gate it are forced open. Every target below
+// and the rest hang off sub methods, so the demo state is swapped in around the method that
+// draws each element and the expressions that gate it are forced open. Every target below
 // was read off the 1.8.9 bytecode.
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
@@ -313,8 +302,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameGui.class)
 public abstract class GuiEditorMixin {
@@ -332,62 +319,45 @@ public abstract class GuiEditorMixin {
     @Shadow private int titleFadeOutTime;
 
     @Unique
-    private boolean vanillahud$forcedActionBar;
-    @Unique
-    private boolean vanillahud$forcedItemName;
-    @Unique
-    private boolean vanillahud$forcedTitle;
-    @Unique
-    private String vanillahud$savedTitle, vanillahud$savedSubtitle;
-    @Unique
-    private int vanillahud$savedTitleTime, vanillahud$savedFadeIn, vanillahud$savedStay, vanillahud$savedFadeOut;
-
-    @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
         return VanillaHud.previewing(hud);
     }
 
-    @Inject(method = "render", at = @At("HEAD"))
-    private void vanillahud$forceActionBar(float tickDelta, CallbackInfo ci) {
-        if (vanillahud$editing(Huds.INSTANCE.getActionBar())) {
-            if (!vanillahud$forcedActionBar) {
-                this.overlayMessage = "Action Bar";
-                this.overlayMessageTinted = false;
-                vanillahud$forcedActionBar = true;
-            }
+    @WrapMethod(method = "render")
+    private void vanillahud$forceActionBarAndTitle(float tickDelta, Operation<Void> original) {
+        boolean actionBar = vanillahud$editing(Huds.INSTANCE.getActionBar());
+        boolean titles = vanillahud$editing(Huds.INSTANCE.getTitle());
+        String message = this.overlayMessage;
+        int messageTime = this.overlayMessageCooldown;
+        boolean tinted = this.overlayMessageTinted;
+        String realTitle = this.title, realSubtitle = this.subtitle;
+        int time = this.titleTime, fadeIn = this.titleFadeInTime, stay = this.titleDuration, fadeOut = this.titleFadeOutTime;
+        if (actionBar) {
+            this.overlayMessage = "Action Bar";
             this.overlayMessageCooldown = 60;
-        } else if (vanillahud$forcedActionBar) {
-            this.overlayMessageCooldown = 0;
-            vanillahud$forcedActionBar = false;
+            this.overlayMessageTinted = false;
         }
-    }
-
-    @Inject(method = "render", at = @At("HEAD"))
-    private void vanillahud$forceTitle(float tickDelta, CallbackInfo ci) {
-        if (vanillahud$editing(Huds.INSTANCE.getTitle())) {
-            if (!vanillahud$forcedTitle) {
-                vanillahud$savedTitle = this.title;
-                vanillahud$savedSubtitle = this.subtitle;
-                vanillahud$savedTitleTime = this.titleTime;
-                vanillahud$savedFadeIn = this.titleFadeInTime;
-                vanillahud$savedStay = this.titleDuration;
-                vanillahud$savedFadeOut = this.titleFadeOutTime;
-                this.title = "Title";
-                this.subtitle = "Subtitle";
-                this.titleFadeInTime = 10;
-                this.titleDuration = 70;
-                this.titleFadeOutTime = 20;
-                vanillahud$forcedTitle = true;
-            }
+        if (titles) {
+            this.title = "Title";
+            this.subtitle = "Subtitle";
+            this.titleFadeInTime = 10;
+            this.titleDuration = 70;
+            this.titleFadeOutTime = 20;
             this.titleTime = this.titleFadeOutTime + this.titleDuration;
-        } else if (vanillahud$forcedTitle) {
-            this.title = vanillahud$savedTitle;
-            this.subtitle = vanillahud$savedSubtitle;
-            this.titleTime = vanillahud$savedTitleTime;
-            this.titleFadeInTime = vanillahud$savedFadeIn;
-            this.titleDuration = vanillahud$savedStay;
-            this.titleFadeOutTime = vanillahud$savedFadeOut;
-            vanillahud$forcedTitle = false;
+        }
+        original.call(tickDelta);
+        if (actionBar) {
+            this.overlayMessage = message;
+            this.overlayMessageCooldown = messageTime;
+            this.overlayMessageTinted = tinted;
+        }
+        if (titles) {
+            this.title = realTitle;
+            this.subtitle = realSubtitle;
+            this.titleTime = time;
+            this.titleFadeInTime = fadeIn;
+            this.titleDuration = stay;
+            this.titleFadeOutTime = fadeOut;
         }
     }
 
@@ -398,16 +368,19 @@ public abstract class GuiEditorMixin {
         return vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip()) || original;
     }
 
-    @Inject(method = "renderSelectedItemName", at = @At("HEAD"))
-    private void vanillahud$forceItemName(Window window, CallbackInfo ci) {
-        if (vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip())) {
-            this.selectedItem = new ItemStack(Items.DIAMOND_SWORD);
-            this.itemSelectedTimer = 100;
-            vanillahud$forcedItemName = true;
-        } else if (vanillahud$forcedItemName) {
-            this.itemSelectedTimer = 0;
-            vanillahud$forcedItemName = false;
+    @WrapMethod(method = "renderSelectedItemName")
+    private void vanillahud$forceItemName(Window window, Operation<Void> original) {
+        if (!vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip())) {
+            original.call(window);
+            return;
         }
+        ItemStack item = this.selectedItem;
+        int timer = this.itemSelectedTimer;
+        this.selectedItem = new ItemStack(Items.DIAMOND_SWORD);
+        this.itemSelectedTimer = 100;
+        original.call(window);
+        this.selectedItem = item;
+        this.itemSelectedTimer = timer;
     }
 
     // vanilla drops the name by 14 when the status bars are hidden, so the preview keeps the
