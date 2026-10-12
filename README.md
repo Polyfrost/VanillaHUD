@@ -3,34 +3,30 @@
 [![Modrinth downloads](https://img.shields.io/modrinth/dt/pWXJaKrX?style=flat&logo=modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/mod/vanillahud)
 [![CurseForge downloads](https://img.shields.io/curseforge/dt/1147254?style=flat&logo=curseforge&label=CurseForge&color=f16436)](https://www.curseforge.com/minecraft/mc-mods/vanillahud)
 
-VanillaHUD turns the parts of Minecraft's own HUD into elements you can move, scale and hide. It covers the hotbar, action bar, held item tooltip, title, scoreboard, tab list and boss bar, and each one has extra options.
-
-## Features
-
-Every element starts in its vanilla position. Open the OneConfig HUD editor to drag it somewhere else, change its scale or hide it.
+VanillaHUD turns the parts of Minecraft's own HUD into elements you can move, scale and hide. It covers the hotbar, action bar, held item tooltip, title, scoreboard, tab list and boss bar.
 
 ### Hotbar
 
 The hotbar moves together with the health, hunger, armor, air, mount health and experience displays.
 
-- Dock it to the bottom, left, top or right edge of the screen. Left and right turn it a quarter turn.
-- Slide the selected slot highlight between slots. This is off by default.
-- Turn off the health bar animation on damage and healing, and the hunger bar shake.
-- Always show hardcore hearts, or never show them.
-- Hide the experience bar or the experience level.
-- On Minecraft 1.21.8 and newer, draw the locator bar's waypoints over the experience bar. Vanilla replaces the experience bar with them. This is off by default.
+Neat features:
+- Animate the selected slot highlight between slots!
+- Turn off the health bar animation on damage and healing, and the hunger bar shake (replicates 1.7)
+- Always show hardcore hearts!
+- Hide the experience bar or the experience level
+- Draw the locator bar's waypoints over the experience bar
 
 ### Action bar
 
-- Turn off the rainbow color that the "Now Playing" text uses when a jukebox starts.
+- Turn off the rainbow color that the "Now Playing" text uses when a jukebox starts
 
 ### Held item tooltip
 
-- Keep the item name on screen all the time, or make it disappear without a fade.
+- Keep the item name on screen all the time, or make it disappear without a fade
 
 ### Title and subtitle
 
-- "Auto Scale" shrinks a title that is wider than the screen. It is off by default.
+- "Auto Scale" to shrink titles that go out of window bounds
 
 ### Scoreboard
 
@@ -76,11 +72,3 @@ VanillaHUD needs [OneConfig](https://modrinth.com/mod/oneconfig) and Fabric Lang
 
 - Report bugs and ask questions on the [Polyfrost Discord](https://polyfrost.org/discord).
 - Check [Polyfrost Status](https://status.polyfrost.org/) if a Polyfrost service is down.
-
-## Building
-
-```sh
-./gradlew ":26.3:build"
-```
-
-Replace `26.3` with any supported Minecraft version. The build needs JDK 21 and JDK 25 installed.
