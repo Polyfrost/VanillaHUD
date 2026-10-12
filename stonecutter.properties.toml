@@ -12,6 +12,7 @@ deps.devauth = "1.2.2"
 loomx.loom_version = "1.17-SNAPSHOT"
 
 publish.modrinth = "pWXJaKrX"
+publish.curseforge = "1147254"
 
 ["1.8.9"]
 mod.mc_compat = "1.8.9"
