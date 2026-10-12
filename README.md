@@ -30,41 +30,42 @@ Neat features:
 
 ### Scoreboard
 
-- Choose when the red score numbers show. The default hides them only when they are consecutive numbers, so a server that uses them for real values keeps them. You can also always hide or always show them.
-- Hide the numbers when every line has the same score. This is on by default.
-- Change the color of the score numbers.
-- Hide the scoreboard title, or keep it on screen when there are no lines.
-- Change the background colors of the title and the body.
-- Use a PNG image as the scoreboard background.
-- Turn the text shadow on.
+- Hide the red score numbers (always, or only when they're just consecutive numbers)
+- Hide the numbers when every line has the same score
+- Change the color of the score numbers
+- Hide the scoreboard title, or keep it on screen when there are no lines
+- Custom background colors for the title and the body
+- Use a PNG image as the scoreboard background
+- Text shadow
 
 ### Tab list
 
-- Slide the tab list open and closed. The animation takes 400 ms by default and you can set it between 50 and 1000 ms.
-- Hold the key to show the tab list, or switch to toggle mode.
-- Limit the list to between 10 and 120 players. The default is 80.
-- Show ping as a number, colored by six ping ranges. You pick the color of each range.
-- Hide ping values of 1 or lower and 999 or higher, which some servers send in place of the real ping.
-- Hide the header, the footer, the player heads or the ping.
-- Put yourself at the top of the list. This is off by default.
-- Change the background colors of the header, body, footer and player rows.
-- Turn the text shadow off.
+- Animate the tab list opening and closing
+- Hold or toggle mode for the tab key
+- Limit how many players are shown
+- Show ping as a colored number (you pick the color for each range)
+- Hide the fake ping values some servers send
+- Hide the header, the footer, the player heads or the ping
+- Put yourself at the top of the list
+- Custom background colors for the header, body, footer and player rows
+- Turn off the text shadow
 
 ### Boss bar
 
-- Hide the boss name or the health bar.
+- Hide the boss name or the health bar
 
 ### Status effects and closed captions
 
-These two elements exist on the Fabric versions only.
+These two only exist on the Fabric versions.
 
-- Move, scale or hide the status effect icons.
-- Move, scale or hide the closed captions, and change their text color, background color and text shadow.
+- Move, scale or hide the status effect icons
+- Move, scale or hide the closed captions
+- Custom text color, background color and text shadow for the captions
 
 ## Supported versions
 
 - Minecraft 1.8.9 on Ornithe.
-- Minecraft 1.21.1, 1.21.4, 1.21.5, 1.21.8, 1.21.10, 1.21.11, 26.1, 26.2 and 26.3 on Fabric.
+- Minecraft 1.21.1-26.3 on Fabric.
 
 VanillaHUD needs [OneConfig](https://modrinth.com/mod/oneconfig) and Fabric Language Kotlin. The Fabric builds also need Fabric API.
 
