@@ -5,6 +5,8 @@
 
 VanillaHUD turns the parts of Minecraft's own HUD into elements you can move, scale and hide. It covers the hotbar, action bar, held item tooltip, title, scoreboard, tab list and boss bar.
 
+![HUD editor](.github/images/hud-editor.gif)
+
 ### Hotbar
 
 The hotbar moves together with the health, hunger, armor, air, mount health and experience displays.
@@ -15,6 +17,8 @@ Neat features:
 - Always show hardcore hearts!
 - Hide the experience bar or the experience level
 - Draw the locator bar's waypoints over the experience bar
+
+![Hotbar animation](.github/images/hotbar.gif)
 
 ### Action bar
 
@@ -38,6 +42,8 @@ Neat features:
 - Use a PNG image as the scoreboard background
 - Text shadow
 
+![Scoreboard options](.github/images/scoreboard.gif)
+
 ### Tab list
 
 - Animate the tab list opening and closing
@@ -49,6 +55,8 @@ Neat features:
 - Put yourself at the top of the list
 - Custom background colors for the header, body, footer and player rows
 - Turn off the text shadow
+
+![Tab list](.github/images/tab-list.gif)
 
 ### Boss bar
 
