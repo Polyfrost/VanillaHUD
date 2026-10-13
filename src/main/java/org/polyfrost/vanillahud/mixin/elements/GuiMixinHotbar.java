@@ -17,13 +17,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 
-//? if >=1.21.6 {
+//? if >=26 {
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 //?}
-//? if >=1.21.2 <1.21.6 {
-/*import net.minecraft.client.renderer.RenderType;
-import java.util.function.Function;
-*///?}
 
 import net.minecraft.resources.Identifier;
 
@@ -87,7 +83,7 @@ public abstract class GuiMixinHotbar {
         if (player == null) {
             selected = 0;
         } else {
-            //? if >=1.21.5 {
+            //? if >=26 {
             selected = player.getInventory().getSelectedSlot();
             //?} else {
             /*selected = player.getInventory().selected;
@@ -113,27 +109,23 @@ public abstract class GuiMixinHotbar {
             *///?} else {
             method = "extractItemHotbar",
             //?}
-            //? if >=1.21.6 {
+            //? if >=26 {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V")
-            //?} else if >=1.21.2 {
-            /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/Identifier;IIII)V")
-            *///?} else {
+            //?} else {
             /*at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lnet/minecraft/resources/Identifier;IIII)V")
             *///?}
     )
     private void vanillahud$blit(GuiGraphicsExtractor graphics,
-            //? if >=1.21.6 {
+            //? if >=26 {
             RenderPipeline pipeline,
-            //?} else if >=1.21.2 {
-            /*Function<Identifier, RenderType> pipeline,
-            *///?}
+            //?}
             Identifier sprite,
             int x, int y, int width, int height, Operation<Void> original) {
         if (vanillahud$active && VANILLAHUD$SELECTION.equals(sprite)) {
             x = graphics.guiWidth() / 2 - 92 + Math.round(vanillahud$animSlot * 20f);
         }
         original.call(graphics,
-                //? if >=1.21.2 {
+                //? if >=26 {
                 pipeline,
                 //?}
                 sprite, x, y, width, height);

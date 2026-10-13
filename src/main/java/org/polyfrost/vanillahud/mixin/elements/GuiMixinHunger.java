@@ -5,7 +5,7 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-//? if <1.21.6 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -29,7 +29,7 @@ import net.minecraft.client.gui.Hud;
 /*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinHunger {
-    //? if <1.21.6 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderFood")
     private void vanillahud$hunger(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int xRight, Operation<Void> original) {

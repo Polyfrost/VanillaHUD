@@ -14,14 +14,14 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-//? if <1.21.4 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 
 @Mixin(SubtitleOverlay.class)
 public class GuiMixinClosedCaptions {
-    //? if <1.21.4 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "render")
     private void vanillahud$closedCaptions(GuiGraphicsExtractor graphics, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
@@ -52,13 +52,7 @@ public class GuiMixinClosedCaptions {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
             )
-            //?} elif >=1.21.6 {
-            /*method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
-            )
-            *///?} else {
+            //?} else {
             /*method = "render",
             at = @At(
                     value = "INVOKE",
@@ -66,7 +60,7 @@ public class GuiMixinClosedCaptions {
             )
             *///?}
     )
-    //? if <1.21.6 && >1.8.9 {
+    //? if = 1.21.1 {
     /*private int vanillahud$closedCaptions$text(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, Operation<Integer> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
         return graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
@@ -90,13 +84,7 @@ public class GuiMixinClosedCaptions {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"
             )
-            //?} elif >=1.21.6 {
-            /*method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"
-            )
-            *///?} else {
+            //?} else {
             /*method = "render",
             at = @At(
                     value = "INVOKE",
@@ -104,7 +92,7 @@ public class GuiMixinClosedCaptions {
             )
             *///?}
     )
-    //? if <1.21.6 && >1.8.9 {
+    //? if = 1.21.1 {
     /*private int vanillahud$closedCaptions$arrow(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color, Operation<Integer> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
         return graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());

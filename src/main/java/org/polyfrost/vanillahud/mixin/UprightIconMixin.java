@@ -9,34 +9,26 @@ import net.minecraft.resources.Identifier;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if >=1.21.6 {
+//? if >=26 {
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 //?}
-//? if >=1.21.2 <1.21.6 {
-/*import net.minecraft.client.renderer.RenderType;
-import java.util.function.Function;
-*///?}
 
 @Mixin(GuiGraphicsExtractor.class)
 public class UprightIconMixin {
     @WrapMethod(method = "blitSprite(" +
-            //? if >=1.21.6 {
+            //? if >=26 {
             "Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;" +
-            //?} else if >=1.21.2 {
-            /*"Ljava/util/function/Function;" +
-            *///?}
+            //?}
             "Lnet/minecraft/resources/Identifier;IIII)V")
     private void vanillahud$uprightIcon(
-            //? if >=1.21.6 {
+            //? if >=26 {
             RenderPipeline pipeline,
-            //?} else if >=1.21.2 {
-            /*Function<Identifier, RenderType> pipeline,
-            *///?}
+            //?}
             Identifier sprite, int x, int y, int width, int height, Operation<Void> original) {
         GuiGraphicsExtractor self = (GuiGraphicsExtractor) (Object) this;
         boolean rotated = HudTransform.uprightIcon(self, x, y, width, height);
         original.call(
-                //? if >=1.21.2 {
+                //? if >=26 {
                 pipeline,
                 //?}
                 sprite, x, y, width, height);

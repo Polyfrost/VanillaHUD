@@ -1,6 +1,6 @@
 package org.polyfrost.vanillahud.compat
 
-//? if >=1.21.4 {
+//? if >=26 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.Huds
@@ -8,7 +8,7 @@ import org.polyfrost.vanillahud.hud.VanillaHud
 import net.minecraft.resources.Identifier
 //?}
 
-//? if >=1.21.6 {
+//? if >=26 {
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
@@ -88,69 +88,7 @@ object HudElementCompat {
         }
     }
 }
-//?} elif >=1.21.4 {
-/*import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
-import net.fabricmc.fabric.api.client.rendering.v1.LayeredDrawerWrapper
-import org.polyfrost.vanillahud.render.HudTransform
-
-object HudElementCompat {
-    fun init() {
-        HudLayerRegistrationCallback.EVENT.register { layers ->
-            replaceUpright(layers, IdentifiedLayer.EXPERIENCE_LEVEL, { Huds.hotbar }) { Huds.hotbar.experienceLevel }
-            replace(layers, IdentifiedLayer.OVERLAY_MESSAGE) { Huds.actionBar }
-            replace(layers, IdentifiedLayer.TITLE_AND_SUBTITLE) { Huds.title }
-            replace(layers, IdentifiedLayer.SCOREBOARD) { Huds.scoreboard }
-            replace(layers, IdentifiedLayer.PLAYER_LIST) { Huds.tabList }
-            replace(layers, IdentifiedLayer.BOSS_BAR) { Huds.bossBar }
-            replace(layers, IdentifiedLayer.SUBTITLES) { Huds.closedCaptions }
-        }
-    }
-
-    private fun replace(layers: LayeredDrawerWrapper, id: Identifier, hud: () -> VanillaHud) =
-        wrap(layers, id, hud, HudTransform::begin, HudTransform::end)
-
-    private fun replaceUpright(
-        layers: LayeredDrawerWrapper,
-        id: Identifier,
-        hud: () -> VanillaHud,
-        visible: () -> Boolean,
-    ) =
-        wrap(layers, id, hud, { ctx, element ->
-            HudTransform.begin(ctx, element)
-            HudTransform.beginUpright(
-                ctx, element,
-                ctx.guiWidth() / 2f, ctx.guiHeight() - HotbarHud.LEVEL_CENTER_Y,
-            )
-        }, { ctx ->
-            HudTransform.endUpright(ctx)
-            HudTransform.end(ctx)
-        }, visible)
-
-    private fun wrap(
-        layers: LayeredDrawerWrapper,
-        id: Identifier,
-        hud: () -> VanillaHud,
-        begin: (GuiGraphicsExtractor, VanillaHud) -> Unit,
-        end: (GuiGraphicsExtractor) -> Unit,
-        visible: () -> Boolean = { true },
-    ) {
-        layers.replaceLayer(id) { original ->
-            IdentifiedLayer.of(original.id()) { context, tickCounter ->
-                val element = hud()
-                if (element.shouldDraw() && visible()) {
-                    begin(context, element)
-                    try {
-                        original.render(context, tickCounter)
-                    } finally {
-                        end(context)
-                    }
-                }
-            }
-        }
-    }
-}
-*///?} else {
+//?} else {
 
 /*object HudElementCompat {
     fun init() {}

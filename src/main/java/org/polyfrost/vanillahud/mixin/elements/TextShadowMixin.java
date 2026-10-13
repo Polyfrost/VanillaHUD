@@ -22,29 +22,7 @@ public class TextShadowMixin {
     }
     //?}
 
-    //? if >=1.21.8 && <26 {
-    /*@ModifyVariable(
-            method = "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)V",
-            at = @At("HEAD"),
-            argsOnly = true,
-            ordinal = 0
-    )
-    private boolean vanillahud$sequenceShadow(boolean dropShadow) {
-        return TextShadowHook.apply(dropShadow);
-    }
-
-    @ModifyVariable(
-            method = "drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)V",
-            at = @At("HEAD"),
-            argsOnly = true,
-            ordinal = 0
-    )
-    private boolean vanillahud$stringShadow(boolean dropShadow) {
-        return TextShadowHook.apply(dropShadow);
-    }
-    *///?}
-
-    //? if <1.21.8 {
+    //? if <26 {
     /*@ModifyVariable(
             method = "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I",
             at = @At("HEAD"),

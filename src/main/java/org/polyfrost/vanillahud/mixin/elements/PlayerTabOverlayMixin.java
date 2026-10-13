@@ -30,10 +30,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//? if >=1.21.6 {
+//? if >=26 {
 import org.joml.Matrix3x2fStack;
 //?}
-//? if <1.21.6 {
+//? if <26 {
 /*import com.mojang.blaze3d.vertex.PoseStack;
 *///?}
 
@@ -55,7 +55,7 @@ public abstract class PlayerTabOverlayMixin {
             UUID self = this.minecraft.player.getUUID();
             List<PlayerInfo> list = stream.collect(Collectors.toList());
             for (int i = 0; i < list.size(); i++) {
-                //? if >=1.21.9 {
+                //? if >=26 {
                 UUID id = list.get(i).getProfile().id();
                 //?} else {
                 /*UUID id = list.get(i).getProfile().getId();
@@ -203,18 +203,15 @@ public abstract class PlayerTabOverlayMixin {
 
     // at clamped GUI scales names overflow their column into the numeric ping so clip them
     @WrapOperation(
-            //? if <1.21.6 {
+            //? if <26 {
             /*method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I", ordinal = 0)
-            *///?} else if <26 {
-            /*method = "render",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", ordinal = 0)
             *///?} else {
             method = "extractRenderState",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", ordinal = 0)
             //?}
     )
-    //? if <1.21.6 {
+    //? if <26 {
     /*private int vanillahud$clipName(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color,
                                    Operation<Integer> original, @Share("vhTabSlotRight") LocalIntRef slotRight) {
         int clipRight = slotRight.get() - vanillahud$pingReserve();
@@ -274,17 +271,7 @@ public abstract class PlayerTabOverlayMixin {
                 graphics.text(this.minecraft.font, text, scaledX, scaledY, color);
                 pose.popMatrix();
             }
-            //?} else if >=1.21.6 {
-            /*if (full) {
-                graphics.drawString(this.minecraft.font, str, fullX, yo, color);
-            } else {
-                Matrix3x2fStack pose = graphics.pose();
-                pose.pushMatrix();
-                pose.scale(0.5f, 0.5f);
-                graphics.drawString(this.minecraft.font, str, scaledX, scaledY, color);
-                pose.popMatrix();
-            }
-            *///?} else {
+            //?} else {
             /*if (full) {
                 graphics.drawString(this.minecraft.font, str, fullX, yo, color);
             } else {
@@ -309,20 +296,16 @@ public abstract class PlayerTabOverlayMixin {
                     value = "INVOKE",
                     //? if >= 26.1 {
                     target = "Lnet/minecraft/client/gui/components/PlayerFaceExtractor;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZI)V"
-                    //?} else if >= 1.21.11 {
-                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZI)V"
-                    *///?} else if >= 1.21.4 {
-                    /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZI)V"
-                    *///?} else {
+                    //?} else {
                     /*target = "Lnet/minecraft/client/gui/components/PlayerFaceRenderer;draw(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/resources/Identifier;IIIZZ)V"
                     *///?}
             )
     )
-    private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
+    private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip, /*? if >=26 {*/ int color, /*?}*/ Operation<Void> original) {
         if (Huds.INSTANCE.getTabList().getBetterHatLayer()) {
-            HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
+            HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >=26 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
         } else {
-            original.call(graphics, texture, x, y, size, hat, flip /*? if >= 1.21.4 {*/, color /*?}*/);
+            original.call(graphics, texture, x, y, size, hat, flip /*? if >=26 {*/, color /*?}*/);
         }
     }
 }

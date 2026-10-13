@@ -2,7 +2,7 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if <1.21.6 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -27,7 +27,7 @@ import net.minecraft.client.gui.Hud;
 /*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinArmor {
-    //? if <1.21.6 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderArmor")
     private static void vanillahud$armor(
             GuiGraphicsExtractor graphics, Player player, int yLineBase, int numHealthRows, int healthRowHeight, int xLeft, Operation<Void> original) {

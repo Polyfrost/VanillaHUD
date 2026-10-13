@@ -14,16 +14,16 @@ stonecutter parameters {
     }
 
     replacements {
-        string(current.parsed >= "1.21.6" || current.version == "1.8.9") {
+        string(current.version != "1.21.1") {
             replace("pushPose", "pushMatrix")
             replace("popPose", "popMatrix")
         }
 
-        string(current.parsed < "1.21.11") {
+        string(current.parsed < "26") {
             replace("net.minecraft.Util", "net.minecraft.util.Util")
         }
 
-        string(current.parsed >= "1.21.11") {
+        string(current.parsed >= "26") {
             replace("ResourceLocation", "Identifier")
         }
 

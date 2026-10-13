@@ -2,16 +2,11 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if <1.21.6 && >1.8.9 {
+//? if = 1.21.1 {
 /*//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
-*///?}
-//? if >=1.21.4 <1.21.6 {
-/*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.world.entity.player.Player;
 *///?}
 //? if 1.21.1 {
 /*import org.spongepowered.asm.mixin.injection.At;
@@ -56,16 +51,6 @@ public class GuiMixinAir {
     )
     private void vanillahud$airEnd(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
         HudTransform.endIcons(guiGraphics);
-    }
-    *///?} elif >=1.21.4 && <1.21.6 {
-    /*@WrapMethod(method = "renderAirBubbles")
-    private void vanillahud$air(GuiGraphicsExtractor graphics, Player player, int vehicleHearts, int yLineAir,
-                                int xRight, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
-
-        HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
-        original.call(graphics, player, vehicleHearts, yLineAir, xRight);
-        HudTransform.endIcons(graphics);
     }
     *///?}
 }

@@ -47,7 +47,7 @@ public class GuiMixinHealth {
             GuiGraphicsExtractor graphics, Player player, int xLeft, int yLineBase, int healthRowHeight,
             int heartOffsetIndex, float maxHealth, int currentHealth, int oldHealth,
             int absorption, boolean blink, Operation<Void> original) {
-        //? if <=1.21.6 && >1.8.9 {
+        //? if = 1.21.1 {
         /*if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
         HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
         *///?}
@@ -55,7 +55,7 @@ public class GuiMixinHealth {
         original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
                 currentHealth, oldHealth, absorption, blink && Huds.INSTANCE.getHotbar().getHealthAnimation());
 
-        //? if <=1.21.6 && >1.8.9 {
+        //? if = 1.21.1 {
         /*HudTransform.endIcons(graphics);
         *///?}
     }

@@ -8,11 +8,9 @@ import net.minecraft.client.gui.components.PlayerFaceExtractor;
 //?} else {
 /*import net.minecraft.client.gui.components.PlayerFaceRenderer;
 *///?}
-//? if >= 1.21.8 {
+//? if >=26 {
 import net.minecraft.client.renderer.RenderPipelines;
-//?} else if >= 1.21.4 {
-/*import net.minecraft.client.renderer.RenderType;
- *///?}
+//?}
 import net.minecraft.resources.Identifier;
 import org.polyfrost.vanillahud.hook.HeadHook;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +20,7 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(/*? if >= 26.1 {*/ PlayerFaceExtractor.class /*?} else {*/ /*PlayerFaceRenderer.class *//*?}*/)
 public class PlayerFaceRendererMixin implements HeadHook {
     @Shadow
-    private static void /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean flip /*? if >= 1.21.4 {*/ , int color /*?}*/) {
+    private static void /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean flip /*? if >=26 {*/ , int color /*?}*/) {
         throw new UnsupportedOperationException("Implemented via mixin");
     }
 
@@ -33,19 +31,17 @@ public class PlayerFaceRendererMixin implements HeadHook {
         int i = 8 + (flip ? 8 : 0);
         int j = 8 * (flip ? -1 : 1);
         graphics.blit(
-                /*? if >= 1.21.8 {*/
+                //? if >=26 {
                 RenderPipelines.GUI_TEXTURED,
-                /*?} else if >= 1.21.4 {*/
-                /*RenderType::guiTextured,
-                *//*?}*/
+                //?}
                 texture, x, y, size, size,
                 8, i, 8, j, 64, 64
-                /*? if >= 1.21.4 {*/, color /*?}*/
+                /*? if >=26 {*/, color /*?}*/
         );
         if (hatVisible) {
-            graphics.pose().translate(-0.5F, -0.5F /*? if <= 1.21.5 {*/ /*, 0F *//*?}*/);
-            /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (graphics, texture, x , y , 9, flip /*? if >= 1.21.4 {*/ , color /*?}*/);
-            graphics.pose().translate(0.5F, 0.5F /*? if <= 1.21.5 {*/ /*, 0F *//*?}*/);
+            graphics.pose().translate(-0.5F, -0.5F /*? if <26 {*/ /*, 0F *//*?}*/);
+            /*? if >= 26.1 {*/ extractHat /*?} else {*/ /*drawHat *//*?}*/ (graphics, texture, x , y , 9, flip /*? if >=26 {*/ , color /*?}*/);
+            graphics.pose().translate(0.5F, 0.5F /*? if <26 {*/ /*, 0F *//*?}*/);
         }
     }
 }

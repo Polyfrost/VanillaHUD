@@ -13,7 +13,7 @@ import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.floor
 
-//? if <=1.21.5 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.mojang.math.Axis
 *///?}
 
@@ -164,7 +164,7 @@ object HudTransform {
 
         push(graphics)
         val pose = graphics.pose()
-        //? if <=1.21.5 && >1.8.9 {
+        //? if = 1.21.1 {
         /*pose.translate(gx, gy, 0f)
         pose.scale(s, s, 1f)
         if (turns != 0) {
@@ -220,7 +220,7 @@ object HudTransform {
         val cy = y + height / 2f
         push(graphics)
         val pose = graphics.pose()
-        //? if <=1.21.5 && >1.8.9 {
+        //? if = 1.21.1 {
         /*pose.translate(cx, cy, 0f)
         pose.mulPose(Axis.ZP.rotation(theta))
         pose.translate(-cx, -cy, 0f)
@@ -240,7 +240,7 @@ object HudTransform {
         val pose = graphics.pose()
         if (turns == 0) return
         val theta = -turns * (PI.toFloat() / 2f)
-        //? if <=1.21.5 && >1.8.9 {
+        //? if = 1.21.1 {
         /*pose.translate(cx, cy, 0f)
         pose.mulPose(Axis.ZP.rotation(theta))
         pose.translate(-cx, -cy, 0f)

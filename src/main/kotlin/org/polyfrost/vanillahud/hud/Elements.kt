@@ -181,7 +181,7 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
     @Switch(title = "Render Experience Level")
     var experienceLevel = true
 
-    //? if >=1.21.6 {
+    //? if >=26 {
     @Switch(
         title = "Overlay Locator Bar",
         description = "Draw the locator bar's waypoints over the experience / jump bar instead of replacing it."
@@ -691,7 +691,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     private fun displayName(info: PlayerInfo): Component {
         info.tabListDisplayName?.let { return it }
         val name = try {
-            //? if >=1.21.9 {
+            //? if >=26 {
             info.profile.name() ?: ""
             //?} else {
             /*info.profile.name ?: ""

@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 
-//? if <1.21.4 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.DeltaTracker;
@@ -43,7 +43,7 @@ import net.minecraft.client.gui.Hud;
 *///?}
 public class GuiMixinTabList {
     //? if > 1.8.9 {
-    //? if <1.21.4 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderTabList")
     private void vanillahud$tabList(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker,
                                     Operation<Void> original) {

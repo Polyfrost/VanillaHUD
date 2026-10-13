@@ -76,7 +76,7 @@ object TabListManager {
 
     private fun getProfile(uuid: UUID): GameProfile {
         val profile = try {
-            //? if >=1.21.9 {
+            //? if >=26 {
             mc.services().sessionService.fetchProfile(uuid, true)?.profile()
             //?} elif > 1.8.9 {
             /*mc.minecraftSessionService.fetchProfile(uuid, true)?.profile()

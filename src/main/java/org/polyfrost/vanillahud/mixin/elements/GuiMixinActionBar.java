@@ -17,7 +17,7 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-//? if <1.21.4 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.DeltaTracker;
@@ -42,7 +42,7 @@ import net.minecraft.client.gui.Hud;
 *///?}
 public class GuiMixinActionBar {
     //? if > 1.8.9 {
-    //? if <1.21.4 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderOverlayMessage")
     private void vanillahud$actionBar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         if (!Huds.INSTANCE.getActionBar().shouldDraw()) return;

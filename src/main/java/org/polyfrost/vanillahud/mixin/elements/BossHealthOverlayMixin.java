@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 //? if > 1.8.9
 import java.util.Collection;
 
-//? if <1.21.4 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
@@ -39,7 +39,7 @@ import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 public class BossHealthOverlayMixin {
     //? if > 1.8.9 {
-    //? if <1.21.4 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "render")
     private void vanillahud$boss(GuiGraphicsExtractor graphics, Operation<Void> original) {
         if (!Huds.INSTANCE.getBossBar().shouldDraw()) return;
@@ -78,13 +78,7 @@ public class BossHealthOverlayMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
             )
-            //?} elif >=1.21.6 {
-            /*method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"
-            )
-            *///?} else {
+            //?} else {
             /*method = "render",
             at = @At(
                     value = "INVOKE",
@@ -92,7 +86,7 @@ public class BossHealthOverlayMixin {
             )
             *///?}
     )
-            //? if <1.21.6 && >1.8.9 {
+            //? if = 1.21.1 {
     /*private int vanillahud$bossText(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color, Operation<Integer> original) {
         if (Huds.INSTANCE.getBossBar().getRenderText()) {
             return original.call(graphics, font, name, x, y, color);

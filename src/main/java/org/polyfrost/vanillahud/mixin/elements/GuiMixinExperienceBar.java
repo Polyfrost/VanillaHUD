@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if <=1.21.5 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -40,7 +40,7 @@ import net.minecraft.client.gui.Hud;
 *///?}
 public class GuiMixinExperienceBar {
     //? if > 1.8.9 {
-    //? if <=1.21.5 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderExperienceBar")
     private void vanillahud$xpBar(GuiGraphicsExtractor graphics, int xpBarX, Operation<Void> original) {
         if (!Huds.INSTANCE.getHotbar().shouldDraw() || !Huds.INSTANCE.getHotbar().getExperienceBar()) return;

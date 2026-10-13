@@ -23,7 +23,7 @@ import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 
-//? if <1.21.4 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import org.polyfrost.vanillahud.render.HudTransform;
@@ -49,7 +49,7 @@ public class GuiMixinTitle {
     @Shadow private Component title;
     @Shadow private Component subtitle;
 
-    //? if <1.21.4 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderTitle")
     private void vanillahud$title(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         if (!Huds.INSTANCE.getTitle().shouldDraw()) return;
@@ -67,7 +67,7 @@ public class GuiMixinTitle {
             /*method = "renderTitle",
             *///?}
             at = @At(value = "INVOKE",
-                    //? if >=1.21.6 {
+                    //? if >=26 {
                     target = "Lorg/joml/Matrix3x2fStack;scale(FF)Lorg/joml/Matrix3x2f;",
                     //?} else {
                     /*target = "Lcom/mojang/blaze3d/vertex/PoseStack;scale(FFF)V",
@@ -84,7 +84,7 @@ public class GuiMixinTitle {
             /*method = "renderTitle",
             *///?}
             at = @At(value = "INVOKE",
-                    //? if >=1.21.6 {
+                    //? if >=26 {
                     target = "Lorg/joml/Matrix3x2fStack;scale(FF)Lorg/joml/Matrix3x2f;",
                     //?} else {
                     /*target = "Lcom/mojang/blaze3d/vertex/PoseStack;scale(FFF)V",
@@ -103,7 +103,7 @@ public class GuiMixinTitle {
         if (width <= graphics.guiWidth()) return;
 
         float scale = graphics.guiWidth() / width;
-        //? if >=1.21.6 {
+        //? if >=26 {
         graphics.pose().scale(scale, scale);
         //?} else {
         /*graphics.pose().scale(scale, scale, 1.0F);

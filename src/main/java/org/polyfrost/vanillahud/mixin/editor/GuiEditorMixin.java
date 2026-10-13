@@ -199,7 +199,7 @@ public abstract class GuiEditorMixin {
         return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 200 : original;
     }
 
-    //? if <=1.21.5 {
+    //? if <26 {
     /*@ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpLevelVisible(boolean original) {
         return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
@@ -233,7 +233,7 @@ public abstract class GuiEditorMixin {
     }
     //?}
 
-    //? if <=1.21.5 {
+    //? if <26 {
     /*@ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
         return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;

@@ -43,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//? if <1.21.4 && >1.8.9 {
+//? if = 1.21.1 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import net.minecraft.client.DeltaTracker;
 import org.polyfrost.vanillahud.render.HudTransform;
@@ -70,7 +70,7 @@ public class GuiMixinScoreboard {
         original.call(graphics, x0, y0, x1, y1, color);
     }
 
-    //? if <1.21.4 && >1.8.9 {
+    //? if = 1.21.1 {
     /*@WrapMethod(method = "renderScoreboardSidebar")
     private void vanillahud$scoreboard(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         if (!Huds.INSTANCE.getScoreboard().shouldDraw()) return;
@@ -106,7 +106,7 @@ public class GuiMixinScoreboard {
     }
 
     @WrapOperation(
-            //? if <1.21.4 && >1.8.9 {
+            //? if = 1.21.1 {
             /*method = "method_55440",
             *///?} else {
             method = "displayScoreboardSidebar",
@@ -131,7 +131,7 @@ public class GuiMixinScoreboard {
     }
 
     @WrapOperation(
-            //? if <1.21.4 && >1.8.9 {
+            //? if = 1.21.1 {
             /*method = "method_55440",
             *///?} else {
             method = "displayScoreboardSidebar",
@@ -157,7 +157,7 @@ public class GuiMixinScoreboard {
     }
 
     @WrapOperation(
-            //? if <1.21.4 && >1.8.9 {
+            //? if = 1.21.1 {
             /*method = "method_55440",
             *///?} else {
             method = "displayScoreboardSidebar",
@@ -166,15 +166,13 @@ public class GuiMixinScoreboard {
                     value = "INVOKE",
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
-                    //?} elif >=1.21.6 {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
-                    *///?} else {
+                    //?} else {
                     /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
                     *///?}
                     ordinal = 0
             )
     )
-    //? if <1.21.6 && >1.8.9 {
+    //? if = 1.21.1 {
     /*private int vanillahud$scoreboard$title(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, boolean dropShadow, Operation<Integer> original) {
         if (!Huds.INSTANCE.getScoreboard().getScoreboardTitle()) return 0;
         return original.call(graphics, font, text, x, y, color, dropShadow);
@@ -187,7 +185,7 @@ public class GuiMixinScoreboard {
     //?}
 
     @ModifyArg(
-            //? if <1.21.4 && >1.8.9 {
+            //? if = 1.21.1 {
             /*method = "method_55440",
             *///?} else {
             method = "displayScoreboardSidebar",
@@ -196,9 +194,7 @@ public class GuiMixinScoreboard {
                     value = "INVOKE",
                     //? if >=26 {
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
-                    //?} elif >=1.21.6 {
-                    /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"
-                    *///?} else {
+                    //?} else {
                     /*target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I"
                     *///?}
             ),

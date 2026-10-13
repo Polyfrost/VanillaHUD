@@ -3,7 +3,7 @@ package org.polyfrost.vanillahud.mixin.elements;
 //? if > 1.8.9 {
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if >=1.21.6 {
+//? if >=26 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -43,7 +43,7 @@ import net.minecraft.client.gui.Hud;
 /*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinLocatorBar {
-    //? if >=1.21.6 {
+    //? if >=26 {
     @WrapOperation(
             //? if >=26 {
             method = "extractHotbarAndDecorations",
