@@ -98,7 +98,8 @@ object HudTransform {
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         val editing = HudManager.isEditing
-        val src = live(provider)
+        val resolvedHud = resolveCached(provider)
+        val src = resolvedHud ?: provider
         if (!editing && !src.hasContent()) {
             scissors.addLast(SKIPPED)
             return
@@ -111,10 +112,10 @@ object HudTransform {
         val p = placements.getOrPut(provider.javaClass) { Placement() }
         if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns ||
             p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
-            p.huds != HudManager.activeInstances.size || p.schema != (p.hud?.posSchema ?: 0) ||
-            p.hud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }
+            p.huds != HudManager.activeInstances.size || p.hud !== resolvedHud || p.schema != (resolvedHud?.posSchema ?: 0) ||
+            resolvedHud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }
         ) {
-            val hud = resolveCached(provider)
+            val hud = resolvedHud
             hud?.reseedDefaultForScreen()
             val anchored = hud != null && hud.anchorsToVanillaOrigin()
             val s = hud?.frameScale ?: 1f
@@ -125,10 +126,12 @@ object HudTransform {
             p.s = s
             p.ox = src.vanillaOriginX(w, h)
             p.oy = src.vanillaOriginY(w, h)
-            p.hx = hud?.frameX ?: 0f
-            p.hy = hud?.frameY ?: 0f
-            p.gx = if (anchored) defX else (hud?.frameX ?: defX)
-            p.gy = if (anchored) defY else (hud?.frameY ?: defY)
+            val fx = hud?.frameX
+            val fy = hud?.frameY
+            p.hx = fx ?: 0f
+            p.hy = fy ?: 0f
+            p.gx = if (anchored || fx == null) defX else fx
+            p.gy = if (anchored || fy == null) defY else fy
             p.valid = !editing
             p.w = w
             p.h = h

@@ -7,7 +7,7 @@ plugins {
     id("dev.kikugie.loom-back-compat")
     id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT" apply false
     id("ploceus") version "1.17.4" apply false
-    id("org.jetbrains.kotlin.jvm") version "2.4.10"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
 }
@@ -64,7 +64,7 @@ repositories {
     }
     maven("https://redirector.kotlinlang.org/maven/compose-dev") {
         name = "Compose Dev"
-        content { includeGroupAndSubgroups("org.jetbrains") }
+        content { includeGroup("org.jetbrains.skiko") }
     }
     maven("https://maven.cloverclient.com/releases") {
         name = "CloverClient"
