@@ -62,6 +62,10 @@ repositories {
         name = "Sonatype Snapshots"
         content { includeGroup("net.kyori") }
     }
+    maven("https://redirector.kotlinlang.org/maven/compose-dev") {
+        name = "Compose Dev"
+        content { includeGroupAndSubgroups("org.jetbrains") }
+    }
     maven("https://maven.cloverclient.com/releases") {
         name = "CloverClient"
         content { includeGroup("pl.tomgirl") }
