@@ -1,19 +1,19 @@
 package org.polyfrost.vanillahud.render
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import org.polyfrost.oneconfig.api.hud.v1.Hud
+//?} else {
+/*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
+*///?}
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHudMarker
-import org.polyfrost.oneconfig.api.hud.v1.hudStateRevision
 import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
-import java.util.IdentityHashMap
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.floor
 
-//? if <=1.21.5 {
+//? if <=1.21.5 && >1.8.9 {
 /*import com.mojang.math.Axis
 *///?}
 
@@ -52,6 +52,26 @@ object HudTransform {
         return null
     }
 
+    private val MISSING = Any()
+
+    private val resolved = HashMap<Class<out VanillaHud>, Any>()
+
+    private fun resolveCached(provider: VanillaHud): VanillaHud? =
+        resolved.getOrPut(provider.javaClass) { resolve(provider) ?: MISSING } as? VanillaHud
+
+    /**
+     * The HUD the options actually live on.
+     *
+     * [resolve] exists because OneConfig registers the instance the mixins hold as a provider and
+     * deserialises the configured copies into [HudManager.activeInstances] separately. The user's
+     * settings land on that copy, so anything option shaped has to be read off it rather than off
+     * the template, or it reads back as the field default.
+     */
+    @JvmStatic
+    // resolve only hands back instances of the provider's own class
+    @Suppress("UNCHECKED_CAST")
+    fun <T : VanillaHud> live(provider: T): T = (resolveCached(provider) ?: provider) as T
+
     private class Placement {
         var valid = false
         var w = 0
@@ -63,9 +83,8 @@ object HudTransform {
         var scoreboardRev = 0
         var huds = 0
         var schema = 0
-        var anchored = false
-        var compatAnchored = false
-        var stateRev = 0
+        var hx = 0f
+        var hy = 0f
         var hud: VanillaHud? = null
         var s = 1f
         var ox = 0f
@@ -74,49 +93,42 @@ object HudTransform {
         var gy = 0f
     }
 
-    private val placements = IdentityHashMap<VanillaHud, Placement>()
-
-    private fun followsCompat(hud: Hud?): Boolean {
-        var parent = hud?.effectiveAnchorParent
-        var depth = 0
-        while (parent != null && depth++ < 16) {
-            if (parent.hasExternalGeometry || parent is LegacyHudMarker && parent !is VanillaHud) return true
-            parent = parent.effectiveAnchorParent
-        }
-        return false
-    }
+    private val placements = HashMap<Class<out VanillaHud>, Placement>()
 
     @JvmStatic
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         val editing = HudManager.isEditing
-        if (!editing && !provider.hasContent()) {
+        val src = live(provider)
+        if (!editing && !src.hasContent()) {
             scissors.addLast(SKIPPED)
             return
         }
         val w = graphics.guiWidth()
         val h = graphics.guiHeight()
-        val turns = provider.quarterTurns
-        val natW = provider.unrotatedWidth
-        val natH = provider.unrotatedHeight
-        val p = placements.getOrPut(provider) { Placement() }
+        val turns = src.quarterTurns
+        val natW = src.unrotatedWidth
+        val natH = src.unrotatedHeight
+        val p = placements.getOrPut(provider.javaClass) { Placement() }
         if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns ||
             p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
             p.huds != HudManager.activeInstances.size || p.schema != (p.hud?.posSchema ?: 0) ||
-            (p.compatAnchored || p.stateRev != hudStateRevision && (p.anchored || p.hud?.effectiveAnchorParent != null))
+            p.hud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }
         ) {
-            val hud = resolve(provider)
+            val hud = resolveCached(provider)
             hud?.reseedDefaultForScreen()
             val anchored = hud != null && hud.anchorsToVanillaOrigin()
-            val s = hud?.effectiveScale ?: 1f
+            val s = hud?.frameScale ?: 1f
             if (anchored && editing) hud.pinToVanillaOrigin(w, h, s)
-            val defX = provider.scaledOriginX(w, h, s)
-            val defY = provider.scaledOriginY(w, h, s)
+            val defX = src.scaledOriginX(w, h, s)
+            val defY = src.scaledOriginY(w, h, s)
             p.hud = hud
             p.s = s
-            p.ox = provider.vanillaOriginX(w, h)
-            p.oy = provider.vanillaOriginY(w, h)
-            p.gx = if (anchored) defX else (hud?.x ?: defX)
-            p.gy = if (anchored) defY else (hud?.y ?: defY)
+            p.ox = src.vanillaOriginX(w, h)
+            p.oy = src.vanillaOriginY(w, h)
+            p.hx = hud?.frameX ?: 0f
+            p.hy = hud?.frameY ?: 0f
+            p.gx = if (anchored) defX else (hud?.frameX ?: defX)
+            p.gy = if (anchored) defY else (hud?.frameY ?: defY)
             p.valid = !editing
             p.w = w
             p.h = h
@@ -127,9 +139,6 @@ object HudTransform {
             p.scoreboardRev = HudInternals.scoreboardRevision
             p.huds = HudManager.activeInstances.size
             p.schema = hud?.posSchema ?: 0
-            p.anchored = hud?.effectiveAnchorParent != null
-            p.compatAnchored = followsCompat(hud)
-            p.stateRev = hudStateRevision
         }
         val hud = p.hud
         val s = p.s
@@ -139,13 +148,13 @@ object HudTransform {
         val gy = p.gy
 
         var scissored = false
-        val tab = (hud ?: provider) as? TabListHud
+        val tab = src as? TabListHud
         if (tab != null && tab.animation && !editing) {
             val frac = tab.clipFraction()
             if (frac < 1f) {
                 val foreign = if (frac > 0f) tab.foreignBounds() else null
                 val top = if (foreign != null) gy + (foreign.top - oy) * s else gy - tab.backgroundTop * s
-                val clipH = (foreign?.height ?: (hud?.height ?: provider.height)) * s
+                val clipH = (foreign?.height ?: src.height) * s
                 graphics.enableScissor(0, floor(top).toInt(), w, ceil(top + clipH * frac).toInt())
                 scissored = true
             }
@@ -159,7 +168,7 @@ object HudTransform {
 
         push(graphics)
         val pose = graphics.pose()
-        //? if <=1.21.5 {
+        //? if <=1.21.5 && >1.8.9 {
         /*pose.translate(gx, gy, 0f)
         pose.scale(s, s, 1f)
         if (turns != 0) {
@@ -186,11 +195,12 @@ object HudTransform {
     @JvmStatic
     fun beginIcons(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         begin(graphics, provider)
-        if (iconDepth++ == 0) iconTurns = provider.quarterTurns
+        if (iconDepth++ == 0) iconTurns = live(provider).quarterTurns
     }
 
     @JvmStatic
     fun resetFrame() {
+        resolved.clear()
         iconDepth = 0
         iconTurns = 0
         depth = 0
@@ -214,7 +224,7 @@ object HudTransform {
         val cy = y + height / 2f
         push(graphics)
         val pose = graphics.pose()
-        //? if <=1.21.5 {
+        //? if <=1.21.5 && >1.8.9 {
         /*pose.translate(cx, cy, 0f)
         pose.mulPose(Axis.ZP.rotation(theta))
         pose.translate(-cx, -cy, 0f)
@@ -229,12 +239,12 @@ object HudTransform {
     /** counter rotates around [cx] [cy] so content stays upright inside a rotated element */
     @JvmStatic
     fun beginUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud, cx: Float, cy: Float) {
-        val turns = provider.quarterTurns
+        val turns = live(provider).quarterTurns
         push(graphics)
         val pose = graphics.pose()
         if (turns == 0) return
         val theta = -turns * (PI.toFloat() / 2f)
-        //? if <=1.21.5 {
+        //? if <=1.21.5 && >1.8.9 {
         /*pose.translate(cx, cy, 0f)
         pose.mulPose(Axis.ZP.rotation(theta))
         pose.translate(-cx, -cy, 0f)

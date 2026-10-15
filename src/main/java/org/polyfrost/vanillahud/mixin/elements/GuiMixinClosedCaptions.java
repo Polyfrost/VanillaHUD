@@ -1,9 +1,11 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
+//? if > 1.8.9 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
+//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.network.chat.Component;
@@ -12,14 +14,14 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-//? if <1.21.4 {
+//? if <1.21.4 && >1.8.9 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 
 @Mixin(SubtitleOverlay.class)
 public class GuiMixinClosedCaptions {
-    //? if <1.21.4 {
+    //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "render")
     private void vanillahud$closedCaptions(GuiGraphicsExtractor graphics, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
@@ -64,7 +66,7 @@ public class GuiMixinClosedCaptions {
             )
             *///?}
     )
-    //? if <1.21.6 {
+    //? if <1.21.6 && >1.8.9 {
     /*private int vanillahud$closedCaptions$text(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, Operation<Integer> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
         return graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
@@ -102,7 +104,7 @@ public class GuiMixinClosedCaptions {
             )
             *///?}
     )
-    //? if <1.21.6 {
+    //? if <1.21.6 && >1.8.9 {
     /*private int vanillahud$closedCaptions$arrow(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color, Operation<Integer> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
         return graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
@@ -119,3 +121,12 @@ public class GuiMixinClosedCaptions {
     }
     //?}
 }
+//?} else {
+/*// 1.8.9 has no subtitles
+import net.minecraft.client.gui.GameGui;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(GameGui.class)
+public class GuiMixinClosedCaptions {
+}
+*///?}

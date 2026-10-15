@@ -1,8 +1,10 @@
 package org.polyfrost.vanillahud.mixin.editor;
 
+//? if > 1.8.9 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.audio.ListenerTransform;
 import net.minecraft.client.Minecraft;
+//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import org.polyfrost.vanillahud.hud.Huds;
@@ -56,3 +58,12 @@ public abstract class SubtitleOverlayMixin {
         return vanillahud$editing() ? Boolean.TRUE : original;
     }
 }
+//?} else {
+/*// 1.8.9 has no subtitles to preview
+import net.minecraft.client.gui.GameGui;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(GameGui.class)
+public abstract class SubtitleOverlayMixin {
+}
+*///?}

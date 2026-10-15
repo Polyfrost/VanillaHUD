@@ -1,5 +1,7 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
+//? if > 1.8.9 {
+//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.vanillahud.hook.TextShadowHook;
 import org.spongepowered.asm.mixin.Mixin;
@@ -64,3 +66,13 @@ public class TextShadowMixin {
     }
     *///?}
 }
+//?} else {
+/*// the draw context this hooks does not exist on 1.8.9, where text shadow is a draw
+// argument rather than a context flag, so the option has no effect there yet
+import net.minecraft.client.gui.GameGui;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(GameGui.class)
+public class TextShadowMixin {
+}
+*///?}

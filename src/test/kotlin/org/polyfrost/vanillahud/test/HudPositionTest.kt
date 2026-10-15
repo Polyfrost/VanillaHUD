@@ -1,6 +1,11 @@
 package org.polyfrost.vanillahud.test
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
+//?} else {
+/*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
+import org.polyfrost.vanillahud.compat.LegacyDrawContext
+*///?}
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -209,9 +214,14 @@ class HudPositionTest {
     }
 }
 
+//? if > 1.8.9 {
 internal fun uninitialisedGraphics(): GuiGraphicsExtractor {
     val field = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe")
     field.isAccessible = true
     val unsafe = field.get(null) as sun.misc.Unsafe
     return unsafe.allocateInstance(GuiGraphicsExtractor::class.java) as GuiGraphicsExtractor
 }
+//?} else {
+/*// the 1.8.9 draw context is a singleton shim over the GL matrix stack, nothing to fake
+internal fun uninitialisedGraphics(): GuiGraphicsExtractor = LegacyDrawContext
+*///?}

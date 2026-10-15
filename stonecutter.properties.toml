@@ -1,7 +1,7 @@
 mod.id = "vanillahud"
 mod.name = "VanillaHUD"
 mod.group = "org.polyfrost"
-mod.version = "3.5.2"
+mod.version = "3.5.6"
 
 deps.fabric_loader = "0.19.3"
 deps.oneconfig = "1.2.10"
@@ -12,6 +12,13 @@ deps.devauth = "1.2.2"
 loomx.loom_version = "1.17-SNAPSHOT"
 
 publish.modrinth = "pWXJaKrX"
+
+["1.8.9"]
+mod.mc_compat = "1.8.9"
+mod.mc_releases = ["1.8.9"]
+
+deps.feather_build = "2"
+deps.osl_version = "0.21.0"
 
 ["1.21.1"]
 mod.mc_compat = "1.21.1"

@@ -1,11 +1,19 @@
 package org.polyfrost.vanillahud.hud
 
+//? if > 1.8.9 {
 import net.minecraft.client.gui.components.LerpingBossEvent
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
+//?} else {
+/*import net.minecraft.client.gui.BossBar
+import net.minecraft.client.network.PlayerInfo
+import net.minecraft.scoreboard.ScoreboardScore
+import net.minecraft.scoreboard.team.Team
+import net.minecraft.text.Text
+*///?}
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -15,6 +23,7 @@ import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.mixin.access.ISubtitle
 import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
+import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
 
@@ -33,13 +42,23 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
 
+    //? if > 1.8.9 {
     override fun hasContent() =
         previewing || hudAccessor?.let { it.overlay != null && it.overlayMessageTime > 0 } ?: true
+    //?} else {
+    /*override fun hasContent() =
+        previewing || hudAccessor?.let { !it.overlayText.isNullOrEmpty() && it.overlayMessageCooldown > 0 } ?: true
+    *///?}
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
+        //? if > 1.8.9 {
         return measureOnce({ mix(0L, hudAccessor?.overlay) }) { textWidth { hudAccessor?.overlay?.string } }
             ?: naturalWidth
+        //?} else {
+        /*return measureOnce({ mix(0L, hudAccessor?.overlayText) }) { textWidth { hudAccessor?.overlayText } }
+            ?: naturalWidth
+        *///?}
     }
 }
 
@@ -57,6 +76,7 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
     override val anchorX get() = 0.5f
     override val anchorY get() = 0f
 
+    //? if > 1.8.9 {
     private fun bossEvents(): Collection<LerpingBossEvent> {
         val live = try {
             //? if >=26.2 {
@@ -70,17 +90,36 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
         if (previewing) return DemoData.demoBossEvents()
         return live
     }
+    //?} else {
+    /*// 1.8.9 shows at most one bar, and only for as long as the server keeps refreshing its timer
+    private fun bossNames(): List<String> {
+        if (previewing) return listOf(DemoData.demoBossName())
+        return try {
+            val name = BossBar.name
+            if (name.isNullOrEmpty() || BossBar.timer <= 0) emptyList() else listOf(name)
+        } catch (_: Throwable) {
+            emptyList()
+        }
+    }
+    *///?}
 
-    override fun hasContent() = bossEvents().isNotEmpty()
+    //? if > 1.8.9 {
+    override fun hasContent() = previewing || bossEvents().isNotEmpty()
+    //?} else
+    //override fun hasContent() = previewing || bossNames().isNotEmpty()
 
     private class Size(val width: Float, val height: Float)
 
     private fun size(): Size? = measureOnce({
         var h = mix(0L, renderText)
+        //? if > 1.8.9 {
         for (e in bossEvents()) h = mix(mix(h, e), e.name)
+        //?} else
+        //for (n in bossNames()) h = mix(h, n)
         h
     }) { measureSize() }
 
+    //? if > 1.8.9 {
     private fun measureSize(): Size {
         val events = bossEvents()
         val width = if (events.isEmpty() || !renderText) naturalWidth
@@ -89,6 +128,15 @@ class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.CO
         val height = if (n == 0) naturalHeight else ((n - 1) * 19 + if (renderText) 14 else 5).toFloat()
         return Size(width, height)
     }
+    //?} else {
+    /*private fun measureSize(): Size {
+        val names = bossNames()
+        val width = if (names.isEmpty() || !renderText) naturalWidth
+        else names.fold(naturalWidth) { acc, n -> maxOf(acc, mc.font.width(n).toFloat()) }
+        val height = if (names.isEmpty()) naturalHeight else (if (renderText) 14 else 5).toFloat()
+        return Size(width, height)
+    }
+    *///?}
 
     override fun measuredWidth(): Float = try {
         size()?.width ?: naturalWidth
@@ -187,34 +235,47 @@ class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item 
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
 
+    //? if > 1.8.9 {
     override fun hasContent() = previewing || hudAccessor?.let {
         !it.lastToolHighlight.isEmpty && (!fadeOut || it.toolHighlightTimer > 0)
     } ?: true
+    //?} else {
+    /*// 1.8.9 leaves selectedItem null rather than holding an empty stack
+    override fun hasContent() = previewing || hudAccessor?.let {
+        it.lastToolHighlight != null && (!fadeOut || it.itemSelectedTimer > 0)
+    } ?: true
+    *///?}
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
+        //? if > 1.8.9 {
         return measureOnce({ mix(0L, hudAccessor?.lastToolHighlight) }) {
             textWidth { hudAccessor?.lastToolHighlight?.takeUnless { s -> s.isEmpty }?.hoverName?.string }
         } ?: naturalWidth
+        //?} else {
+        /*return measureOnce({ mix(0L, hudAccessor?.lastToolHighlight) }) {
+            textWidth { hudAccessor?.lastToolHighlight?.legacyHoverName }
+        } ?: naturalWidth
+        *///?}
     }
 }
 
 class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Category.INFO) {
     @Dropdown(
         title = "Show Score Points",
-        category = "Score Points",
+        subcategory = "Score Points",
         options = ["Hide", "Hide Only if Consecutive", "Show Always"]
     )
     var scoreboardPoints: Int = 1
 
     @Switch(
         title = "Hide Repeating Scores",
-        category = "Score Points",
+        subcategory = "Score Points",
         description = "Hide score points when every visible score shows the same number."
     )
     var hideRepeatingScores: Boolean = true
 
-    @Color(title = "Score Points Color", category = "Score Points")
+    @Color(title = "Score Points Color", subcategory = "Score Points")
     var scorePointsColor = PolyColor(0xFFFF5555.toInt())
 
     @Switch(title = "Scoreboard Title")
@@ -234,14 +295,14 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     @Switch(
         title = "Keep Background Colour",
-        category = "Background Image",
+        subcategory = "Background Image",
         description = "Draw the solid background colours on top of the image instead of replacing them."
     )
     var keepBackgroundColor: Boolean = false
 
     @File(
         title = "Image",
-        category = "Background Image",
+        subcategory = "Background Image",
         description = "The PNG image file to use as the scoreboard background.",
         types = ["png"],
         filterName = "PNG Images",
@@ -260,25 +321,39 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     val textShadow: Boolean get() = textType == 1
 
+    //? if > 1.8.9 {
     fun showScorePoints(scores: Collection<PlayerScoreEntry>): Boolean {
+    //?} else
+    //fun showScorePoints(scores: Collection<ScoreboardScore>): Boolean {
+        if (previewing) return scoreboardPoints == 2
         if (hideRepeatingScores && areScoresRepeating(scores)) return false
         return scoreboardPoints == 2 || (scoreboardPoints == 1 && !areScoresConsecutive(scores))
     }
 
+    //? if > 1.8.9 {
     fun areScoresRepeating(scores: Collection<PlayerScoreEntry>): Boolean {
         val values = scores
             .filter { !it.isHidden }
             .map { it.value }
+    //?} else {
+    /*fun areScoresRepeating(scores: Collection<ScoreboardScore>): Boolean {
+        val values = scores.map { it.get() }
+    *///?}
 
         if (values.size < 2) return false
         return values.all { it == values[0] }
     }
 
+    //? if > 1.8.9 {
     fun areScoresConsecutive(scores: Collection<PlayerScoreEntry>): Boolean {
         val values = scores
             .filter { !it.isHidden }
             .map { it.value }
             .sorted()
+    //?} else {
+    /*fun areScoresConsecutive(scores: Collection<ScoreboardScore>): Boolean {
+        val values = scores.map { it.get() }.sorted()
+    *///?}
 
         if (values.isEmpty()) return false
 
@@ -304,6 +379,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     override val anchorX get() = 1f
     override val anchorY get() = 0.5f
 
+    //? if > 1.8.9 {
     override fun hasContent(): Boolean {
         if (previewing) return true
         val scoreboard = mc.level?.scoreboard ?: return true
@@ -311,18 +387,31 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         return scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) != null ||
             scoreboard.getPlayersTeam(player.scoreboardName) != null
     }
+    //?} else {
+    /*override fun hasContent(): Boolean {
+        if (previewing) return true
+        val scoreboard = mc.level?.scoreboard ?: return true
+        val player = mc.player ?: return true
+        return scoreboard.getDisplayObjective(SIDEBAR_SLOT) != null ||
+            scoreboard.getTeamOfMember(player.name) != null
+    }
+    *///?}
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
 
     private fun size(): Size? = measureOnce({
         var h = HudInternals.scoreboardRevision.toLong()
+        //? if > 1.8.9 {
         h = mix(h, mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR))
+        //?} else
+        //h = mix(h, mc.level?.scoreboard?.getDisplayObjective(SIDEBAR_SLOT))
         h = mix(h, scoreboardPoints)
         h = mix(h, hideRepeatingScores)
         h = mix(h, scoreboardTitle)
         mix(h, persistentTitle)
     }) { measureSize() }
 
+    //? if > 1.8.9 {
     private fun measureSize(): Size? {
         val objective = (if (previewing) DemoData.demoScoreboardObjective()
         else mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)) ?: return null
@@ -350,6 +439,39 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
         return Size((maxWidth + 4).toFloat(), scores.size, showTitle)
     }
+    //?} else {
+    /*private fun measureSize(): Size? {
+        val objective = (if (previewing) DemoData.demoScoreboardObjective()
+        else mc.level?.scoreboard?.getDisplayObjective(SIDEBAR_SLOT)) ?: return null
+        val font = mc.font
+        val scoreboard = objective.scoreboard
+        val scores = scoreboard.getScores(objective)
+            .sortedByDescending { it.get() }
+            .take(15)
+        val showTitle = scoreboardTitle
+        if (scores.isEmpty() && !(persistentTitle && showTitle)) return null
+
+        val spaceWidth = font.width(": ")
+        val showPoints = showScorePoints(scores)
+        var maxWidth = font.width(objective.displayName)
+        for (s in scores) {
+            val name = Team.getMemberDisplayName(scoreboard.getTeamOfMember(s.owner), s.owner)
+            var line = font.width(name)
+            if (showPoints) {
+                val scoreWidth = font.width(s.get().toString())
+                if (scoreWidth > 0) line += spaceWidth + scoreWidth
+            }
+            maxWidth = maxOf(maxWidth, line)
+        }
+
+        return Size((maxWidth + 4).toFloat(), scores.size, showTitle)
+    }
+
+    private companion object {
+        // 1.8.9 addresses display slots by index; 1 is the sidebar
+        const val SIDEBAR_SLOT = 1
+    }
+    *///?}
 
     override fun measuredWidth(): Float = try {
         size()?.width ?: naturalWidth
@@ -460,6 +582,11 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     val bodyBgArgb: Int get() = bodyBgColor.argb
     val footerBgArgb: Int get() = footerBgColor.argb
 
+    fun hidesPing(ping: Int): Boolean {
+        if (previewing) return false
+        return hideFalsePing && (ping <= 1 || ping >= 999)
+    }
+
     fun pingColor(ping: Int): Int = when {
         ping >= 400 -> pingLevelSix
         ping >= 300 -> pingLevelFive
@@ -507,7 +634,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     // the open state only updates partway through vanilla's render, after the transform has already measured,
     // so the held key covers the frame the list opens on
+    //? if > 1.8.9 {
     override fun shouldShow() = previewing || isRendering() || mc.options.keyPlayerList.isDown
+    //?} else
+    //override fun shouldShow() = previewing || isRendering() || mc.options.playerListKey.isPressed
 
     override fun hasContent() = shouldShow()
 
@@ -524,20 +654,26 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     private fun tabOverlay(): IPlayerTabOverlay? = try {
         //? if >=26.2 {
         mc.gui.hud.tabList as IPlayerTabOverlay
-        //?} else {
+        //?} elif > 1.8.9 {
         /*mc.gui.tabList as IPlayerTabOverlay
+        *///?} else {
+        /*mc.gui.playerTabOverlay as IPlayerTabOverlay
         *///?}
     } catch (_: Throwable) {
         null
     }
 
     private fun players(): List<PlayerInfo> = try {
+        //? if > 1.8.9 {
         val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
+        //?} else
+        //val real = mc.networkHandler?.onlinePlayers?.take(playerLimit) ?: emptyList()
         if (previewing) TabListManager.devInfo.take(playerLimit) else real
     } catch (_: Throwable) {
         emptyList()
     }
 
+    //? if > 1.8.9 {
     private fun displayName(info: PlayerInfo): Component {
         info.tabListDisplayName?.let { return it }
         val name = try {
@@ -551,27 +687,53 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         }
         return PlayerTeam.formatNameForTeam(info.team, Component.literal(name))
     }
+    //?} else {
+    /*// 1.8.9 formats tab list names as legacy strings rather than components
+    private fun displayName(info: PlayerInfo): String {
+        info.displayName?.let { return it.formattedString }
+        val name = try {
+            info.profile.name ?: ""
+        } catch (_: Throwable) {
+            ""
+        }
+        return Team.getMemberDisplayName(info.team, name)
+    }
+    *///?}
 
+    //? if > 1.8.9 {
     private fun tabText(editing: Component, live: () -> Component?, show: Boolean): Component? {
+    //?} else
+    //private fun tabText(editing: Text, live: () -> Text?, show: Boolean): Text? {
         if (!show) return null
         if (previewing) return editing
         return try { live() } catch (_: Throwable) { null }
     }
 
+    //? if > 1.8.9 {
     private var hfHeader: Component? = null
     private var hfFooter: Component? = null
+    //?} else {
+    /*private var hfHeader: Text? = null
+    private var hfFooter: Text? = null
+    *///?}
     private var hfScreenWidth = -1
     private var hfWidth = 0
     private var hfHeight = 0
 
+    //? if > 1.8.9 {
     private fun measureHeaderFooter(header: Component?, footer: Component?, screenWidth: Int) {
+    //?} else
+    //private fun measureHeaderFooter(header: Text?, footer: Text?, screenWidth: Int) {
         if (header == hfHeader && footer == hfFooter && screenWidth == hfScreenWidth) return
         val font = mc.font
         var width = 0
         var height = 0
         for (text in arrayOf(header, footer)) {
             if (text == null) continue
+            //? if > 1.8.9 {
             val lines = font.split(text, screenWidth - 50)
+            //?} else
+            //val lines = font.split(text.formattedString, screenWidth - 50)
             for (l in lines) width = maxOf(width, font.width(l))
             height += lines.size * font.lineHeight + 1
         }
@@ -591,10 +753,17 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         h = mix(h, overlay?.header)
         h = mix(h, overlay?.footer)
         var n = 0
+        //? if > 1.8.9 {
         for (p in mc.connection?.listedOnlinePlayers ?: emptyList()) {
             if (n++ >= playerLimit) break
             h = mix(mix(h, p), p.tabListDisplayName)
         }
+        //?} else {
+        /*for (p in mc.networkHandler?.onlinePlayers ?: emptyList()) {
+            if (n++ >= playerLimit) break
+            h = mix(mix(h, p), p.displayName)
+        }
+        *///?}
         h = mix(h, n)
         h = mix(h, playerLimit)
         h = mix(h, showHead)
@@ -654,8 +823,13 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     private companion object {
         // Stable instances so the header/footer measure cache also hits while previewing.
+        //? if > 1.8.9 {
         val PREVIEW_HEADER: Component = Component.literal("Tab List")
         val PREVIEW_FOOTER: Component = Component.literal("VanillaHUD")
+        //?} else {
+        /*val PREVIEW_HEADER: Text = DemoData.demoTabHeader()
+        val PREVIEW_FOOTER: Text = DemoData.demoTabFooter()
+        *///?}
     }
 }
 
@@ -678,7 +852,10 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
 
     override val sectionAnchorY get() = 0.5f
 
+    //? if > 1.8.9 {
     override fun shouldShow() = previewing || hudAccessor?.let { it.title != null && it.titleTime > 0 } == true
+    //?} else
+    //override fun shouldShow() = previewing || hudAccessor?.let { it.titleText != null && it.titleTime > 0 } == true
 
     override fun hasContent() = shouldShow()
 
@@ -686,13 +863,21 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
 
     private fun size(): Size? = measureOnce({
         if (!shouldShow()) Long.MIN_VALUE
+        //? if > 1.8.9 {
         else hudAccessor.let { mix(mix(0L, it?.title), it?.subtitle) }
+        //?} else
+        //else hudAccessor.let { mix(mix(0L, it?.titleText), it?.subtitleText) }
     }) { if (shouldShow()) measureSize() else null }
 
     private fun measureSize(): Size {
         val gui = if (previewing) null else hudAccessor
+        //? if > 1.8.9 {
         val title = gui?.title?.string ?: "Title"
         val subtitle = gui?.subtitle?.string ?: "Subtitle"
+        //?} else {
+        /*val title = gui?.titleText ?: "Title"
+        val subtitle = gui?.subtitleText ?: "Subtitle"
+        *///?}
         val font = mc.font
         val line = font.lineHeight
         return Size(
@@ -714,6 +899,7 @@ class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Categor
     }
 }
 
+//? if > 1.8.9 {
 class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Effects", Category.PLAYER) {
     override val naturalWidth get() = 50f
     override val naturalHeight get() = 50f
@@ -830,21 +1016,44 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
         const val CAPTION_ROW = 10
     }
 }
+//?}
 
 object Huds {
-    val hotbar = HotbarHud()
-    val actionBar = ActionBarHud()
-    val heldItemTooltip = HeldItemTooltipHud()
-    val title = TitleHud()
-    val scoreboard = ScoreboardHud()
-    val tabList = TabListHud()
-    val bossBar = BossBarHud()
-    val statusEffects = StatusEffectsHud()
-    val closedCaptions = ClosedCaptionsHud()
+    private val hotbarProvider = HotbarHud()
+    private val actionBarProvider = ActionBarHud()
+    private val heldItemTooltipProvider = HeldItemTooltipHud()
+    private val titleProvider = TitleHud()
+    private val scoreboardProvider = ScoreboardHud()
+    private val tabListProvider = TabListHud()
+    private val bossBarProvider = BossBarHud()
+    //? if > 1.8.9 {
+    private val statusEffectsProvider = StatusEffectsHud()
+    private val closedCaptionsProvider = ClosedCaptionsHud()
+    //?}
+
+    val hotbar: HotbarHud get() = HudTransform.live(hotbarProvider)
+    val actionBar: ActionBarHud get() = HudTransform.live(actionBarProvider)
+    val heldItemTooltip: HeldItemTooltipHud get() = HudTransform.live(heldItemTooltipProvider)
+    val title: TitleHud get() = HudTransform.live(titleProvider)
+    val scoreboard: ScoreboardHud get() = HudTransform.live(scoreboardProvider)
+    val tabList: TabListHud get() = HudTransform.live(tabListProvider)
+    val bossBar: BossBarHud get() = HudTransform.live(bossBarProvider)
+    //? if > 1.8.9 {
+    val statusEffects: StatusEffectsHud get() = HudTransform.live(statusEffectsProvider)
+    val closedCaptions: ClosedCaptionsHud get() = HudTransform.live(closedCaptionsProvider)
+    //?}
 
     val all: Array<VanillaHud>
+        //? if > 1.8.9 {
         get() = arrayOf(
-            hotbar, actionBar, heldItemTooltip,
-            title, scoreboard, tabList, bossBar, statusEffects, closedCaptions,
+            hotbarProvider, actionBarProvider, heldItemTooltipProvider, titleProvider,
+            scoreboardProvider, tabListProvider, bossBarProvider, statusEffectsProvider,
+            closedCaptionsProvider,
         )
+        //?} else {
+        /*get() = arrayOf(
+            hotbarProvider, actionBarProvider, heldItemTooltipProvider,
+            titleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
+        )
+        *///?}
 }

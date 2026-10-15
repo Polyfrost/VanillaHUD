@@ -2,8 +2,9 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-//? if <1.21.6 {
-/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+//? if <1.21.6 && >1.8.9 {
+/*//? if > 1.8.9
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
@@ -20,14 +21,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
 import net.minecraft.client.gui.Hud;
-//?} else {
+//?} elif > 1.8.9 {
 /*import net.minecraft.client.gui.Gui;
+*///?} else {
+/*import net.minecraft.client.gui.GameGui;
 *///?}
 
 //? if >=26.2 {
 @Mixin(Hud.class)
-//?} else {
+//?} elif > 1.8.9 {
 /*@Mixin(Gui.class)
+*///?} else {
+/*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinAir {
     //? if 1.21.1 {
