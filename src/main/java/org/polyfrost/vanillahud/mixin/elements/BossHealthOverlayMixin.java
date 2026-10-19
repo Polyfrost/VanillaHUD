@@ -13,9 +13,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
 //?} else {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import net.minecraft.client.gui.BossBar;
 import net.minecraft.client.gui.GameGui;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.BossBarHud;
+import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
@@ -152,6 +154,8 @@ public class BossHealthOverlayMixin {
     /*
     @WrapMethod(method = "renderBossBars")
     private void vanillahud$boss(Operation<Void> original) {
+        if ((BossBar.name == null || BossBar.timer <= 0) && !VanillaHud.previewing(null)) return;
+
         BossBarHud hud = Huds.INSTANCE.getBossBar();
         if (!hud.shouldDraw()) return;
 
