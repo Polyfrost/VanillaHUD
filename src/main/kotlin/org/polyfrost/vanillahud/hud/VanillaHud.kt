@@ -38,6 +38,9 @@ abstract class VanillaHud(
     /** clockwise quarter turns applied to the whole element from 0 to 3 */
     open val quarterTurns: Int get() = 0
 
+    /** reverses the element along its length */
+    open val mirrored: Boolean get() = false
+
     private val turned: Boolean get() = quarterTurns % 2 != 0
 
     protected open val anchorX: Float get() = 0f

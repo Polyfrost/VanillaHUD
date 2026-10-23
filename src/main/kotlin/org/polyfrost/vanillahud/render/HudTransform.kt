@@ -12,6 +12,7 @@ import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.roundToInt
 
 //? if <=1.21.5 && >1.8.9 {
 /*import com.mojang.math.Axis
@@ -30,6 +31,14 @@ object HudTransform {
     var iconTurns = 0
         private set
     private var iconDepth = 0
+
+    /** open [beginUpright] blocks, which already move their content so [mirrorShift] leaves it alone */
+    private var uprightDepth = 0
+
+    /** per open [begin], twice the centre y of a [VanillaHud.mirrored] element or NaN, kept unboxed */
+    private var mirrors = FloatArray(8)
+    private var mirrorDepth = 0
+    private var mirror2Y = Float.NaN
 
     private fun push(graphics: GuiGraphicsExtractor) {
         graphics.pose().pushMatrix()
@@ -169,14 +178,20 @@ object HudTransform {
         // rotate about the content centre then shift so the rotated bounding box lands on gx gy
         val rotW = if (turns % 2 != 0) natH else natW
         val rotH = if (turns % 2 != 0) natW else natH
-        val theta = turns * (PI.toFloat() / 2f)
+        val drawTurns = drawTurns(src)
+        val theta = drawTurns * (PI.toFloat() / 2f)
+        val turned = drawTurns != 0
+
+        mirror2Y = if (src.mirrored) 2f * oy + natH else Float.NaN
+        if (mirrorDepth == mirrors.size) mirrors = mirrors.copyOf(mirrorDepth * 2)
+        mirrors[mirrorDepth++] = mirror2Y
 
         push(graphics)
         val pose = graphics.pose()
         //? if <=1.21.5 && >1.8.9 {
         /*pose.translate(gx, gy, 0f)
         pose.scale(s, s, 1f)
-        if (turns != 0) {
+        if (turned) {
             pose.translate(rotW / 2f, rotH / 2f, 0f)
             pose.mulPose(Axis.ZP.rotation(theta))
             pose.translate(-natW / 2f - ox, -natH / 2f - oy, 0f)
@@ -186,7 +201,7 @@ object HudTransform {
         *///?} else {
         pose.translate(gx, gy)
         pose.scale(s, s)
-        if (turns != 0) {
+        if (turned) {
             pose.translate(rotW / 2f, rotH / 2f)
             pose.rotate(theta)
             pose.translate(-natW / 2f - ox, -natH / 2f - oy)
@@ -200,7 +215,7 @@ object HudTransform {
     @JvmStatic
     fun beginIcons(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
         begin(graphics, provider)
-        if (iconDepth++ == 0) iconTurns = live(provider).quarterTurns
+        if (iconDepth++ == 0) iconTurns = drawTurns(live(provider))
     }
 
     @JvmStatic
@@ -210,6 +225,9 @@ object HudTransform {
         iconTurns = 0
         depth = 0
         scissors.clear()
+        uprightDepth = 0
+        mirrorDepth = 0
+        mirror2Y = Float.NaN
     }
 
     @JvmStatic
@@ -226,7 +244,7 @@ object HudTransform {
         if (iconTurns == 0) return false
         val theta = -iconTurns * (PI.toFloat() / 2f)
         val cx = x + width / 2f
-        val cy = y + height / 2f
+        val cy = y + height / 2f + mirrorShift(y, y + height)
         push(graphics)
         val pose = graphics.pose()
         //? if <=1.21.5 && >1.8.9 {
@@ -241,12 +259,28 @@ object HudTransform {
         return true
     }
 
-    /** counter rotates around [cx] [cy] so content stays upright inside a rotated element */
+    private fun drawTurns(hud: VanillaHud): Int = if (hud.mirrored) (hud.quarterTurns + 2) % 4 else hud.quarterTurns
+
+    /** how far to move a piece from [y0] to [y1] to reach its flipped height */
+    @JvmStatic
+    fun mirrorShift(y0: Int, y1: Int): Int {
+        if (mirror2Y.isNaN() || uprightDepth > 0) return 0
+        return (mirror2Y - y0 - y1).roundToInt()
+    }
+
+    /** keeps content around [cx] [cy] upright when rotated, or moves it to its flipped height */
     @JvmStatic
     fun beginUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud, cx: Float, cy: Float) {
-        val turns = live(provider).quarterTurns
+        val turns = drawTurns(live(provider))
         push(graphics)
+        uprightDepth++
         val pose = graphics.pose()
+        if (!mirror2Y.isNaN()) {
+            //? if <=1.21.5 && >1.8.9 {
+            /*pose.translate(0f, mirror2Y - 2f * cy, 0f)
+            *///?} else
+            pose.translate(0f, mirror2Y - 2f * cy)
+        }
         if (turns == 0) return
         val theta = -turns * (PI.toFloat() / 2f)
         //? if <=1.21.5 && >1.8.9 {
@@ -262,6 +296,7 @@ object HudTransform {
 
     @JvmStatic
     fun endUpright(graphics: GuiGraphicsExtractor) {
+        if (uprightDepth > 0) uprightDepth--
         pop(graphics)
     }
 
@@ -269,6 +304,8 @@ object HudTransform {
     fun end(graphics: GuiGraphicsExtractor) {
         val state = scissors.removeLastOrNull()
         if (state == SKIPPED) return
+        if (mirrorDepth > 0) mirrorDepth--
+        mirror2Y = if (mirrorDepth > 0) mirrors[mirrorDepth - 1] else Float.NaN
         pop(graphics)
         if (state == SCISSORED) graphics.disableScissor()
     }
