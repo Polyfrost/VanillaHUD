@@ -11,6 +11,16 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
+//? if >=26 {
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
+import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.StatusEffectsHud;
+import org.spongepowered.asm.mixin.injection.At;
+//?}
 
 //? if >=26.2 {
 import net.minecraft.client.gui.Hud;
@@ -37,7 +47,35 @@ public class GuiMixinStatusEffects {
         original.call(graphics, deltaTracker);
         HudTransform.end(graphics);
     }
-    *///?}
+    *///?} else {
+    @WrapOperation(
+            method = "extractEffects",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V")
+    )
+    private void vanillahud$shiftEffectBackground(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height, Operation<Void> original) {
+        StatusEffectsHud hud = Huds.INSTANCE.getStatusEffects();
+        if (!hud.shouldDraw()) {
+            original.call(graphics, pipeline, sprite, x, y, width, height);
+            return;
+        }
+
+        original.call(graphics, pipeline, sprite, x + hud.rowShiftX(y), y + hud.rowShiftY(y), width, height);
+    }
+
+    @WrapOperation(
+            method = "extractEffects",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIII)V")
+    )
+    private void vanillahud$shiftEffectIcon(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height, int color, Operation<Void> original) {
+        StatusEffectsHud hud = Huds.INSTANCE.getStatusEffects();
+        if (!hud.shouldDraw()) {
+            original.call(graphics, pipeline, sprite, x, y, width, height, color);
+            return;
+        }
+
+        original.call(graphics, pipeline, sprite, x + hud.rowShiftX(y), y + hud.rowShiftY(y), width, height, color);
+    }
+    //?}
 }
 //?} else {
 /*// 1.8.9 has no status effect icons on the HUD

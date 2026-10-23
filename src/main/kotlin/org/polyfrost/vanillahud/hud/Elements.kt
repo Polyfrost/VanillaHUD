@@ -957,9 +957,36 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 
     override fun measuredHeight(): Float = try {
         val c = counts() ?: return naturalHeight
-        if (c.harmful > 0) 50f else 24f
+        if (c.harmful > 0 && c.beneficial > 0) 50f else 24f
     } catch (_: Throwable) {
         naturalHeight
+    }
+
+    fun rowShiftX(rowY: Int): Int = try {
+        val c = counts() ?: return 0
+        val rowCount = if (rowY >= HARMFUL_ROW_Y) c.harmful else c.beneficial
+        val gap = 25 * (maxOf(c.beneficial, c.harmful) - rowCount)
+        val fx: Float? = frameX
+        val screenWidth = HudManager.guiScreenWidth
+        val centre = if (fx == null || screenWidth <= 0f) 1f else (fx + width * frameScale / 2f) / screenWidth
+        when {
+            centre < 0.25f -> -gap
+            centre < 0.75f -> -gap / 2
+            else -> 0
+        }
+    } catch (_: Throwable) {
+        0
+    }
+
+    fun rowShiftY(rowY: Int): Int = try {
+        val c = counts() ?: return 0
+        if (rowY >= HARMFUL_ROW_Y && c.beneficial == 0) -26 else 0
+    } catch (_: Throwable) {
+        0
+    }
+
+    private companion object {
+        const val HARMFUL_ROW_Y = 27
     }
 }
 
