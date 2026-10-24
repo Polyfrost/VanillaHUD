@@ -24,10 +24,7 @@ object TabListCompat {
     }
 
     fun bounds(header: Component?, footer: Component?): Bounds? {
-        for (provider in providers) {
-            provider.bounds(header, footer)?.let { return it }
-        }
-        return null
+        return providers.firstNotNullOfOrNull { it.bounds(header, footer) }
     }
 
     private interface Provider {
@@ -136,11 +133,7 @@ object TabListCompat {
                 if (getToggleTab?.invoke(config) == true) return null
 
                 val columns = getRenderColumns?.invoke(reader) as? List<*> ?: return null
-                var maxLines = 0
-                for (column in columns) {
-                    val size = columnSize?.invoke(column) as? Int ?: continue
-                    if (size > maxLines) maxLines = size
-                }
+                val maxLines = columns.maxOfOrNull { columnSize?.invoke(it) as? Int ?: 0 } ?: return null
                 if (maxLines <= 0) return null
 
                 var total = maxLines * LINE_HEIGHT

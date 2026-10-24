@@ -36,8 +36,7 @@ object ForceDefaultPosition {
     private val customized: Customized?
         get() {
             cache?.let { return it }
-            val failed = failedAt
-            if (failed != null && nanos() - failed < RETRY_AFTER_NANOS) return null
+            if (throttled(failedAt)) return null
             val read = read()
             if (read == null) {
                 failedAt = nanos()
@@ -49,6 +48,8 @@ object ForceDefaultPosition {
         }
 
     @Synchronized
+    private fun throttled(stamp: Long?) = stamp != null && nanos() - stamp < RETRY_AFTER_NANOS
+
     fun invalidate() {
         cache = null
         failedAt = null
@@ -68,8 +69,7 @@ object ForceDefaultPosition {
         val known = state.ids
         if (!known.add(hud.hudId)) {
             if (unwritten.isEmpty()) return
-            val last = retriedAt
-            if (last != null && nanos() - last < RETRY_AFTER_NANOS) return
+            if (throttled(retriedAt)) return
             retriedAt = nanos()
         }
         if (write(state)) {
@@ -82,8 +82,7 @@ object ForceDefaultPosition {
 
     private fun flushBacklog() {
         if (unwritten.isEmpty()) return
-        val last = flushedAt
-        if (last != null && nanos() - last < RETRY_AFTER_NANOS) return
+        if (throttled(flushedAt)) return
         val state = customized ?: return
         if (unwritten.isEmpty()) return
         flushedAt = nanos()

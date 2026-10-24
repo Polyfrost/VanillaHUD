@@ -92,7 +92,7 @@ object HudConfigMigrator {
         val from = readStamp(stamp)
         if (from >= SCHEMA_VERSION) return
 
-        if (from < 3) dropCustomScoreboard(folder)
+        if (from < 3) try { Files.deleteIfExists(folder.resolve("huds").resolve(CUSTOM_SCOREBOARD_FILE)) } catch (_: Throwable) {}
         if (from < 5) resetPositions(folder)
         if (from < 6) mergeHotbarCluster(folder)
         if (from < 7) recentreTabList(folder)
@@ -162,7 +162,7 @@ object HudConfigMigrator {
             // the old mode became the side dropdown where Vertical already lines up with Left
             obj.remove("hotbarMode")?.let { obj.add("side", it) }
             for (key in POSITION_KEYS) obj.remove(key)
-            Files.newBufferedWriter(hotbar).use { gson.toJson(obj, it) }
+            writeObject(hotbar, obj)
         } catch (_: Throwable) {
         }
 
@@ -180,7 +180,7 @@ object HudConfigMigrator {
             val y = obj.get("relativeY")?.asFloat ?: return
             if (kotlin.math.abs(y - 10f) > 1e-3f) return
             if (obj.remove("relativeX") == null) return
-            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
+            writeObject(path, obj)
         } catch (_: Throwable) {
         }
     }
@@ -208,12 +208,7 @@ object HudConfigMigrator {
         null
     }
 
-    private fun dropCustomScoreboard(folder: Path) {
-        try {
-            Files.deleteIfExists(folder.resolve("huds").resolve(CUSTOM_SCOREBOARD_FILE))
-        } catch (_: Throwable) {
-        }
-    }
+    private fun writeObject(path: Path, obj: JsonObject) = Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
 
     private fun renameSubtitles(folder: Path) {
         try {
@@ -226,7 +221,7 @@ object HudConfigMigrator {
                     val merged = readObject(target) ?: JsonObject()
                     for (key in POSITION_KEYS) legacy.remove(key)
                     for ((key, value) in legacy.entrySet()) merged.add(key, value)
-                    Files.newBufferedWriter(target).use { gson.toJson(merged, it) }
+                    writeObject(target, merged)
                 }
                 try { Files.deleteIfExists(old) } catch (_: Throwable) {}
             }
@@ -244,7 +239,7 @@ object HudConfigMigrator {
             val current = try { obj.get("hudClass")?.asString } catch (_: Throwable) { null }
             if (current != null && current != LEGACY_CAPTIONS_CLASS) return
             obj.addProperty("hudClass", CLOSED_CAPTIONS_CLASS)
-            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
+            writeObject(path, obj)
         } catch (_: Throwable) {
         }
     }
@@ -256,16 +251,14 @@ object HudConfigMigrator {
             if (current == id) return
             if (path.fileName.toString() == CLOSED_CAPTIONS_FILE && current !in LEGACY_CAPTION_IDS) return
             obj.addProperty("id", id)
-            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
+            writeObject(path, obj)
         } catch (_: Throwable) {
         }
     }
 
     private fun resetFile(path: Path): Boolean {
         return try {
-            val json = Files.newBufferedReader(path).use { JsonParser.parseReader(it) }
-            if (!json.isJsonObject) return false
-            val obj = json.asJsonObject
+            val obj = readObject(path) ?: return false
 
             var changed = false
             for (key in POSITION_KEYS) if (obj.remove(key) != null) changed = true
@@ -275,7 +268,7 @@ object HudConfigMigrator {
             }
             if (!changed) return false
 
-            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
+            writeObject(path, obj)
             true
         } catch (_: Throwable) {
             false

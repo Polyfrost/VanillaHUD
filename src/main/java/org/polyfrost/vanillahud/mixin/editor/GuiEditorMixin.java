@@ -65,7 +65,7 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
-        return VanillaHud.previewing(hud);
+        return VanillaHud.previewing();
     }
 
     @ModifyExpressionValue(
@@ -320,7 +320,7 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
-        return VanillaHud.previewing(hud);
+        return VanillaHud.previewing();
     }
 
     @WrapMethod(method = "render")

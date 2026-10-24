@@ -45,21 +45,19 @@ object VanillaHUDClient : ClientModInitializer {
         }
 
         //? if > 1.8.9 {
-        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick {
-            ForceDefaultPosition.tick()
-            VanillaHud.markRefreshDue()
-            if (HudManager.isEditing) VanillaHud.refreshAll()
-        })
+        ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { onTick() })
         //?} else {
         /*// same per tick refresh the newer versions get from the Fabric end tick event: without it
         // the editor previews keep whatever they measured when the editor opened
-        EventManager.register(TickEvent.End::class.java, Consumer {
-            ForceDefaultPosition.tick()
-            VanillaHud.markRefreshDue()
-            if (HudManager.isEditing) VanillaHud.refreshAll()
-        })
+        EventManager.register(TickEvent.End::class.java, Consumer { onTick() })
         *///?}
 
         HudElementCompat.init()
+    }
+
+    private fun onTick() {
+        ForceDefaultPosition.tick()
+        VanillaHud.markRefreshDue()
+        if (HudManager.isEditing) VanillaHud.refreshAll()
     }
 }

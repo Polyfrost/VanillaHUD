@@ -148,24 +148,16 @@ abstract class VanillaHud(
     override fun deletable() = false
     override fun showByDefault() = true
 
-    private var seededWidth = -1
-    private var seededHeight = -1
-    private var seededHudWidth = -1f
-    private var seededHudHeight = -1f
-    private var seededTurns = -1
-    private var seededAnchor: HudAnchor? = null
+    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?)
+
+    private var seed: Seed? = null
     private var forcePending = false
 
     private fun forgetProfileState() {
         sectionChecked = false
         forcePending = false
         measureOwed = false
-        seededWidth = -1
-        seededHeight = -1
-        seededHudWidth = -1f
-        seededHudHeight = -1f
-        seededTurns = -1
-        seededAnchor = null
+        seed = null
         measuredValid = false
         measuredFrame = -1L
     }
@@ -233,19 +225,20 @@ abstract class VanillaHud(
         val w = HudManager.guiScreenWidth.toInt()
         val h = HudManager.guiScreenHeight.toInt()
         if (w <= 0 || h <= 0) return
-        val screenSame = w == seededWidth && h == seededHeight && quarterTurns == seededTurns &&
-            growthAnchor == seededAnchor
+        val seed = seed
+        val screenSame = seed != null && w == seed.w && h == seed.h && quarterTurns == seed.turns &&
+            growthAnchor == seed.anchor
         if (screenSame && !measure) return
         try {
             val scale = effectiveScale
-            if (screenSame && (width * scale).coerceAtLeast(1f) == seededHudWidth &&
-                (height * scale).coerceAtLeast(1f) == seededHudHeight
+            if (screenSame && (width * scale).coerceAtLeast(1f) == seed!!.hudW &&
+                (height * scale).coerceAtLeast(1f) == seed.hudH
             ) {
                 measureOwed = false
                 return
             }
             syncRenderedSize()
-            if (screenSame && renderedW == seededHudWidth && renderedH == seededHudHeight) return
+            if (screenSame && renderedW == seed!!.hudW && renderedH == seed.hudH) return
             val wasDefault = isAtDefaultPosition()
             captureDefaults()
             if (wasDefault) {
@@ -260,15 +253,10 @@ abstract class VanillaHud(
     }
 
     private fun commitSeed(w: Int, h: Int, hudW: Float, hudH: Float) {
-        seededWidth = w
-        seededHeight = h
-        seededHudWidth = hudW
-        seededHudHeight = hudH
-        seededTurns = quarterTurns
-        seededAnchor = growthAnchor
+        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor)
     }
 
-    val previewing: Boolean get() = previewing(this)
+    val previewing: Boolean get() = previewing()
 
     fun shouldDraw(): Boolean {
         if (!HudManager.isEditing && hidden) return false
@@ -448,7 +436,7 @@ abstract class VanillaHud(
         }
 
         /**
-         * Whether [hud] should be drawing demo content instead of whatever the game has.
+         * Whether HUDs should be drawing demo content instead of whatever the game has.
          *
          * The editor and the settings page both want it. The settings page used to be gated on
          * `hud.locked == false`, but [locked] means "still pinned to the vanilla origin" here, so
@@ -456,44 +444,24 @@ abstract class VanillaHud(
          * were off on the settings page for exactly the elements nobody had touched yet.
          */
         @JvmStatic
-        // the per-element call sites in the mixins still hand in their HUD
-        @Suppress("UNUSED_PARAMETER")
-        fun previewing(hud: VanillaHud?): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen
+        fun previewing(): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen
     }
 }
 
-internal fun sectionFor(fx: Float, fy: Float): Section = when {
-    fy < 0.25f -> when {
-        fx < 0.25f -> Section.TopLeft
-        fx < 0.75f -> Section.TopCenter
-        else -> Section.TopRight
-    }
-    fy < 0.75f -> when {
-        fx < 0.25f -> Section.CenterLeft
-        fx < 0.75f -> Section.Center
-        else -> Section.CenterRight
-    }
-    else -> when {
-        fx < 0.25f -> Section.BottomLeft
-        fx < 0.75f -> Section.BottomCenter
-        else -> Section.BottomRight
-    }
-}
+private fun cell(f: Float) = if (f < 0.25f) 0 else if (f < 0.75f) 1 else 2
 
-internal fun growthAnchorFor(fx: Float, fy: Float): HudAnchor = when {
-    fy < 0.25f -> when {
-        fx < 0.25f -> HudAnchor.TopLeft
-        fx < 0.75f -> HudAnchor.Top
-        else -> HudAnchor.TopRight
-    }
-    fy < 0.75f -> when {
-        fx < 0.25f -> HudAnchor.Left
-        fx < 0.75f -> HudAnchor.Center
-        else -> HudAnchor.Right
-    }
-    else -> when {
-        fx < 0.25f -> HudAnchor.BottomLeft
-        fx < 0.75f -> HudAnchor.Bottom
-        else -> HudAnchor.BottomRight
-    }
-}
+private val SECTIONS = listOf(
+    Section.TopLeft, Section.TopCenter, Section.TopRight,
+    Section.CenterLeft, Section.Center, Section.CenterRight,
+    Section.BottomLeft, Section.BottomCenter, Section.BottomRight,
+)
+
+private val GROWTH_ANCHORS = listOf(
+    HudAnchor.TopLeft, HudAnchor.Top, HudAnchor.TopRight,
+    HudAnchor.Left, HudAnchor.Center, HudAnchor.Right,
+    HudAnchor.BottomLeft, HudAnchor.Bottom, HudAnchor.BottomRight,
+)
+
+internal fun sectionFor(fx: Float, fy: Float): Section = SECTIONS[cell(fy) * 3 + cell(fx)]
+
+internal fun growthAnchorFor(fx: Float, fy: Float): HudAnchor = GROWTH_ANCHORS[cell(fy) * 3 + cell(fx)]

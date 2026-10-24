@@ -54,14 +54,8 @@ object HudTransform {
         }
     }
 
-    private fun resolve(provider: VanillaHud): VanillaHud? {
-        for (h in HudManager.activeInstances) {
-            if (provider.javaClass.isInstance(h)) {
-                return h as VanillaHud
-            }
-        }
-        return null
-    }
+    private fun resolve(provider: VanillaHud): VanillaHud? =
+        HudManager.activeInstances.firstOrNull(provider.javaClass::isInstance) as VanillaHud?
 
     private val MISSING = Any()
 
