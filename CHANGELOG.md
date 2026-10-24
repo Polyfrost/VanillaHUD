@@ -1,3 +1,4 @@
-## 3.5.9
-- Properly restore HUD state after preview
-- Fixed rotated hotbar icons not working on 1.8.9 when paired with Argentum
+## 3.5.10
+- Improve performance
+- Fix tab list being off-center sometimes
+- align effect rows to the element's side and remove the empty row gap
