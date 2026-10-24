@@ -557,6 +557,29 @@ class TitlePositionTest {
         assertEquals(vanillaY(LAPTOP_H), hud.y, 0.5f, "so the offsets it restores have to match it")
     }
 
+    @Test
+    fun `a default taken after the hud shrank is centred on its new width`() {
+        screen(LAPTOP_W, LAPTOP_H)
+        val hud = fresh(ShrinkingHud())
+        hud.renderedW = 370f
+        hud.w = 200f
+
+        val (dx, _) = hud.defaultPosition()
+
+        assertEquals(LAPTOP_W / 2f, dx + hud.scaledWidth / 2f, 0.5f, "oneconfig converts the default through scaledWidth")
+
+        val provider = ShrinkingHud()
+        provider.renderedW = 370f
+        provider.w = 200f
+        provider.defaultPosition()
+        assertEquals(370f, provider.renderedW, 0f, "an unmade provider hud is not measured")
+    }
+
+    private class ShrinkingHud : CentredHud("vanillahud-shrinking.json", "Shrinking") {
+        var w = 370f
+        override fun measuredWidth() = w
+    }
+
     private class AnchorHud : VanillaHud("vanillahud-anchor.json", "Anchor", Hud.Category.INFO) {
         override val naturalWidth get() = 60f
         override val naturalHeight get() = 11f

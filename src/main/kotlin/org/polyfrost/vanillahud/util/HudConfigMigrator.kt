@@ -9,11 +9,13 @@ import java.nio.file.Path
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 6
+    private const val SCHEMA_VERSION = 7
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
     private const val HOTBAR_FILE = "vanillahud-hotbar.json"
+
+    private const val TAB_FILE = "vanillahud-tab.json"
 
     /** hud files folded into [HOTBAR_FILE] mapped to the keys they hand over */
     private val MERGED_INTO_HOTBAR = mapOf(
@@ -93,6 +95,7 @@ object HudConfigMigrator {
         if (from < 3) dropCustomScoreboard(folder)
         if (from < 5) resetPositions(folder)
         if (from < 6) mergeHotbarCluster(folder)
+        if (from < 7) recentreTabList(folder)
 
         writeStamp(stamp)
     }
@@ -164,6 +167,27 @@ object HudConfigMigrator {
         }
 
         unmarkCustomized(folder, HOTBAR_FILE)
+    }
+
+    internal fun recentreTabList(folder: Path) {
+        try {
+            val path = folder.resolve("huds").resolve(TAB_FILE)
+            val obj = readObject(path) ?: return
+            if (!isLocked(obj)) return
+            if (enumValue(obj, "section") != "TopCenter") return
+            if ((enumValue(obj, "growthAnchor") ?: "Auto") != "Auto") return
+            if (!obj.get("anchorTargetId")?.asString.isNullOrEmpty()) return
+            val y = obj.get("relativeY")?.asFloat ?: return
+            if (kotlin.math.abs(y - 10f) > 1e-3f) return
+            if (obj.remove("relativeX") == null) return
+            Files.newBufferedWriter(path).use { gson.toJson(obj, it) }
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun enumValue(obj: JsonObject, key: String): String? {
+        val e = obj.get(key) ?: return null
+        return if (e.isJsonObject) e.asJsonObject.get("value")?.asString else e.asString
     }
 
     /** lets [ForceDefaultPosition] re-seed the hud from its new origin on the next tick */

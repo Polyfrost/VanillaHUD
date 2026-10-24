@@ -362,6 +362,7 @@ abstract class VanillaHud(
     override fun hasBackground() = false
 
     override fun defaultPosition(): Pair<Float, Float> {
+        if (tree != null) syncRenderedSize()
         val w = HudManager.guiScreenWidth.toInt()
         val h = HudManager.guiScreenHeight.toInt()
         return Pair(scaledOriginX(w, h), scaledOriginY(w, h))
