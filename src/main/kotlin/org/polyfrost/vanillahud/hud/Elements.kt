@@ -160,6 +160,9 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
     )
     var side = BOTTOM
 
+    @Switch(title = "Reverse Direction", description = "Reverse the order of the slots, health and hunger.")
+    var reverseDirection = false
+
     @Switch(
         title = "Animation",
         description = "Slide the selected-slot highlight between positions instead of snapping."
@@ -190,6 +193,8 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
     //?}
 
     override val quarterTurns get() = side.coerceIn(BOTTOM, RIGHT)
+
+    override val mirrored get() = reverseDirection != (quarterTurns == TOP || quarterTurns == RIGHT)
 
     override val naturalWidth get() = 182f
 

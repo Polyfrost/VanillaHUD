@@ -3,7 +3,7 @@ mod.name = "VanillaHUD"
 mod.group = "org.polyfrost"
 mod.version = "3.5.10"
 
-deps.fabric_loader = "0.19.3"
+deps.fabric_loader = "0.19.5"
 deps.oneconfig = "1.4.3"
 deps.fabric_language_kotlin = "1.14.1+kotlin.2.4.20"
 deps.junit = "6.1.3"
