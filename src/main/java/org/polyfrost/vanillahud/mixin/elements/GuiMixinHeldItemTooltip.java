@@ -81,7 +81,7 @@ public class GuiMixinHeldItemTooltip {
     /*@WrapMethod(method = "renderSelectedItemName")
     private void vanillahud$itemName(Window window, Operation<Void> original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
-        if (!hud.shouldDraw()) return;
+        if (!hud.hasContent() || !hud.shouldDraw()) return;
 
         HudTransform.begin(LegacyDrawContext.INSTANCE, hud);
         original.call(window);

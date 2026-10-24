@@ -271,6 +271,7 @@ object HudTransform {
     /** keeps content around [cx] [cy] upright when rotated, or moves it to its flipped height */
     @JvmStatic
     fun beginUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud, cx: Float, cy: Float) {
+        if (uprightIsNoop(provider)) return
         val turns = drawTurns(live(provider))
         push(graphics)
         uprightDepth++
@@ -295,10 +296,18 @@ object HudTransform {
     }
 
     @JvmStatic
-    fun endUpright(graphics: GuiGraphicsExtractor) {
+    fun endUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
+        if (uprightIsNoop(provider)) return
         if (uprightDepth > 0) uprightDepth--
         pop(graphics)
     }
+
+    @JvmStatic
+    fun endUprightIcon(graphics: GuiGraphicsExtractor) {
+        pop(graphics)
+    }
+
+    private fun uprightIsNoop(provider: VanillaHud) = mirror2Y.isNaN() && drawTurns(live(provider)) == 0
 
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {

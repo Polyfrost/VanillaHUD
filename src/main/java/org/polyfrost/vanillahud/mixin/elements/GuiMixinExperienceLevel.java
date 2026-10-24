@@ -38,7 +38,7 @@ public class GuiMixinExperienceLevel {
         HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
                 graphics.guiWidth() / 2f, graphics.guiHeight() - HotbarHud.LEVEL_CENTER_Y);
         original.call(graphics, delta);
-        HudTransform.endUpright(graphics);
+        HudTransform.endUpright(graphics, Huds.INSTANCE.getHotbar());
         HudTransform.end(graphics);
     }
     *///?}

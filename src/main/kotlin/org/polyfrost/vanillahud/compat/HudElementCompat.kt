@@ -55,7 +55,7 @@ object HudElementCompat {
         val (cx, cy) = center(ctx)
         HudTransform.beginUpright(ctx, element, cx, cy)
     }, { ctx ->
-        HudTransform.endUpright(ctx)
+        HudTransform.endUpright(ctx, hud())
         HudTransform.end(ctx)
     }, visible)
 
@@ -123,7 +123,7 @@ object HudElementCompat {
                 ctx.guiWidth() / 2f, ctx.guiHeight() - HotbarHud.LEVEL_CENTER_Y,
             )
         }, { ctx ->
-            HudTransform.endUpright(ctx)
+            HudTransform.endUpright(ctx, hud())
             HudTransform.end(ctx)
         }, visible)
 

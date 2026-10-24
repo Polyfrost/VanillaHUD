@@ -90,7 +90,7 @@ public class GuiMixinExperienceBar {
                 LegacyDrawContext.INSTANCE.guiWidth() / 2f,
                 LegacyDrawContext.INSTANCE.guiHeight() - HotbarHud.LEVEL_CENTER_Y);
         int width = original.call(font, text, x, y, color);
-        HudTransform.endUpright(LegacyDrawContext.INSTANCE);
+        HudTransform.endUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar());
         return width;
     }
     *///?}
