@@ -86,11 +86,9 @@ public class GuiMixinExperienceBar {
     private int vanillahud$xpLevel(Font font, String text, int x, int y, int color,
                                    Operation<Integer> original) {
         if (!Huds.INSTANCE.getHotbar().getExperienceLevel()) return 0;
-        HudTransform.beginUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar(),
-                LegacyDrawContext.INSTANCE.guiWidth() / 2f,
-                LegacyDrawContext.INSTANCE.guiHeight() - HotbarHud.LEVEL_CENTER_Y);
+        HudTransform.beginLevel(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar());
         int width = original.call(font, text, x, y, color);
-        HudTransform.endUpright(LegacyDrawContext.INSTANCE);
+        HudTransform.endLevel(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar());
         return width;
     }
     *///?}

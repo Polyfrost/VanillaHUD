@@ -2,7 +2,6 @@ package org.polyfrost.vanillahud.compat
 
 //? if >=1.21.4 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.Huds
 import org.polyfrost.vanillahud.hud.VanillaHud
 import net.minecraft.resources.Identifier
@@ -13,6 +12,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import org.polyfrost.vanillahud.render.HudTransform
+import org.polyfrost.vanillahud.render.TitlePass
 
 object HudElementCompat {
     fun init() {
@@ -23,12 +23,26 @@ object HudElementCompat {
         replaceIcons(VanillaHudElements.FOOD_BAR) { Huds.hotbar }
         replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.hotbar }
         replace(VanillaHudElements.INFO_BAR) { Huds.hotbar }
-        replaceUpright(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.hotbar }, ::experienceLevelCenter) {
-            Huds.hotbar.experienceLevel
-        }
+        wrap(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.hotbar }, { ctx, element ->
+            HudTransform.begin(ctx, element)
+            HudTransform.beginLevel(ctx, Huds.hotbar)
+        }, { ctx ->
+            HudTransform.endLevel(ctx, Huds.hotbar)
+            HudTransform.end(ctx)
+        }) { Huds.hotbar.experienceLevel }
         replace(VanillaHudElements.HELD_ITEM_TOOLTIP) { Huds.heldItemTooltip }
         replace(VanillaHudElements.OVERLAY_MESSAGE) { Huds.actionBar }
-        replace(VanillaHudElements.TITLE_AND_SUBTITLE) { Huds.title }
+        HudElementRegistry.replaceElement(VanillaHudElements.TITLE_AND_SUBTITLE) { original ->
+            HudElement { context, tickCounter ->
+                TitlePass.draw(context) {
+                    //? if >=26 {
+                    original.extractRenderState(context, tickCounter)
+                    //?} else {
+                    /*original.render(context, tickCounter)
+                    *///?}
+                }
+            }
+        }
         replace(VanillaHudElements.SCOREBOARD) { Huds.scoreboard }
         replace(VanillaHudElements.PLAYER_LIST) { Huds.tabList }
         replace(VanillaHudElements.BOSS_BAR) { Huds.bossBar }
@@ -43,24 +57,6 @@ object HudElementCompat {
     /** layers built from standalone icons where each sprite is kept upright inside the rotation */
     private fun replaceIcons(id: Identifier, hud: () -> VanillaHud) =
         wrap(id, hud, HudTransform::beginIcons, HudTransform::endIcons)
-
-    /** layers drawn as one block counter rotated whole about [center] so text stays readable */
-    private fun replaceUpright(
-        id: Identifier,
-        hud: () -> VanillaHud,
-        center: (GuiGraphicsExtractor) -> Pair<Float, Float>,
-        visible: () -> Boolean,
-    ) = wrap(id, hud, { ctx, element ->
-        HudTransform.begin(ctx, element)
-        val (cx, cy) = center(ctx)
-        HudTransform.beginUpright(ctx, element, cx, cy)
-    }, { ctx ->
-        HudTransform.endUpright(ctx)
-        HudTransform.end(ctx)
-    }, visible)
-
-    private fun experienceLevelCenter(context: GuiGraphicsExtractor): Pair<Float, Float> =
-        context.guiWidth() / 2f to context.guiHeight() - HotbarHud.LEVEL_CENTER_Y
 
     private fun wrap(
         id: Identifier,
@@ -93,13 +89,18 @@ object HudElementCompat {
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer
 import net.fabricmc.fabric.api.client.rendering.v1.LayeredDrawerWrapper
 import org.polyfrost.vanillahud.render.HudTransform
+import org.polyfrost.vanillahud.render.TitlePass
 
 object HudElementCompat {
     fun init() {
         HudLayerRegistrationCallback.EVENT.register { layers ->
             replaceUpright(layers, IdentifiedLayer.EXPERIENCE_LEVEL, { Huds.hotbar }) { Huds.hotbar.experienceLevel }
             replace(layers, IdentifiedLayer.OVERLAY_MESSAGE) { Huds.actionBar }
-            replace(layers, IdentifiedLayer.TITLE_AND_SUBTITLE) { Huds.title }
+            layers.replaceLayer(IdentifiedLayer.TITLE_AND_SUBTITLE) { original ->
+                IdentifiedLayer.of(original.id()) { context, tickCounter ->
+                    TitlePass.draw(context) { original.render(context, tickCounter) }
+                }
+            }
             replace(layers, IdentifiedLayer.SCOREBOARD) { Huds.scoreboard }
             replace(layers, IdentifiedLayer.PLAYER_LIST) { Huds.tabList }
             replace(layers, IdentifiedLayer.BOSS_BAR) { Huds.bossBar }
@@ -118,12 +119,9 @@ object HudElementCompat {
     ) =
         wrap(layers, id, hud, { ctx, element ->
             HudTransform.begin(ctx, element)
-            HudTransform.beginUpright(
-                ctx, element,
-                ctx.guiWidth() / 2f, ctx.guiHeight() - HotbarHud.LEVEL_CENTER_Y,
-            )
+            HudTransform.beginLevel(ctx, Huds.hotbar)
         }, { ctx ->
-            HudTransform.endUpright(ctx)
+            HudTransform.endLevel(ctx, Huds.hotbar)
             HudTransform.end(ctx)
         }, visible)
 

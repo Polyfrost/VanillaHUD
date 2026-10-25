@@ -26,6 +26,7 @@
         "elements.GuiMixinArmor",
         "elements.GuiMixinExperienceBar",
         "elements.GuiMixinExperienceLevel",
+        "elements.GuiMixinStatBars",
         "elements.GuiMixinHealth",
         "elements.GuiMixinHeldItemTooltip",
         "elements.GuiMixinHotbar",
@@ -38,6 +39,7 @@
         "elements.PlayerTabOverlayMixin",
         "elements.TextShadowMixin",
         "elements.GuiMixinTabList",
-        "elements.GuiMixinTitle"
+        "elements.GuiMixinTitle",
+        "elements.LerpingBossEventMixin"
     ]
 }

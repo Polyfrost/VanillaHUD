@@ -42,6 +42,18 @@ object TabListManager {
     @Volatile
     private var requested = false
 
+    private var selfInfo: PlayerInfo? = null
+
+    fun previewInfo(limit: Int): List<PlayerInfo> {
+        ensureLoaded()
+        val profile = mc.player?.gameProfile
+        val self = profile?.let { p ->
+            selfInfo?.takeIf { it.profile === p } ?: p.toPlayerInfo().also { selfInfo = it }
+        }
+        val list = if (self != null) listOf(self) + devInfo.filter { it.profile.id != profile.id } else devInfo
+        return list.take(limit)
+    }
+
     fun ensureLoaded() {
         if (requested) return
         requested = true
@@ -68,11 +80,13 @@ object TabListManager {
         }
     }
 
-    private fun List<UUID>.toPlayerInfoList(): List<PlayerInfo> =
+    private fun List<UUID>.toPlayerInfoList(): List<PlayerInfo> = map { getProfile(it).toPlayerInfo() }
+
+    private fun GameProfile.toPlayerInfo(): PlayerInfo =
         //? if > 1.8.9 {
-        map { PlayerInfo(getProfile(it), false) }
+        PlayerInfo(this, false)
         //?} else
-        //map { PlayerInfo(getProfile(it)) }
+        //PlayerInfo(this)
 
     private fun getProfile(uuid: UUID): GameProfile {
         val profile = try {

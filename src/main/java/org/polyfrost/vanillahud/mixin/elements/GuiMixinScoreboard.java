@@ -21,6 +21,8 @@ import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.PlayerScoreEntry;
+import java.util.Collection;
 //?} else {
 /*import net.minecraft.client.gui.GameGui;
 import net.minecraft.client.render.Window;
@@ -30,11 +32,13 @@ import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.polyfrost.vanillahud.render.ScoreboardBackground;
+import org.polyfrost.vanillahud.render.TextBackdrop;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
 //? if > 1.8.9 {
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.ScoreboardBackground;
+import org.polyfrost.vanillahud.render.TextBackdrop;
 //?}
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -65,9 +69,14 @@ public class GuiMixinScoreboard {
     private int vanillahud$titleX0, vanillahud$titleX1, vanillahud$titleY1;
 
     @Unique
-    private static void vanillahud$fill(Operation<Void> original, GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color) {
+    private boolean vanillahud$showScorePoints;
+
+    @Unique
+    private static void vanillahud$fill(Operation<Void> original, GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color,
+                                        boolean roundTop, boolean roundBottom) {
         if ((color >>> 24) == 0) return;
-        original.call(graphics, x0, y0, x1, y1, color);
+        TextBackdrop.roundedSegment(graphics, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getRadius(), roundTop, roundBottom,
+                (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
     }
 
     //? if <1.21.4 && >1.8.9 {
@@ -85,23 +94,24 @@ public class GuiMixinScoreboard {
     private void vanillahud$scoreboard$persistent(GuiGraphicsExtractor graphics, Objective objective, CallbackInfo ci) {
         this.vanillahud$scoreboardTop = Integer.MIN_VALUE;
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
-        long visible = objective.getScoreboard().listPlayerScores(objective).stream()
-                .filter(score -> !score.isHidden())
-                .count();
-        if (visible == 0 && !(hud.getPersistentTitle() && hud.getScoreboardTitle())) {
+        Collection<PlayerScoreEntry> scores = objective.getScoreboard().listPlayerScores(objective);
+        boolean anyVisible = scores.stream().anyMatch(score -> !score.isHidden());
+        if (!anyVisible && !(hud.getPersistentTitle() && hud.getScoreboardTitle())) {
             ci.cancel();
+            return;
         }
+        this.vanillahud$showScorePoints = hud.showScorePoints(scores);
     }
 
     @ModifyExpressionValue(
             method = "displayScoreboardSidebar",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Objective;numberFormatOrDefault(Lnet/minecraft/network/chat/numbers/NumberFormat;)Lnet/minecraft/network/chat/numbers/NumberFormat;")
     )
-    private NumberFormat vanillahud$scoreboard$scorePoints(NumberFormat original, @Local(argsOnly = true) Objective objective) {
-        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
-        if (!hud.showScorePoints(objective.getScoreboard().listPlayerScores(objective))) {
+    private NumberFormat vanillahud$scoreboard$scorePoints(NumberFormat original) {
+        if (!this.vanillahud$showScorePoints) {
             return BlankFormat.INSTANCE;
         }
+        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         return new StyledFormat(Style.EMPTY.withColor(hud.getScorePointsColor().getArgb()));
     }
 
@@ -127,7 +137,7 @@ public class GuiMixinScoreboard {
             this.vanillahud$titleY1 = y1;
             return;
         }
-        vanillahud$fill(original, graphics, x0, y0, x1, y1, hud.getTitleBgColor());
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, hud.getTitleBgColor(), true, false);
     }
 
     @WrapOperation(
@@ -149,11 +159,12 @@ public class GuiMixinScoreboard {
             int top = hasTitle ? this.vanillahud$scoreboardTop : y0;
             boolean drew = ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath());
             if (hasTitle && (hud.getKeepBackgroundColor() || !drew)) {
-                vanillahud$fill(original, graphics, this.vanillahud$titleX0, top, this.vanillahud$titleX1, this.vanillahud$titleY1, hud.getTitleBgColor());
+                vanillahud$fill(original, graphics, this.vanillahud$titleX0, top, this.vanillahud$titleX1, this.vanillahud$titleY1, hud.getTitleBgColor(), true, false);
             }
             if (drew && !hud.getKeepBackgroundColor()) return;
         }
-        vanillahud$fill(original, graphics, x0, y0, x1, y1, hud.getBodyBgColor());
+        boolean titled = this.vanillahud$scoreboardTop != Integer.MIN_VALUE && (hud.getTitleBgColor() >>> 24) != 0;
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, hud.getBodyBgColor(), !titled, true);
     }
 
     @WrapOperation(
@@ -215,6 +226,22 @@ public class GuiMixinScoreboard {
     @Unique
     private boolean vanillahud$drewBackground;
 
+    // getScores builds a new sorted list, so check once per sidebar
+    @Unique
+    private boolean vanillahud$showScorePoints;
+
+    @Inject(method = "renderScoreboardObjective", at = @At("HEAD"))
+    private void vanillahud$scorePointsOnce(ScoreboardObjective objective, Window window, CallbackInfo ci) {
+        java.util.Collection<ScoreboardScore> scores = objective.getScoreboard().getScores(objective);
+        this.vanillahud$showScorePoints = Huds.INSTANCE.getScoreboard().showScorePoints(scores);
+        int rows = 0;
+        for (ScoreboardScore score : scores) {
+            if (score.getOwner() != null && !score.getOwner().startsWith("#")) rows++;
+        }
+        this.vanillahud$rowsLeft = Math.min(rows, 15);
+        this.vanillahud$firstRow = true;
+    }
+
     // wraps the call so argentum's deferred batch still draws inside the transform
     @WrapOperation(method = "render", order = 2000, at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GameGui;renderScoreboardObjective(Lnet/minecraft/scoreboard/ScoreboardObjective;Lnet/minecraft/client/render/Window;)V"))
@@ -253,10 +280,19 @@ public class GuiMixinScoreboard {
     }
 
     @Unique
-    private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color) {
+    private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color,
+                                        boolean roundTop, boolean roundBottom) {
         if ((color >>> 24) == 0) return;
-        original.call(x0, y0, x1, y1, color);
+        TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getRadius(),
+                roundTop, roundBottom, (a, b, c, d) -> original.call(a, b, c, d, color));
     }
+
+    // rows are drawn bottom first, so the top one is found by counting down the rows vanilla
+    // will draw (no "#" owners, at most 15)
+    @Unique
+    private int vanillahud$rowsLeft;
+    @Unique
+    private boolean vanillahud$firstRow;
 
     // a legacy colour code in the string wins over the colour argument, so it has to go before
     // the configured score colour can take effect
@@ -282,7 +318,13 @@ public class GuiMixinScoreboard {
     private void vanillahud$rowBackground(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         if (vanillahud$solidHidden(hud)) return;
-        vanillahud$fill(original, x0, y0, x1, y1, hud.getBodyBgColor());
+        boolean bottom = this.vanillahud$firstRow;
+        this.vanillahud$firstRow = false;
+        boolean top = --this.vanillahud$rowsLeft <= 0;
+        boolean titled = hud.getScoreboardTitle() && (hud.getTitleBgColor() >>> 24) != 0;
+        // with no title, the top row also covers the 1px gap so its corners round cleanly
+        if (top && !titled) y0--;
+        vanillahud$fill(original, x0, y0, x1, y1, hud.getBodyBgColor(), top && !titled, bottom);
     }
 
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
@@ -291,7 +333,7 @@ public class GuiMixinScoreboard {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         if (!hud.getScoreboardTitle()) return;
         if (vanillahud$solidHidden(hud)) return;
-        vanillahud$fill(original, x0, y0, x1, y1, hud.getTitleBgColor());
+        vanillahud$fill(original, x0, y0, x1, y1, hud.getTitleBgColor(), true, false);
     }
 
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
@@ -299,7 +341,8 @@ public class GuiMixinScoreboard {
     private void vanillahud$titleGap(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
         if (vanillahud$solidHidden(hud)) return;
-        vanillahud$fill(original, x0, y0, x1, y1, hud.getBodyBgColor());
+        if (!hud.getScoreboardTitle() || (hud.getTitleBgColor() >>> 24) == 0) return;
+        vanillahud$fill(original, x0, y0, x1, y1, hud.getBodyBgColor(), false, false);
     }
 
     // vanilla folds ": <score>" into every row when it sizes the sidebar, so hiding the score
@@ -308,10 +351,8 @@ public class GuiMixinScoreboard {
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/Font;width(Ljava/lang/String;)I", ordinal = 1))
     private int vanillahud$entryWidth(Font font, String text, Operation<Integer> original,
-                                      @Local ScoreboardScore score,
-                                      @Local(argsOnly = true) ScoreboardObjective objective) {
-        ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
-        if (hud.showScorePoints(objective.getScoreboard().getScores(objective))) {
+                                      @Local ScoreboardScore score) {
+        if (this.vanillahud$showScorePoints) {
             return original.call(font, text);
         }
         // the colour code vanilla splices in front of the number measures zero, so the suffix
@@ -329,10 +370,9 @@ public class GuiMixinScoreboard {
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/Font;draw(Ljava/lang/String;III)I", ordinal = 1))
     private int vanillahud$scorePoints(Font font, String text, int x, int y, int color,
-                                       Operation<Integer> original,
-                                       @Local(argsOnly = true) ScoreboardObjective objective) {
+                                       Operation<Integer> original) {
+        if (!this.vanillahud$showScorePoints) return 0;
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
-        if (!hud.showScorePoints(objective.getScoreboard().getScores(objective))) return 0;
         return vanillahud$draw(font, vanillahud$stripLeadingColor(text), x, y,
                 hud.getScorePointsColor().getArgb(), original);
     }

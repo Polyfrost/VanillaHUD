@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
@@ -265,6 +266,7 @@ object HudTransform {
     /** keeps content around [cx] [cy] upright when rotated, or moves it to its flipped height */
     @JvmStatic
     fun beginUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud, cx: Float, cy: Float) {
+        if (uprightIsNoop(provider)) return
         val turns = drawTurns(live(provider))
         push(graphics)
         uprightDepth++
@@ -289,8 +291,33 @@ object HudTransform {
     }
 
     @JvmStatic
-    fun endUpright(graphics: GuiGraphicsExtractor) {
+    fun endUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
+        if (uprightIsNoop(provider)) return
         if (uprightDepth > 0) uprightDepth--
+        pop(graphics)
+    }
+
+    @JvmStatic
+    fun endUprightIcon(graphics: GuiGraphicsExtractor) {
+        pop(graphics)
+    }
+
+    private fun uprightIsNoop(provider: VanillaHud) = mirror2Y.isNaN() && drawTurns(live(provider)) == 0
+
+    @JvmStatic
+    fun beginLevel(graphics: GuiGraphicsExtractor, hud: HotbarHud) {
+        val offset = live(hud).levelOffsetY.toFloat().let { if (mirror2Y.isNaN()) it else -it }
+        push(graphics)
+        //? if <=1.21.5 && >1.8.9 {
+        /*graphics.pose().translate(0f, offset, 0f)
+        *///?} else
+        graphics.pose().translate(0f, offset)
+        beginUpright(graphics, hud, graphics.guiWidth() / 2f, graphics.guiHeight() - HotbarHud.LEVEL_CENTER_Y)
+    }
+
+    @JvmStatic
+    fun endLevel(graphics: GuiGraphicsExtractor, hud: HotbarHud) {
+        endUpright(graphics, hud)
         pop(graphics)
     }
 

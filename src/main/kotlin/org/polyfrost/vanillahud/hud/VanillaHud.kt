@@ -5,6 +5,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 //?} else {
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
+import org.polyfrost.oneconfig.api.config.v1.Property
+import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
@@ -22,6 +24,29 @@ abstract class VanillaHud(
     init {
         locked = true
         currentSchema = posSchema
+    }
+
+    override fun addCallbacks(tree: Tree) {
+        super.addCallbacks(tree)
+        tree.addDependencies()
+    }
+
+    protected open fun Tree.addDependencies() {}
+
+    @Suppress("UNCHECKED_CAST")
+    protected fun Tree.hideUnless(parent: String, vararg children: String) {
+        val p = getProp(parent) as Property<Boolean>
+        for (child in children) getProp(child).addDisplayCondition(p, true)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    protected fun <T> Tree.hideUnless(parent: String, vararg children: String, test: (T?) -> Boolean) {
+        val p = getProp(parent) as Property<T>
+        for (child in children) {
+            val c = getProp(child)
+            c.addDisplayCondition { if (test(p.get())) Property.Display.SHOWN else Property.Display.HIDDEN }
+            p.addCallback { c.revaluateDisplay(); false }
+        }
     }
 
     abstract val naturalWidth: Float

@@ -7,10 +7,21 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GameGui;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 *///?}
 
+//? if > 1.8.9 {
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import org.polyfrost.vanillahud.hook.TextShadowHook;
+import org.polyfrost.vanillahud.render.TextBackdrop;
+//?}
+import org.polyfrost.vanillahud.hud.ActionBarHud;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.hud.Huds;
@@ -72,6 +83,39 @@ public class GuiMixinActionBar {
     private boolean vanillahud$actionBar$rainbowTimer(boolean original) {
         return original && Huds.INSTANCE.getActionBar().getRainbowTimer();
     }
+
+    @WrapOperation(
+            //? if >=26 {
+            method = "extractOverlayMessage",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;textWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V")
+            //?} elif >=1.21.8 {
+            /*method = "renderOverlayMessage",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawStringWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V")
+            *///?} else {
+            /*method = "renderOverlayMessage",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawStringWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)I")
+            *///?}
+    )
+    //? if >=1.21.8 {
+    private void vanillahud$actionBarText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y,
+                                      int width, int color, Operation<Void> original) {
+    //?} else
+    //private int vanillahud$actionBarText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, Operation<Integer> original) {
+        ActionBarHud hud = Huds.INSTANCE.getActionBar();
+        TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
+        TextShadowHook.push(hud.getTextShadow());
+        try {
+            //? if >=1.21.8 {
+            original.call(graphics, font, text, x, y, width, color);
+            //?} else
+            //return original.call(graphics, font, text, x, y, width, color);
+        } finally {
+            TextShadowHook.pop();
+        }
+    }
     //?} else {
     /*// The action bar is drawn inline in render, bracketed by the first pushMatrix and popMatrix
     // of the method. Verified against the 1.8.9 bytecode.
@@ -93,10 +137,10 @@ public class GuiMixinActionBar {
             target = "Lnet/minecraft/client/gui/Font;draw(Ljava/lang/String;III)I"))
     private int vanillahud$actionBarDraw(Font font, String text, int x, int y, int color,
                                          Operation<Integer> original) {
-        if (!Huds.INSTANCE.getActionBar().shouldDraw()) return 0;
-        // 1.8.9 draws the overlay message flat while every later version shadows it, and the
-        // shadow is a separate draw call here rather than a flag on the draw context
-        return font.drawWithShadow(text, (float) x, (float) y, color);
+        ActionBarHud hud = Huds.INSTANCE.getActionBar();
+        if (!hud.shouldDraw()) return 0;
+        TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, x, y, font.width(text), 9, color);
+        return font.draw(text, (float) x, (float) y, color, hud.getTextShadow());
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",

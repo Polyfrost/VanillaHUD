@@ -15,6 +15,7 @@ import net.minecraft.scoreboard.team.Team
 import net.minecraft.text.Text
 *///?}
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -26,8 +27,9 @@ import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
+import kotlin.math.roundToInt
 
-class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Category.INFO) {
+class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Category.INFO) {
     @Switch(
         title = "Use Jukebox Rainbow Timer Color",
         description = "Use the rainbow timer color when a jukebox begins playing."
@@ -62,17 +64,61 @@ class ActionBarHud : VanillaHud("vanillahud-actionbar.json", "Action Bar", Categ
     }
 }
 
-class BossBarHud : VanillaHud("vanillahud-bossbar.json", "Boss Bar", Category.COMBAT) {
+class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.COMBAT, 0x78000000) {
     @Switch(title = "Render Text")
     var renderText = true
 
     @Switch(title = "Render Health")
     var renderHealth = true
 
+    @Switch(title = "Smooth Health", description = "Lerps the health bar to make it smoother.")
+    var smoothHealth = true
+
+    @Slider(title = "Lerp Speed", description = "How long the health bar takes to catch up, in milliseconds.", min = 1f, max = 1000f)
+    var lerpSpeed = 100f
+
+    //? if <= 1.8.9 {
+    /*    private var lerpFrom = 1f
+    private var lerpTarget = 1f
+    private var lerpStart = 0L
+
+    fun smoothedHealth(health: Float): Float {
+        val now = System.currentTimeMillis()
+        if (health != lerpTarget) {
+            lerpFrom = lerp(now)
+            lerpTarget = health
+            lerpStart = now
+        }
+        return lerp(now)
+    }
+
+    private fun lerp(now: Long): Float {
+        val t = ((now - lerpStart) / lerpSpeed).coerceIn(0f, 1f)
+        return lerpFrom + (lerpTarget - lerpFrom) * t
+    }
+    *///?}
+
+    @Slider(
+        title = "Bar Position",
+        description = "Where the bar sits under text wider than it. 0 is the left edge, 100 the right.",
+        min = 0f, max = 100f
+    )
+    var barPosition = 50f
+
+    fun barOffset(textWidth: Int): Int {
+        if (!renderText || textWidth <= 182) return 0
+        return ((textWidth - 182) * (barPosition / 100f - 0.5f)).toInt()
+    }
+
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 30f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = if (renderText) 3f else 12f
+
+    override fun Tree.addDependencies() {
+        backdropDependencies()
+        hideUnless("smoothHealth", "lerpSpeed")
+    }
     override val anchorX get() = 0.5f
     override val anchorY get() = 0f
 
@@ -184,6 +230,28 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
     @Switch(title = "Render Experience Level")
     var experienceLevel = true
 
+    @Slider(title = "Experience Level Height", description = "How high the level number sits above the bar.", min = -10f, max = 10f)
+    var levelTextHeight = 4
+
+    //? if >1.8.9 {
+    @Dropdown(title = "Health Alignment", description = "Which side the hearts fill from.", options = ["Left", "Right"])
+    var healthAlignment = ALIGN_LEFT
+
+    @Dropdown(title = "Armor Alignment", description = "Which side the armor fills from.", options = ["Left", "Right"])
+    var armorAlignment = ALIGN_LEFT
+
+    @Dropdown(title = "Hunger Alignment", description = "Which side the hunger fills from.", options = ["Left", "Right"])
+    var hungerAlignment = ALIGN_RIGHT
+
+    @Dropdown(title = "Air Alignment", description = "Which side the air bubbles fill from.", options = ["Left", "Right"])
+    var airAlignment = ALIGN_RIGHT
+
+    @Dropdown(title = "Mount Health Alignment", description = "Which side the mount hearts fill from.", options = ["Left", "Right"])
+    var mountAlignment = ALIGN_RIGHT
+    //?}
+
+    val levelOffsetY get() = 4 - levelTextHeight
+
     //? if >=1.21.6 {
     @Switch(
         title = "Overlay Locator Bar",
@@ -202,6 +270,10 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - naturalHeight
+
+    override fun Tree.addDependencies() {
+        hideUnless("experienceLevel", "levelTextHeight")
+    }
 
     override fun defaultOriginX(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
         LEFT -> 0f
@@ -234,12 +306,15 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
         const val TOP = 2
         const val RIGHT = 3
 
+        const val ALIGN_LEFT = 0
+        const val ALIGN_RIGHT = 1
+
         /** vanilla centres the experience level this far above the bottom of the screen */
         const val LEVEL_CENTER_Y = 30.5f
     }
 }
 
-class HeldItemTooltipHud : VanillaHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
+class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
     @Switch(title = "Fade Out")
     var fadeOut: Boolean = true
 
@@ -311,6 +386,14 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     @Color(title = "Background Color")
     var backgroundColor = PolyColor(0x4C000000)
+
+    @Switch(title = "Rounded Corners")
+    var rounded: Boolean = false
+
+    @Slider(title = "Corner Radius", min = 0f, max = 10f)
+    var cornerRadius = 2f
+
+    val radius: Int get() = if (rounded) cornerRadius.roundToInt() else 0
 
     @Switch(
         title = "Keep Background Colour",
@@ -386,6 +469,14 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     override val naturalWidth get() = 90f
     override val naturalHeight get() = 90f
+    override fun Tree.addDependencies() {
+        hideUnless<Int>("scoreboardPoints", "scorePointsColor") { it != 0 }
+        hideUnless<Int>("scoreboardPoints", "hideRepeatingScores") { it == 1 }
+        hideUnless("scoreboardTitle", "persistentTitle", "titleColor")
+        hideUnless<String>("backgroundImagePath", "keepBackgroundColor") { !it.isNullOrEmpty() }
+        hideUnless("rounded", "cornerRadius")
+    }
+
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float {
         val s = try {
@@ -536,6 +627,9 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
     var textType: Int = 1
 
+    @Switch(title = "Fix TabList Entry Width", description = "Stop long names from being squashed when the tab list is wider than the screen.")
+    var fixWidth: Boolean = false
+
     @Switch(title = "Show Header")
     var showHeader: Boolean = true
 
@@ -596,6 +690,14 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     @Color(title = "Footer Background Color")
     var footerBgColor = PolyColor(0x80000000.toInt())
 
+    @Switch(title = "Rounded Corners")
+    var rounded: Boolean = false
+
+    @Slider(title = "Corner Radius", min = 0f, max = 10f)
+    var cornerRadius = 2f
+
+    val radius: Int get() = if (rounded) cornerRadius.roundToInt() else 0
+
     val tabWidgetArgb: Int get() = tabWidgetColor.argb
     val headerBgArgb: Int get() = headerBgColor.argb
     val bodyBgArgb: Int get() = bodyBgColor.argb
@@ -619,6 +721,15 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     override val naturalHeight get() = 100f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
+
+    override fun Tree.addDependencies() {
+        hideUnless("animation", "animationDuration")
+        hideUnless("rounded", "cornerRadius")
+        hideUnless("showHead", "betterHatLayer")
+        val pingColors = arrayOf("pingLevelOne", "pingLevelTwo", "pingLevelThree", "pingLevelFour", "pingLevelFive", "pingLevelSix")
+        hideUnless("showPing", "numberPing", "pingType", "hideFalsePing", *pingColors)
+        hideUnless("numberPing", "pingType", *pingColors)
+    }
     override val anchorX get() = 0.5f
     override val anchorY get() = 0f
 
@@ -694,7 +805,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
         //?} else
         //val real = mc.networkHandler?.onlinePlayers?.take(playerLimit) ?: emptyList()
-        if (previewing) TabListManager.devInfo.take(playerLimit) else real
+        if (previewing) TabListManager.previewInfo(playerLimit) else real
     } catch (_: Throwable) {
         emptyList()
     }
@@ -859,70 +970,92 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 }
 
-class TitleHud : VanillaHud("vanillahud-title.json", "Title & Subtitle", Category.INFO) {
-    @Switch(
-        title = "Auto Scale",
-        description = "Shrink the title and subtitle so they always fit within the screen width."
-    )
-    var autoTitleScale = false
+abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, title, Category.INFO) {
+    abstract val instantFade: Boolean
+    abstract val autoTitleScale: Boolean
+    abstract val scale: Float
+    protected abstract val placeholder: String
+    protected abstract fun text(): String?
+    protected abstract val topOffset: Float
 
     override val naturalWidth get() = 120f
-    override val naturalHeight get() = 68f
+    override val naturalHeight get() = 9f * scale
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f - 40f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f + topOffset
     override val anchorX get() = 0.5f
     override val anchorY get() = 0.5f
-
-    // title top edge sits a fixed distance above screen centre and the subtitle only grows downwards
     override val positionAnchorY get() = 0f
-
     override val sectionAnchorY get() = 0.5f
 
-    //? if > 1.8.9 {
-    override fun shouldShow() = previewing || hudAccessor?.let { it.title != null && it.titleTime > 0 } == true
-    //?} else
-    //override fun shouldShow() = previewing || hudAccessor?.let { it.titleText != null && it.titleTime > 0 } == true
+    private fun active(): Boolean {
+        //? if > 1.8.9 {
+        return hudAccessor?.let { it.title != null && it.titleTime > 0 } == true
+        //?} else
+        //return hudAccessor?.let { it.titleText != null && it.titleTime > 0 } == true
+    }
+
+    override fun shouldShow() = previewing || (active() && !text().isNullOrEmpty())
 
     override fun hasContent() = shouldShow()
 
-    private class Size(val width: Float, val height: Float)
-
-    private fun size(): Size? = measureOnce({
+    private fun width(): Float? = measureOnce({
         if (!shouldShow()) Long.MIN_VALUE
-        //? if > 1.8.9 {
-        else hudAccessor.let { mix(mix(0L, it?.title), it?.subtitle) }
-        //?} else
-        //else hudAccessor.let { mix(mix(0L, it?.titleText), it?.subtitleText) }
-    }) { if (shouldShow()) measureSize() else null }
-
-    private fun measureSize(): Size {
-        val gui = if (previewing) null else hudAccessor
-        //? if > 1.8.9 {
-        val title = gui?.title?.string ?: "Title"
-        val subtitle = gui?.subtitle?.string ?: "Subtitle"
-        //?} else {
-        /*val title = gui?.titleText ?: "Title"
-        val subtitle = gui?.subtitleText ?: "Subtitle"
-        *///?}
-        val font = mc.font
-        val line = font.lineHeight
-        return Size(
-            maxOf(font.width(title) * 4, font.width(subtitle) * 2).toFloat(),
-            if (subtitle.isNotBlank()) (line * 4 + 14 + line * 2).toFloat() else (line * 4).toFloat(),
-        )
-    }
+        else mix(mix(mix(0L, previewing), scale.toBits()), text()?.hashCode() ?: 0)
+    }) { mc.font.width(if (previewing) placeholder else text() ?: placeholder) * scale }
 
     override fun measuredWidth(): Float = try {
-        size()?.width ?: naturalWidth
+        width() ?: naturalWidth
     } catch (_: Throwable) {
         naturalWidth
     }
 
-    override fun measuredHeight(): Float = try {
-        size()?.height ?: naturalHeight
-    } catch (_: Throwable) {
-        naturalHeight
-    }
+    override fun measuredHeight(): Float = 9f * scale
+}
+
+class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
+    @Switch(title = "Instant Fade", description = "Skip the fade in and fade out of the title.")
+    override var instantFade = false
+
+    @Slider(title = "Scale", min = 0.5f, max = 8f)
+    var titleScale = 4f
+
+    @Switch(
+        title = "Auto Scale",
+        description = "Shrink the title so it always fits within the screen width."
+    )
+    override var autoTitleScale = false
+
+    override val scale get() = titleScale
+    override val placeholder get() = "Title"
+    override val topOffset get() = -40f
+
+    //? if > 1.8.9 {
+    override fun text(): String? = hudAccessor?.title?.string
+    //?} else
+    //override fun text(): String? = hudAccessor?.titleText
+}
+
+class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
+    @Slider(title = "Scale", min = 0.5f, max = 8f)
+    var subtitleScale = 2f
+
+    @Switch(title = "Instant Fade", description = "Skip the fade in and fade out of the subtitle.")
+    override var instantFade = false
+
+    @Switch(
+        title = "Auto Scale",
+        description = "Shrink the subtitle so it always fits within the screen width."
+    )
+    override var autoTitleScale = false
+
+    override val scale get() = subtitleScale
+    override val placeholder get() = "Subtitle"
+    override val topOffset get() = 10f
+
+    //? if > 1.8.9 {
+    override fun text(): String? = hudAccessor?.subtitle?.string
+    //?} else
+    //override fun text(): String? = hudAccessor?.subtitleText
 }
 
 //? if > 1.8.9 {
@@ -1076,6 +1209,7 @@ object Huds {
     private val actionBarProvider = ActionBarHud()
     private val heldItemTooltipProvider = HeldItemTooltipHud()
     private val titleProvider = TitleHud()
+    private val subtitleProvider = SubtitleHud()
     private val scoreboardProvider = ScoreboardHud()
     private val tabListProvider = TabListHud()
     private val bossBarProvider = BossBarHud()
@@ -1088,6 +1222,7 @@ object Huds {
     val actionBar: ActionBarHud get() = HudTransform.live(actionBarProvider)
     val heldItemTooltip: HeldItemTooltipHud get() = HudTransform.live(heldItemTooltipProvider)
     val title: TitleHud get() = HudTransform.live(titleProvider)
+    val subtitle: SubtitleHud get() = HudTransform.live(subtitleProvider)
     val scoreboard: ScoreboardHud get() = HudTransform.live(scoreboardProvider)
     val tabList: TabListHud get() = HudTransform.live(tabListProvider)
     val bossBar: BossBarHud get() = HudTransform.live(bossBarProvider)
@@ -1100,13 +1235,14 @@ object Huds {
         //? if > 1.8.9 {
         get() = arrayOf(
             hotbarProvider, actionBarProvider, heldItemTooltipProvider, titleProvider,
+            subtitleProvider,
             scoreboardProvider, tabListProvider, bossBarProvider, statusEffectsProvider,
             closedCaptionsProvider,
         )
         //?} else {
         /*get() = arrayOf(
             hotbarProvider, actionBarProvider, heldItemTooltipProvider,
-            titleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
+            titleProvider, subtitleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
         )
         *///?}
 }

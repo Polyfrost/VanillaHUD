@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.Minecraft;
 //? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if > 1.8.9 {
@@ -13,12 +14,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
 //?} else {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import net.minecraft.client.gui.BossBar;
 import net.minecraft.client.gui.GameGui;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
-import org.polyfrost.vanillahud.hud.BossBarHud;
+import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.BossBarHud;
+import org.polyfrost.vanillahud.render.TextBackdrop;
+//? if > 1.8.9
+import org.polyfrost.vanillahud.hook.TextShadowHook;
 //? if > 1.8.9
 import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
@@ -66,8 +72,10 @@ public class BossHealthOverlayMixin {
             *///?}
     )
     private void vanillahud$bossHealth(BossHealthOverlay self, GuiGraphicsExtractor graphics, int x, int y, BossEvent event, Operation<Void> original) {
-        if (Huds.INSTANCE.getBossBar().getRenderHealth()) {
-            original.call(self, graphics, x, y, event);
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (hud.getRenderHealth()) {
+            int offset = hud.barOffset(Minecraft.getInstance().font.width(event.getName()));
+            original.call(self, graphics, x + offset, y, event);
         }
     }
 
@@ -94,15 +102,26 @@ public class BossHealthOverlayMixin {
     )
             //? if <1.21.6 && >1.8.9 {
     /*private int vanillahud$bossText(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color, Operation<Integer> original) {
-        if (Huds.INSTANCE.getBossBar().getRenderText()) {
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (!hud.getRenderText()) return 0;
+        TextBackdrop.draw(graphics, hud, x, y, font.width(name), 9, color);
+        TextShadowHook.push(hud.getTextShadow());
+        try {
             return original.call(graphics, font, name, x, y, color);
+        } finally {
+            TextShadowHook.pop();
         }
-        return 0;
     }
     *///?} else {
     private void vanillahud$bossText(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getBossBar().getRenderText()) {
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (!hud.getRenderText()) return;
+        TextBackdrop.draw(graphics, hud, x, y, font.width(name), 9, color);
+        TextShadowHook.push(hud.getTextShadow());
+        try {
             original.call(graphics, font, name, x, y, color);
+        } finally {
+            TextShadowHook.pop();
         }
     }
     //?}
@@ -152,6 +171,8 @@ public class BossHealthOverlayMixin {
     /*
     @WrapMethod(method = "renderBossBars")
     private void vanillahud$boss(Operation<Void> original) {
+        if ((BossBar.name == null || BossBar.timer <= 0) && !VanillaHud.previewing()) return;
+
         BossBarHud hud = Huds.INSTANCE.getBossBar();
         if (!hud.shouldDraw()) return;
 
@@ -164,16 +185,24 @@ public class BossHealthOverlayMixin {
             target = "Lnet/minecraft/client/gui/GameGui;drawTexture(IIIIII)V"))
     private void vanillahud$bossHealth(GameGui self, int x, int y, int u, int v, int width, int height,
                                        Operation<Void> original) {
-        if (!Huds.INSTANCE.getBossBar().getRenderHealth()) return;
-        original.call(self, x, y, u, v, width, height);
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (!hud.getRenderHealth()) return;
+        if (v == 79 && hud.getSmoothHealth()) {
+            width = (int) (hud.smoothedHealth(BossBar.health) * 183);
+            if (width <= 0) return;
+        }
+        int offset = hud.barOffset(Minecraft.getInstance().font.width(BossBar.name));
+        original.call(self, x + offset, y, u, v, width, height);
     }
 
     @WrapOperation(method = "renderBossBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/Font;drawWithShadow(Ljava/lang/String;FFI)I"))
     private int vanillahud$bossText(Font font, String text, float x, float y, int color,
                                     Operation<Integer> original) {
-        if (!Huds.INSTANCE.getBossBar().getRenderText()) return 0;
-        return original.call(font, text, x, y, color);
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (!hud.getRenderText()) return 0;
+        TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, (int) x, (int) y, font.width(text), 9, color);
+        return font.draw(text, x, y, color, hud.getTextShadow());
     }
     *///?}
 }

@@ -19,10 +19,7 @@ public abstract class PlayerTabOverlayMixin {
     @ModifyReturnValue(method = "getPlayerInfos", at = @At("RETURN"))
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         if (!Huds.INSTANCE.getTabList().getPreviewing()) return original;
-        TabListManager.INSTANCE.ensureLoaded();
-        List<PlayerInfo> dev = TabListManager.INSTANCE.getDevInfo();
-        int limit = Huds.INSTANCE.getTabList().getPlayerLimit();
-        return dev.size() > limit ? dev.subList(0, limit) : dev;
+        return TabListManager.INSTANCE.previewInfo(Huds.INSTANCE.getTabList().getPlayerLimit());
     }
 
     @ModifyExpressionValue(
@@ -76,10 +73,7 @@ public abstract class PlayerTabOverlayMixin {
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (!hud.getPreviewing()) return original;
-        TabListManager.INSTANCE.ensureLoaded();
-        List<PlayerInfo> dev = TabListManager.INSTANCE.getDevInfo();
-        int limit = hud.getPlayerLimit();
-        return dev.size() > limit ? dev.subList(0, limit) : dev;
+        return TabListManager.INSTANCE.previewInfo(hud.getPlayerLimit());
     }
 }
 *///?}

@@ -40,7 +40,7 @@ public class UprightIconMixin {
                 pipeline,
                 //?}
                 sprite, x, y, width, height);
-        if (rotated) HudTransform.endUpright(self);
+        if (rotated) HudTransform.endUprightIcon(self);
     }
 
     //? if >=1.21.2 {

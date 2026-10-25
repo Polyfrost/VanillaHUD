@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import org.polyfrost.vanillahud.hud.HotbarHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
@@ -34,11 +33,9 @@ public class GuiMixinExperienceLevel {
         if (!Huds.INSTANCE.getHotbar().shouldDraw() || !Huds.INSTANCE.getHotbar().getExperienceLevel()) return;
 
         HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
-        // the level is one block of text so counter rotating it whole keeps it readable
-        HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
-                graphics.guiWidth() / 2f, graphics.guiHeight() - HotbarHud.LEVEL_CENTER_Y);
+        HudTransform.beginLevel(graphics, Huds.INSTANCE.getHotbar());
         original.call(graphics, delta);
-        HudTransform.endUpright(graphics);
+        HudTransform.endLevel(graphics, Huds.INSTANCE.getHotbar());
         HudTransform.end(graphics);
     }
     *///?}

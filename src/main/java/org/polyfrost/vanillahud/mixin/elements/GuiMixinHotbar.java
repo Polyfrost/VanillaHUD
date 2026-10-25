@@ -97,7 +97,7 @@ public abstract class GuiMixinHotbar {
             vanillahud$animSlot = (float) selected;
             vanillahud$animInit = true;
         }
-        if (!hud.getAnimation() || Math.abs((float) selected - vanillahud$animSlot) > 4.5f) {
+        if (!hud.getAnimation()) {
             vanillahud$animSlot = (float) selected;
         } else {
             float t = Math.min(1f, deltaTracker.getRealtimeDeltaTicks() * 0.6f);
@@ -165,7 +165,7 @@ public abstract class GuiMixinHotbar {
         HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
         original.call(self, graphics, x, y, deltaTracker, player, stack, seed);
-        HudTransform.endUpright(graphics);
+        HudTransform.endUpright(graphics, Huds.INSTANCE.getHotbar());
     }
     //?} else {
     /*@Unique private boolean vanillahud$active;
@@ -203,7 +203,7 @@ public abstract class GuiMixinHotbar {
             vanillahud$animSlot = (float) selected;
             vanillahud$animInit = true;
         }
-        if (!hud.getAnimation() || Math.abs((float) selected - vanillahud$animSlot) > 4.5f) {
+        if (!hud.getAnimation()) {
             vanillahud$animSlot = (float) selected;
         } else {
             float t = Math.min(1f, elapsedTicks * 0.6f);
@@ -236,7 +236,7 @@ public abstract class GuiMixinHotbar {
         HudTransform.beginUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
         original.call(self, slot, x, y, tickDelta, player);
-        HudTransform.endUpright(LegacyDrawContext.INSTANCE);
+        HudTransform.endUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar());
     }
     *///?}
 }

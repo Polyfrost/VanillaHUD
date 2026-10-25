@@ -18,6 +18,8 @@ import org.polyfrost.vanillahud.hook.HeadHook;
 import org.polyfrost.vanillahud.hook.TextShadowHook;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
+import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay;
+import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -82,37 +84,35 @@ public abstract class PlayerTabOverlayMixin {
         return Huds.INSTANCE.getTabList().getTabWidgetArgb();
     }
 
-    @ModifyArg(
-            //? if <26 {
-            /*method = "render",
-            *///?} else {
-            method = "extractRenderState",
-            //?}
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    ordinal = 0),
-            index = 4
-    )
-    private int vanillahud$headerBg(int color) {
-        return Huds.INSTANCE.getTabList().getHeaderBgArgb();
+    @Unique
+    private int vanillahud$shapeX0, vanillahud$shapeX1, vanillahud$shapeTop, vanillahud$shapeBottom;
+
+    @Unique
+    private void vanillahud$markShape(int x0, int y0, int x1, int y1, boolean header, boolean footer) {
+        this.vanillahud$shapeX0 = x0;
+        this.vanillahud$shapeX1 = x1;
+        if (!header) this.vanillahud$shapeTop = y0;
+        this.vanillahud$shapeBottom = footer ? Integer.MAX_VALUE / 2 : y1;
     }
 
-    @ModifyArg(
-            //? if <26 {
-            /*method = "render",
-            *///?} else {
-            method = "extractRenderState",
-            //?}
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    ordinal = 1),
-            index = 4
-    )
-    private int vanillahud$bodyBg(int color) {
-        return Huds.INSTANCE.getTabList().getBodyBgArgb();
+    @Unique
+    private boolean vanillahud$headerDrawn;
+
+    @Unique
+    private boolean vanillahud$footerPending() {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return hud.getShowFooter() && (hud.getPreviewing() || ((IPlayerTabOverlay) (Object) this).getFooter() != null);
     }
 
-    @ModifyArg(
+    @Unique
+    private static void vanillahud$fill(Operation<Void> original, GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color,
+                                        boolean roundTop, boolean roundBottom) {
+        if ((color >>> 24) == 0) return;
+        TextBackdrop.roundedSegment(graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getRadius(), roundTop, roundBottom,
+                (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
+    }
+
+    @WrapOperation(
             //? if <26 {
             /*method = "render",
             *///?} else {
@@ -120,11 +120,44 @@ public abstract class PlayerTabOverlayMixin {
             //?}
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
-                    ordinal = 3),
-            index = 4
+                    ordinal = 0)
     )
-    private int vanillahud$footerBg(int color) {
-        return Huds.INSTANCE.getTabList().getFooterBgArgb();
+    private void vanillahud$headerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
+        this.vanillahud$headerDrawn = (argb >>> 24) != 0;
+        this.vanillahud$shapeTop = y0;
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, argb, true, false);
+    }
+
+    @WrapOperation(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    ordinal = 1)
+    )
+    private void vanillahud$bodyBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        boolean header = this.vanillahud$headerDrawn;
+        this.vanillahud$headerDrawn = false;
+        vanillahud$markShape(x0, y0, x1, y1, header, vanillahud$footerPending());
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getBodyBgArgb(), !header, !vanillahud$footerPending());
+    }
+
+    @WrapOperation(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V",
+                    ordinal = 3)
+    )
+    private void vanillahud$footerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        vanillahud$fill(original, graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
     }
 
     @Inject(
@@ -184,6 +217,17 @@ public abstract class PlayerTabOverlayMixin {
         return reserve > 0 ? Math.max(original, reserve) : original;
     }
 
+    @WrapOperation(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 0))
+    private int vanillahud$fixWidth(int a, int b, Operation<Integer> original) {
+        return Huds.INSTANCE.getTabList().getFixWidth() ? a : original.call(a, b);
+    }
+
     // captures each slot right edge so the name clip below knows where the ping sits
     @WrapOperation(
             //? if <26 {
@@ -198,7 +242,9 @@ public abstract class PlayerTabOverlayMixin {
                                              Operation<Void> original,
                                              @Share("vhTabSlotRight") LocalIntRef slotRight) {
         slotRight.set(x2);
-        original.call(graphics, x1, y1, x2, y2, color);
+        if ((color >>> 24) == 0) return;
+        TextBackdrop.roundedClip(graphics, x1, y1, x2, y2, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
+                Huds.INSTANCE.getTabList().getRadius(), (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
     }
 
     // at clamped GUI scales names overflow their column into the numeric ping so clip them
@@ -348,6 +394,7 @@ import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
+import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -359,9 +406,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerTabOverlayMixin {
     @Unique
     private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color) {
-        if ((color >>> 24) == 0) return;
-        original.call(x0, y0, x1, y1, color);
+        vanillahud$fill(original, x0, y0, x1, y1, color, false, false);
     }
+
+    @Unique
+    private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color,
+                                        boolean roundTop, boolean roundBottom) {
+        if ((color >>> 24) == 0) return;
+        TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getRadius(), roundTop, roundBottom,
+                (a, b, c, d) -> original.call(a, b, c, d, color));
+    }
+
+    @Unique
+    private int vanillahud$shapeX0, vanillahud$shapeX1, vanillahud$shapeTop, vanillahud$shapeBottom;
+
+    @Unique
+    private void vanillahud$markShape(int x0, int y0, int x1, int y1, boolean header, boolean footer) {
+        this.vanillahud$shapeX0 = x0;
+        this.vanillahud$shapeX1 = x1;
+        if (!header) this.vanillahud$shapeTop = y0;
+        this.vanillahud$shapeBottom = footer ? Integer.MAX_VALUE / 2 : y1;
+    }
+
+    @Unique
+    private boolean vanillahud$headerDrawn;
+
+    @Unique
+    private boolean vanillahud$hasFooter;
 
     @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "intValue=80"))
     private int vanillahud$playerLimit(int original) {
@@ -382,32 +453,42 @@ public abstract class PlayerTabOverlayMixin {
             opcode = Opcodes.GETFIELD))
     private Text vanillahud$footer(Text original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (!hud.getShowFooter()) return null;
-        return hud.getPreviewing() ? DemoData.demoTabFooter() : original;
+        Text footer = !hud.getShowFooter() ? null : hud.getPreviewing() ? DemoData.demoTabFooter() : original;
+        this.vanillahud$hasFooter = footer != null;
+        return footer;
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 0))
     private void vanillahud$headerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getHeaderBgArgb());
+        int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
+        this.vanillahud$headerDrawn = (argb >>> 24) != 0;
+        this.vanillahud$shapeTop = y0;
+        vanillahud$fill(original, x0, y0, x1, y1, argb, true, false);
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 1))
     private void vanillahud$bodyBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getBodyBgArgb());
+        boolean header = this.vanillahud$headerDrawn;
+        this.vanillahud$headerDrawn = false;
+        vanillahud$markShape(x0, y0, x1, y1, header, this.vanillahud$hasFooter);
+        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getBodyBgArgb(), !header, !this.vanillahud$hasFooter);
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 2))
     private void vanillahud$widget(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getTabWidgetArgb());
+        int argb = Huds.INSTANCE.getTabList().getTabWidgetArgb();
+        if ((argb >>> 24) == 0) return;
+        TextBackdrop.roundedClip(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
+                Huds.INSTANCE.getTabList().getRadius(), (a, b, c, d) -> original.call(a, b, c, d, argb));
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 3))
     private void vanillahud$footerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb());
+        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
     }
 
     @ModifyExpressionValue(method = "render", at = {
@@ -431,6 +512,11 @@ public abstract class PlayerTabOverlayMixin {
     private int vanillahud$pingReserveWidth(int original) {
         int reserve = vanillahud$pingReserve();
         return reserve > 0 ? Math.max(original, reserve) : original;
+    }
+
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 1))
+    private int vanillahud$fixWidth(int a, int b, Operation<Integer> original) {
+        return Huds.INSTANCE.getTabList().getFixWidth() ? a : original.call(a, b);
     }
 
     @Inject(method = "renderPing", at = @At("HEAD"), cancellable = true)

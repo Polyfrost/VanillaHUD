@@ -185,7 +185,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAirSupply()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 200 : original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 299 : original;
     }
 
     //? if <=1.21.5 {
@@ -420,7 +420,7 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/LocalPlayer;getBreath()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 200 : original;
+        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 299 : original;
     }
 
     // both reads gate the level text, so neither carries an ordinal on purpose

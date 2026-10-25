@@ -7,6 +7,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if > 1.8.9
 import net.minecraft.network.chat.Component;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.client.gui.Font;
+import org.polyfrost.vanillahud.hook.TextShadowHook;
+import org.polyfrost.vanillahud.hud.BackdropHud;
+import org.polyfrost.vanillahud.hud.TitleHud;
+import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,18 +23,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if = 1.8.9 {
-/*import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.gui.Font;
-import org.polyfrost.vanillahud.compat.LegacyDrawContext;
+/*import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.polyfrost.vanillahud.hud.SubtitleHud;
+import net.minecraft.client.render.platform.GlStateManager;
 *///?}
 
 //? if <1.21.4 && >1.8.9 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
+
+//? if > 1.8.9
+import org.polyfrost.vanillahud.render.TitlePass;
 
 //? if >=26.2 {
 import net.minecraft.client.gui.Hud;
@@ -52,11 +59,7 @@ public class GuiMixinTitle {
     //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "renderTitle")
     private void vanillahud$title(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
-        if (!Huds.INSTANCE.getTitle().shouldDraw()) return;
-
-        HudTransform.begin(graphics, Huds.INSTANCE.getTitle());
-        original.call(graphics, deltaTracker);
-        HudTransform.end(graphics);
+        TitlePass.draw(graphics, () -> original.call(graphics, deltaTracker));
     }
     *///?}
 
@@ -74,7 +77,9 @@ public class GuiMixinTitle {
                     *///?}
                     ordinal = 0, shift = At.Shift.AFTER))
     private void vanillahud$titleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        vanillahud$autoScale(graphics, title, 4.0F);
+        TitleHud hud = Huds.INSTANCE.getTitle();
+        vanillahud$customScale(graphics, hud.getTitleScale() / 4.0F);
+        vanillahud$autoScale(graphics, title, hud.getTitleScale(), hud.getAutoTitleScale());
     }
 
     @Inject(
@@ -91,12 +96,104 @@ public class GuiMixinTitle {
                     *///?}
                     ordinal = 1, shift = At.Shift.AFTER))
     private void vanillahud$subtitleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        vanillahud$autoScale(graphics, subtitle, 2.0F);
+        float scale = Huds.INSTANCE.getSubtitle().getSubtitleScale();
+        vanillahud$customScale(graphics, scale / 2.0F);
+        vanillahud$autoScale(graphics, subtitle, scale, Huds.INSTANCE.getSubtitle().getAutoTitleScale());
+    }
+
+    @WrapOperation(
+            //? if >=26 {
+            method = "extractTitle",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;textWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V", ordinal = 0)
+            //?} elif >=1.21.8 {
+            /*method = "renderTitle",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawStringWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V", ordinal = 0)
+            *///?} else {
+            /*method = "renderTitle",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawStringWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)I", ordinal = 0)
+            *///?}
+    )
+    //? if >=1.21.8 {
+    private void vanillahud$titleText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y,
+                                      int width, int color, Operation<Void> original) {
+    //?} else
+    //private int vanillahud$titleText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, Operation<Integer> original) {
+        if (TitlePass.getCurrent() == TitlePass.SUBTITLE) {
+            //? if >=1.21.8 {
+            return;
+            //?} else
+            //return 0;
+        }
+        BackdropHud hud = Huds.INSTANCE.getTitle();
+        if (Huds.INSTANCE.getTitle().getInstantFade()) color |= 0xFF000000;
+        TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
+        TextShadowHook.push(hud.getTextShadow());
+        try {
+            //? if >=1.21.8 {
+            original.call(graphics, font, text, x, y, width, color);
+            //?} else
+            //return original.call(graphics, font, text, x, y, width, color);
+        } finally {
+            TextShadowHook.pop();
+        }
+    }
+
+    @WrapOperation(
+            //? if >=26 {
+            method = "extractTitle",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;textWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V", ordinal = 1)
+            //?} elif >=1.21.8 {
+            /*method = "renderTitle",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawStringWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)V", ordinal = 1)
+            *///?} else {
+            /*method = "renderTitle",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawStringWithBackdrop(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIII)I", ordinal = 1)
+            *///?}
+    )
+    //? if >=1.21.8 {
+    private void vanillahud$subtitleText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y,
+                                      int width, int color, Operation<Void> original) {
+    //?} else
+    //private int vanillahud$subtitleText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, Operation<Integer> original) {
+        if (TitlePass.getCurrent() == TitlePass.TITLE) {
+            //? if >=1.21.8 {
+            return;
+            //?} else
+            //return 0;
+        }
+        BackdropHud hud = Huds.INSTANCE.getSubtitle();
+        if (Huds.INSTANCE.getSubtitle().getInstantFade()) color |= 0xFF000000;
+        TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
+        TextShadowHook.push(hud.getTextShadow());
+        try {
+            //? if >=1.21.8 {
+            original.call(graphics, font, text, x, y, width, color);
+            //?} else
+            //return original.call(graphics, font, text, x, y, width, color);
+        } finally {
+            TextShadowHook.pop();
+        }
     }
 
     @Unique
-    private void vanillahud$autoScale(GuiGraphicsExtractor graphics, Component text, float drawScale) {
-        if (!Huds.INSTANCE.getTitle().getAutoTitleScale()) return;
+    private void vanillahud$customScale(GuiGraphicsExtractor graphics, float scale) {
+        if (scale == 1.0F) return;
+        //? if >=1.21.6 {
+        graphics.pose().scale(scale, scale);
+        //?} else {
+        /*graphics.pose().scale(scale, scale, 1.0F);
+        *///?}
+    }
+
+    @Unique
+    private void vanillahud$autoScale(GuiGraphicsExtractor graphics, Component text, float drawScale, boolean enabled) {
+        if (!enabled) return;
         if (!vanillahud$isNormalTitle(text)) return;
 
         float width = Minecraft.getInstance().font.width(text) * drawScale + 50.0F;
@@ -137,34 +234,64 @@ public class GuiMixinTitle {
             shift = At.Shift.AFTER))
     private void vanillahud$titleEnd(float tickDelta, CallbackInfo ci) {
         HudTransform.end(LegacyDrawContext.INSTANCE);
+        if (vanillahud$subtitleColor == null) return;
+        int color = vanillahud$subtitleColor;
+        vanillahud$subtitleColor = null;
+
+        SubtitleHud hud = Huds.INSTANCE.getSubtitle();
+        if (!hud.shouldDraw()) return;
+        LegacyDrawContext ctx = LegacyDrawContext.INSTANCE;
+        Font font = Minecraft.getInstance().font;
+        HudTransform.begin(ctx, hud);
+        ctx.pose().pushMatrix();
+        ctx.pose().translate(ctx.guiWidth() / 2.0F, ctx.guiHeight() / 2.0F);
+        ctx.pose().scale(2.0F, 2.0F);
+        vanillahud$customScale(hud.getSubtitleScale() / 2.0F);
+        vanillahud$autoScale(subtitle, hud.getSubtitleScale(), hud.getAutoTitleScale());
+        GlStateManager.enableBlend();
+        int width = font.width(subtitle);
+        if (hud.getInstantFade()) color |= 0xFF000000;
+        TextBackdrop.draw(ctx, hud, -width / 2, 5, width, 9, color);
+        font.draw(subtitle, (float) (-width / 2), 5.0F, color, hud.getTextShadow());
+        ctx.pose().popMatrix();
+        HudTransform.end(ctx);
     }
 
-    // a bracketed region cannot be cancelled, so hiding the element skips its two text draws
+    @Unique private Integer vanillahud$subtitleColor;
+
+    // the subtitle has its own element transform, so it is drawn after the title region closes
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/Font;draw(Ljava/lang/String;FFIZ)I"))
     private int vanillahud$titleDraw(Font font, String text, float x, float y, int color, boolean shadow,
                                      Operation<Integer> original) {
-        if (!Huds.INSTANCE.getTitle().shouldDraw()) return 0;
-        return original.call(font, text, x, y, color, shadow);
+        if (text == this.subtitle) {
+            vanillahud$subtitleColor = color;
+            return 0;
+        }
+        TitleHud hud = Huds.INSTANCE.getTitle();
+        if (!hud.shouldDraw()) return 0;
+        if (hud.getInstantFade()) color |= 0xFF000000;
+        TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, (int) x, (int) y, font.width(text), 9, color);
+        return original.call(font, text, x, y, color, hud.getTextShadow());
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/render/platform/GlStateManager;scalef(FFF)V", ordinal = 0,
             shift = At.Shift.AFTER))
     private void vanillahud$titleScale(float tickDelta, CallbackInfo ci) {
-        vanillahud$autoScale(title, 4.0F);
-    }
-
-    @Inject(method = "render", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/render/platform/GlStateManager;scalef(FFF)V", ordinal = 1,
-            shift = At.Shift.AFTER))
-    private void vanillahud$subtitleScale(float tickDelta, CallbackInfo ci) {
-        vanillahud$autoScale(subtitle, 2.0F);
+        TitleHud hud = Huds.INSTANCE.getTitle();
+        vanillahud$customScale(hud.getTitleScale() / 4.0F);
+        vanillahud$autoScale(title, hud.getTitleScale(), hud.getAutoTitleScale());
     }
 
     @Unique
-    private void vanillahud$autoScale(String text, float drawScale) {
-        if (!Huds.INSTANCE.getTitle().getAutoTitleScale()) return;
+    private void vanillahud$customScale(float scale) {
+        if (scale != 1.0F) LegacyDrawContext.INSTANCE.pose().scale(scale, scale);
+    }
+
+    @Unique
+    private void vanillahud$autoScale(String text, float drawScale, boolean enabled) {
+        if (!enabled) return;
         if (!vanillahud$isNormalTitle(text)) return;
 
         float width = Minecraft.getInstance().font.width(text) * drawScale + 50.0F;
