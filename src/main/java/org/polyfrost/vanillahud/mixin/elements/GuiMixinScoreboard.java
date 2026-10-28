@@ -22,7 +22,6 @@ import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
-import java.util.Collection;
 //?} else {
 /*import net.minecraft.client.gui.GameGui;
 import net.minecraft.client.render.Window;
@@ -46,6 +45,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Collection;
 
 //? if <1.21.4 && >1.8.9 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
@@ -232,7 +233,7 @@ public class GuiMixinScoreboard {
 
     @Inject(method = "renderScoreboardObjective", at = @At("HEAD"))
     private void vanillahud$scorePointsOnce(ScoreboardObjective objective, Window window, CallbackInfo ci) {
-        java.util.Collection<ScoreboardScore> scores = objective.getScoreboard().getScores(objective);
+        Collection<ScoreboardScore> scores = objective.getScoreboard().getScores(objective);
         this.vanillahud$showScorePoints = Huds.INSTANCE.getScoreboard().showScorePoints(scores);
         int rows = 0;
         for (ScoreboardScore score : scores) {

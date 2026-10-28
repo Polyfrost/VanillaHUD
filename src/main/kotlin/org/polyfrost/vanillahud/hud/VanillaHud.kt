@@ -15,6 +15,7 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IGui
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
+import kotlin.math.abs
 
 abstract class VanillaHud(
     val hudId: String,
@@ -223,8 +224,8 @@ abstract class VanillaHud(
             val relYDef = getProperty("relativeY").getMetadata<Float?>("default") ?: return fallback
             val sectionDef = getProperty("section").getMetadata<Any?>("default") ?: return fallback
             sectionDef == section &&
-                kotlin.math.abs(relXDef - relativeX) < 1e-4f &&
-                kotlin.math.abs(relYDef - relativeY) < 1e-4f
+                abs(relXDef - relativeX) < 1e-4f &&
+                abs(relYDef - relativeY) < 1e-4f
         } catch (_: Throwable) {
             fallback
         }

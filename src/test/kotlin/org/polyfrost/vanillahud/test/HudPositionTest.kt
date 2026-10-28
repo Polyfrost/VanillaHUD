@@ -2,6 +2,7 @@ package org.polyfrost.vanillahud.test
 
 //? if > 1.8.9 {
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import sun.misc.Unsafe
 //?} else {
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 import org.polyfrost.vanillahud.compat.LegacyDrawContext
@@ -218,7 +219,7 @@ class HudPositionTest {
 internal fun uninitialisedGraphics(): GuiGraphicsExtractor {
     val field = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe")
     field.isAccessible = true
-    val unsafe = field.get(null) as sun.misc.Unsafe
+    val unsafe = field.get(null) as Unsafe
     return unsafe.allocateInstance(GuiGraphicsExtractor::class.java) as GuiGraphicsExtractor
 }
 //?} else {
