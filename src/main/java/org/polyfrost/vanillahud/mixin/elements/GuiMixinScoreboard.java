@@ -157,7 +157,7 @@ public class GuiMixinScoreboard {
         if (hud.getHasCustomBackground()) {
             boolean hasTitle = this.vanillahud$scoreboardTop != Integer.MIN_VALUE;
             int top = hasTitle ? this.vanillahud$scoreboardTop : y0;
-            boolean drew = ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath());
+            boolean drew = ScoreboardBackground.render(graphics, x0, top, x1, y1, hud.getBackgroundImagePath(), hud.getBackgroundImageMode());
             if (hasTitle && (hud.getKeepBackgroundColor() || !drew)) {
                 vanillahud$fill(original, graphics, this.vanillahud$titleX0, top, this.vanillahud$titleX1, this.vanillahud$titleY1, hud.getTitleBgColor(), true, false);
             }
@@ -270,7 +270,8 @@ public class GuiMixinScoreboard {
                 x0, y0,
                 x0 + (int) hud.getUnrotatedWidth(),
                 y0 + (int) hud.getUnrotatedHeight(),
-                hud.getBackgroundImagePath()
+                hud.getBackgroundImagePath(),
+                hud.getBackgroundImageMode()
         );
     }
 

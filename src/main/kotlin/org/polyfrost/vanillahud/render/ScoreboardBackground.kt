@@ -23,23 +23,24 @@ object ScoreboardBackground {
     private var texHeight = 0
 
     @JvmStatic
-    fun render(graphics: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int, path: String?): Boolean {
+    fun render(graphics: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int, path: String?, mode: Int): Boolean {
         if (!ensureLoaded(path)) return false
         val w = x1 - x0
         val h = y1 - y0
         if (w <= 0 || h <= 0) return true
+        val r = fit(mode, x0, y0, w, h, texWidth, texHeight)
         //? if >=1.21.8 {
         graphics.blit(
-            RenderPipelines.GUI_TEXTURED, TEXTURE_ID, x0, y0, 0f, 0f,
-            w, h, texWidth, texHeight, texWidth, texHeight
+            RenderPipelines.GUI_TEXTURED, TEXTURE_ID, r.x, r.y, r.u.toFloat(), r.v.toFloat(),
+            r.w, r.h, r.uw, r.vh, texWidth, texHeight
         )
         //?} elif >=1.21.4 {
         /*graphics.blit(
-            RenderType::guiTextured, TEXTURE_ID, x0, y0, 0f, 0f,
-            w, h, texWidth, texHeight, texWidth, texHeight
+            RenderType::guiTextured, TEXTURE_ID, r.x, r.y, r.u.toFloat(), r.v.toFloat(),
+            r.w, r.h, r.uw, r.vh, texWidth, texHeight
         )
         *///?} else {
-        /*graphics.blit(TEXTURE_ID, x0, y0, w, h, 0f, 0f, texWidth, texHeight, texWidth, texHeight)
+        /*graphics.blit(TEXTURE_ID, r.x, r.y, r.w, r.h, r.u.toFloat(), r.v.toFloat(), r.uw, r.vh, texWidth, texHeight)
         *///?}
         return true
     }
@@ -91,18 +92,18 @@ object ScoreboardBackground {
     private var texHeight = 0
 
     @JvmStatic
-    fun render(graphics: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int, path: String?): Boolean {
+    fun render(graphics: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int, path: String?, mode: Int): Boolean {
         if (!ensureLoaded(path)) return false
         val w = x1 - x0
         val h = y1 - y0
         if (w <= 0 || h <= 0) return true
+        val r = fit(mode, x0, y0, w, h, texWidth, texHeight)
         Minecraft.getInstance().textureManager.bind(TEXTURE_ID)
         GlStateManager.enableTexture()
         GlStateManager.enableBlend()
         GlStateManager.color4f(1f, 1f, 1f, 1f)
-        // the image is stretched over the whole region, so the source rect is the entire texture
         GuiElement.drawTexture(
-            x0, y0, 0f, 0f, texWidth, texHeight, w, h, texWidth.toFloat(), texHeight.toFloat()
+            r.x, r.y, r.u.toFloat(), r.v.toFloat(), r.uw, r.vh, r.w, r.h, texWidth.toFloat(), texHeight.toFloat()
         )
         GlStateManager.disableBlend()
         return true

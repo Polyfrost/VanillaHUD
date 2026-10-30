@@ -412,6 +412,14 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     )
     var backgroundImagePath: String = ""
 
+    @Dropdown(
+        title = "Image Scaling",
+        subcategory = "Background Image",
+        description = "Stretch distorts the image to the scoreboard, Fill scales it to cover and crops the overflow, Fit scales it to fit inside, Crop draws it at its original size, centred.",
+        options = ["Stretch", "Fill", "Fit", "Crop"]
+    )
+    var backgroundImageMode: Int = 0
+
     @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
     var textType: Int = 0
 
@@ -474,6 +482,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         hideUnless<Int>("scoreboardPoints", "hideRepeatingScores") { it == 1 }
         hideUnless("scoreboardTitle", "persistentTitle", "titleColor")
         hideUnless<String>("backgroundImagePath", "keepBackgroundColor") { !it.isNullOrEmpty() }
+        hideUnless<String>("backgroundImagePath", "backgroundImageMode") { !it.isNullOrEmpty() }
         hideUnless("rounded", "cornerRadius")
     }
 
