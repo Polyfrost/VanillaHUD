@@ -25,6 +25,7 @@ import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import org.polyfrost.vanillahud.util.HudConfigMigrator
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.math.abs
 
@@ -2731,7 +2732,7 @@ class TitlePositionTest {
 
     private class FrameHookHud : ThrowingSeedHud("vanillahud-frame-hook.json", "Frame Hook")
 
-    private fun unwritableList(file: java.nio.file.Path) {
+    private fun unwritableList(file: Path) {
         Files.deleteIfExists(file)
         Files.createDirectories(file)
         ForceDefaultPosition.invalidate()

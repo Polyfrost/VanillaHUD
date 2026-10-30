@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
@@ -178,7 +179,7 @@ object HudConfigMigrator {
             if ((enumValue(obj, "growthAnchor") ?: "Auto") != "Auto") return
             if (!obj.get("anchorTargetId")?.asString.isNullOrEmpty()) return
             val y = obj.get("relativeY")?.asFloat ?: return
-            if (kotlin.math.abs(y - 10f) > 1e-3f) return
+            if (abs(y - 10f) > 1e-3f) return
             if (obj.remove("relativeX") == null) return
             writeObject(path, obj)
         } catch (_: Throwable) {
