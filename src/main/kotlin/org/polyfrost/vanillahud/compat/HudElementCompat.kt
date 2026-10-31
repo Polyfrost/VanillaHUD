@@ -16,20 +16,13 @@ import org.polyfrost.vanillahud.render.TitlePass
 
 object HudElementCompat {
     fun init() {
-        // every status and experience layer rides the hotbar element so the cluster moves as one
-        replaceIcons(VanillaHudElements.AIR_BAR) { Huds.hotbar }
-        replaceIcons(VanillaHudElements.ARMOR_BAR) { Huds.hotbar }
-        replaceIcons(VanillaHudElements.HEALTH_BAR) { Huds.hotbar }
-        replaceIcons(VanillaHudElements.FOOD_BAR) { Huds.hotbar }
-        replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.hotbar }
-        replace(VanillaHudElements.INFO_BAR) { Huds.hotbar }
-        wrap(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.hotbar }, { ctx, element ->
-            HudTransform.begin(ctx, element)
-            HudTransform.beginLevel(ctx, Huds.hotbar)
-        }, { ctx ->
-            HudTransform.endLevel(ctx, Huds.hotbar)
-            HudTransform.end(ctx)
-        }) { Huds.hotbar.experienceLevel }
+        replaceIcons(VanillaHudElements.AIR_BAR) { Huds.air }
+        replaceIcons(VanillaHudElements.ARMOR_BAR) { Huds.armor }
+        replaceIcons(VanillaHudElements.HEALTH_BAR) { Huds.health }
+        replaceIcons(VanillaHudElements.FOOD_BAR) { Huds.hunger }
+        replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.mountHealth }
+        replace(VanillaHudElements.INFO_BAR) { Huds.experienceBar }
+        wrap(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.experienceLevel }, HudTransform::beginText, { ctx -> HudTransform.endText(ctx, Huds.experienceLevel) })
         replace(VanillaHudElements.HELD_ITEM_TOOLTIP) { Huds.heldItemTooltip }
         replace(VanillaHudElements.OVERLAY_MESSAGE) { Huds.actionBar }
         HudElementRegistry.replaceElement(VanillaHudElements.TITLE_AND_SUBTITLE) { original ->
@@ -94,7 +87,8 @@ import org.polyfrost.vanillahud.render.TitlePass
 object HudElementCompat {
     fun init() {
         HudLayerRegistrationCallback.EVENT.register { layers ->
-            replaceUpright(layers, IdentifiedLayer.EXPERIENCE_LEVEL, { Huds.hotbar }) { Huds.hotbar.experienceLevel }
+            wrap(layers, IdentifiedLayer.EXPERIENCE_LEVEL, { Huds.experienceLevel }, HudTransform::beginText,
+                { ctx -> HudTransform.endText(ctx, Huds.experienceLevel) })
             replace(layers, IdentifiedLayer.OVERLAY_MESSAGE) { Huds.actionBar }
             layers.replaceLayer(IdentifiedLayer.TITLE_AND_SUBTITLE) { original ->
                 IdentifiedLayer.of(original.id()) { context, tickCounter ->
@@ -110,20 +104,6 @@ object HudElementCompat {
 
     private fun replace(layers: LayeredDrawerWrapper, id: Identifier, hud: () -> VanillaHud) =
         wrap(layers, id, hud, HudTransform::begin, HudTransform::end)
-
-    private fun replaceUpright(
-        layers: LayeredDrawerWrapper,
-        id: Identifier,
-        hud: () -> VanillaHud,
-        visible: () -> Boolean,
-    ) =
-        wrap(layers, id, hud, { ctx, element ->
-            HudTransform.begin(ctx, element)
-            HudTransform.beginLevel(ctx, Huds.hotbar)
-        }, { ctx ->
-            HudTransform.endLevel(ctx, Huds.hotbar)
-            HudTransform.end(ctx)
-        }, visible)
 
     private fun wrap(
         layers: LayeredDrawerWrapper,

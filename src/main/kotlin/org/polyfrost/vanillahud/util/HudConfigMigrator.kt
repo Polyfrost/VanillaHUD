@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 7
+    private const val SCHEMA_VERSION = 8
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -28,6 +28,29 @@ object HudConfigMigrator {
         "vanillahud-experience.json" to emptyMap(),
         "vanillahud-experience-level.json" to emptyMap(),
     )
+
+    /** hotbar keys handed back to the bar huds that were split out of it again */
+    private val SPLIT_FROM_HOTBAR = mapOf(
+        "vanillahud-health.json" to mapOf(
+            "healthAnimation" to "animation", "hardcoreHearts" to "hardcoreHearts", "healthAlignment" to "fillSide",
+        ),
+        "vanillahud-armor.json" to mapOf("armorAlignment" to "fillSide"),
+        "vanillahud-hunger.json" to mapOf("hungerAnimation" to "animation", "hungerAlignment" to "fillSide"),
+        "vanillahud-air.json" to mapOf("airAlignment" to "fillSide"),
+        "vanillahud-mount.json" to mapOf("mountAlignment" to "fillSide"),
+        "vanillahud-experience.json" to mapOf("overlayLocatorBar" to "overlayLocatorBar"),
+        "vanillahud-experience-level.json" to emptyMap(),
+    )
+
+    /** hotbar switches that became hiding the experience huds */
+    private val HIDDEN_BY_HOTBAR_SWITCH = mapOf(
+        "experienceBar" to "vanillahud-experience.json",
+        "experienceLevel" to "vanillahud-experience-level.json",
+    )
+
+    private val ROTATION_KEYS = listOf("side", "reverseDirection")
+
+    private val DROPPED_HOTBAR_KEYS = listOf("experienceBar", "experienceLevel", "levelTextHeight")
 
     private const val LEGACY_UNLOCKED_FILE = "vanillahud-unlocked"
     private const val CUSTOMIZED_FILE = "vanillahud-customized"
@@ -97,6 +120,7 @@ object HudConfigMigrator {
         if (from < 5) resetPositions(folder)
         if (from < 6) mergeHotbarCluster(folder)
         if (from < 7) recentreTabList(folder)
+        if (from < 8) splitHotbarCluster(folder)
 
         writeStamp(stamp)
     }
@@ -164,6 +188,38 @@ object HudConfigMigrator {
             obj.remove("hotbarMode")?.let { obj.add("side", it) }
             for (key in POSITION_KEYS) obj.remove(key)
             writeObject(hotbar, obj)
+        } catch (_: Throwable) {
+        }
+
+        unmarkCustomized(folder, HOTBAR_FILE)
+    }
+
+    /** the bars left the hotbar again so each gets its settings back and the hotbar drops its stale position */
+    private fun splitHotbarCluster(folder: Path) {
+        try {
+            val hudsDir = folder.resolve("huds")
+            val hotbarPath = hudsDir.resolve(HOTBAR_FILE)
+            val hotbar = readObject(hotbarPath) ?: return
+
+            for ((file, keys) in SPLIT_FROM_HOTBAR) {
+                val path = hudsDir.resolve(file)
+                val obj = readObject(path) ?: JsonObject()
+                obj.addProperty("id", file)
+                for ((from, to) in keys) hotbar.get(from)?.let { obj.add(to, it) }
+                // the old hotbar rotated the whole cluster so every part inherits it
+                for (key in ROTATION_KEYS) hotbar.get(key)?.let { obj.add(key, it) }
+                if (HIDDEN_BY_HOTBAR_SWITCH.any { (switch, target) ->
+                        target == file && hotbar.get(switch)?.let { it.isJsonPrimitive && !it.asBoolean } == true
+                    }
+                ) obj.addProperty("hidden", true)
+                writeObject(path, obj)
+                unmarkCustomized(folder, file)
+            }
+
+            for (keys in SPLIT_FROM_HOTBAR.values) for (from in keys.keys) hotbar.remove(from)
+            for (key in DROPPED_HOTBAR_KEYS) hotbar.remove(key)
+            for (key in POSITION_KEYS) hotbar.remove(key)
+            writeObject(hotbarPath, hotbar)
         } catch (_: Throwable) {
         }
 

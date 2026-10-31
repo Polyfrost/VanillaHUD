@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
@@ -304,21 +303,23 @@ object HudTransform {
 
     private fun uprightIsNoop(provider: VanillaHud) = mirror2Y.isNaN() && drawTurns(live(provider)) == 0
 
+    /** like [begin] for an element drawn as text, which is kept upright around its own centre */
     @JvmStatic
-    fun beginLevel(graphics: GuiGraphicsExtractor, hud: HotbarHud) {
-        val offset = live(hud).levelOffsetY.toFloat().let { if (mirror2Y.isNaN()) it else -it }
-        push(graphics)
-        //? if <=1.21.5 && >1.8.9 {
-        /*graphics.pose().translate(0f, offset, 0f)
-        *///?} else
-        graphics.pose().translate(0f, offset)
-        beginUpright(graphics, hud, graphics.guiWidth() / 2f, graphics.guiHeight() - HotbarHud.LEVEL_CENTER_Y)
+    fun beginText(graphics: GuiGraphicsExtractor, hud: VanillaHud) {
+        begin(graphics, hud)
+        val w = graphics.guiWidth()
+        val h = graphics.guiHeight()
+        beginUpright(
+            graphics, hud,
+            hud.vanillaOriginX(w, h) + hud.naturalWidth / 2f,
+            hud.vanillaOriginY(w, h) + hud.naturalHeight / 2f,
+        )
     }
 
     @JvmStatic
-    fun endLevel(graphics: GuiGraphicsExtractor, hud: HotbarHud) {
+    fun endText(graphics: GuiGraphicsExtractor, hud: VanillaHud) {
         endUpright(graphics, hud)
-        pop(graphics)
+        end(graphics)
     }
 
     @JvmStatic

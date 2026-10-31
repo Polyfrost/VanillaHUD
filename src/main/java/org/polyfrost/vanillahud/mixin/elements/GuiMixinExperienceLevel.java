@@ -30,13 +30,11 @@ public class GuiMixinExperienceLevel {
     //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "renderExperienceLevel")
     private void vanillahud$xpLevel(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw() || !Huds.INSTANCE.getHotbar().getExperienceLevel()) return;
+        if (!Huds.INSTANCE.getExperienceLevel().shouldDraw()) return;
 
-        HudTransform.begin(graphics, Huds.INSTANCE.getHotbar());
-        HudTransform.beginLevel(graphics, Huds.INSTANCE.getHotbar());
+        HudTransform.beginText(graphics, Huds.INSTANCE.getExperienceLevel());
         original.call(graphics, delta);
-        HudTransform.endLevel(graphics, Huds.INSTANCE.getHotbar());
-        HudTransform.end(graphics);
+        HudTransform.endText(graphics, Huds.INSTANCE.getExperienceLevel());
     }
     *///?}
 }

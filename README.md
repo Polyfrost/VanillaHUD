@@ -9,7 +9,7 @@ VanillaHUD turns the parts of Minecraft's own HUD into elements you can move, sc
 
 ### Hotbar
 
-The hotbar moves together with the health, hunger, armor, air, mount health and experience displays.
+Health, hunger, armor, air, mount health, the experience bar and the experience level are separate elements, each with its own position.
 
 Neat features:
 - Animate the selected slot highlight between slots!

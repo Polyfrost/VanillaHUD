@@ -42,12 +42,12 @@ public class GuiMixinAir {
             cancellable = true
     )
     private void vanillahud$air(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw()) {
+        if (!Huds.INSTANCE.getAir().shouldDraw()) {
             ci.cancel();
             return;
         }
 
-        HudTransform.beginIcons(guiGraphics, Huds.INSTANCE.getHotbar());
+        HudTransform.beginIcons(guiGraphics, Huds.INSTANCE.getAir());
     }
 
     @Inject(
@@ -61,9 +61,9 @@ public class GuiMixinAir {
     /*@WrapMethod(method = "renderAirBubbles")
     private void vanillahud$air(GuiGraphicsExtractor graphics, Player player, int vehicleHearts, int yLineAir,
                                 int xRight, Operation<Void> original) {
-        if (!Huds.INSTANCE.getHotbar().shouldDraw()) return;
+        if (!Huds.INSTANCE.getAir().shouldDraw()) return;
 
-        HudTransform.beginIcons(graphics, Huds.INSTANCE.getHotbar());
+        HudTransform.beginIcons(graphics, Huds.INSTANCE.getAir());
         original.call(graphics, player, vehicleHearts, yLineAir, xRight);
         HudTransform.endIcons(graphics);
     }

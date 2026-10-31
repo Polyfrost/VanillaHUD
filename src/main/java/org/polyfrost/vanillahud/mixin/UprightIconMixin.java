@@ -72,18 +72,18 @@ public class UprightIconMixin {
     *///?}
 }
 //?} else {
-/*// 1.8.9 blits every HUD sprite through GameGui.drawTexture, so rotated elements keep their
-// icons upright from there. HudTransform only acts while an icon layer is open, which is just
-// the status bar pass, so the hotbar frame and the experience bar are left alone unless the
-// hotbar is mirrored.
-//
-// Argentum batches these blits and draws them later, losing any GL rotation around them,
-// so rotated icons are turned upright in LegacyIconBatch instead.
+/*// 1.8.9 blits every HUD sprite through GameGui.drawTexture and draws all the status bars in
+// renderStatusBars, so each bar's icons are told apart by their row in icons.png and given
+// the transform of their own element. Argentum batches these blits and draws them later,
+// losing any GL rotation around them, so rotated icons are turned upright in LegacyIconBatch.
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.GameGui;
 import net.minecraft.client.gui.GuiElement;
+import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.compat.LegacyIconBatch;
+import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -92,15 +92,26 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class UprightIconMixin extends GuiElement {
     @WrapOperation(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GameGui;drawTexture(IIIIII)V"))
-    private void vanillahud$uprightIcon(GameGui self, int x, int y, int u, int v, int width, int height,
-                                        Operation<Void> original) {
+    private void vanillahud$statusIcon(GameGui self, int x, int y, int u, int v, int width, int height,
+                                       Operation<Void> original) {
+        VanillaHud hud;
+        if (v == 18) hud = Huds.INSTANCE.getAir();
+        else if (v == 27) hud = Huds.INSTANCE.getHunger();
+        else if (v == 9) hud = x < LegacyDrawContext.INSTANCE.guiWidth() / 2
+                ? Huds.INSTANCE.getArmor() : Huds.INSTANCE.getMountHealth();
+        else hud = Huds.INSTANCE.getHealth();
+
+        if (!hud.shouldDraw()) return;
+        HudTransform.beginIcons(LegacyDrawContext.INSTANCE, hud);
         y += HudTransform.mirrorShift(y, y + height);
         int turns = HudTransform.getIconTurns();
         if (turns == 0) {
             original.call(self, x, y, u, v, width, height);
-            return;
+        } else {
+            LegacyIconBatch.quad(x, y, u, v, width, height, width, height, 256, 256, this.drawOffset, turns);
+            LegacyIconBatch.draw();
         }
-        LegacyIconBatch.quad(x, y, u, v, width, height, width, height, 256, 256, this.drawOffset, turns);
+        HudTransform.endIcons(LegacyDrawContext.INSTANCE);
     }
 
     @WrapOperation(method = {"renderHotbar", "renderXpBar", "renderJumpBar"}, at = @At(value = "INVOKE",

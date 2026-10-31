@@ -197,106 +197,52 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
     }
 }
 
-/** the whole bottom cluster as one element so it keeps its vanilla internal layout and moves as a unit */
-class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER) {
+/** an element that can dock to any screen edge, rotating a quarter turn for the left and right ones */
+abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, title, Category.PLAYER) {
     @Dropdown(
         title = "Side",
-        description = "Which screen edge the cluster docks against. Left and Right rotate it a quarter turn.",
+        description = "Which screen edge the element docks against. Left and Right rotate it a quarter turn.",
         options = ["Bottom", "Left", "Top", "Right"]
     )
     var side = BOTTOM
 
-    @Switch(title = "Reverse Direction", description = "Reverse the order of the slots, health and hunger.")
+    @Switch(title = "Reverse Direction", description = "Reverse the order of the element's contents.")
     var reverseDirection = false
 
-    @Switch(
-        title = "Animation",
-        description = "Slide the selected-slot highlight between positions instead of snapping."
-    )
-    var animation = false
-
-    @Switch(title = "Health Animation", description = "Animate the health bar when taking damage / healing.")
-    var healthAnimation = true
-
-    @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
-    var hardcoreHearts = 0
-
-    @Switch(title = "Hunger Animation", description = "Animate the hunger bar when it shakes.")
-    var hungerAnimation = true
-
-    @Switch(title = "Render Experience Bar")
-    var experienceBar = true
-
-    @Switch(title = "Render Experience Level")
-    var experienceLevel = true
-
-    @Slider(title = "Experience Level Height", description = "How high the level number sits above the bar.", min = -10f, max = 10f)
-    var levelTextHeight = 4
-
-    //? if >1.8.9 {
-    @Dropdown(title = "Health Alignment", description = "Which side the hearts fill from.", options = ["Left", "Right"])
-    var healthAlignment = ALIGN_LEFT
-
-    @Dropdown(title = "Armor Alignment", description = "Which side the armor fills from.", options = ["Left", "Right"])
-    var armorAlignment = ALIGN_LEFT
-
-    @Dropdown(title = "Hunger Alignment", description = "Which side the hunger fills from.", options = ["Left", "Right"])
-    var hungerAlignment = ALIGN_RIGHT
-
-    @Dropdown(title = "Air Alignment", description = "Which side the air bubbles fill from.", options = ["Left", "Right"])
-    var airAlignment = ALIGN_RIGHT
-
-    @Dropdown(title = "Mount Health Alignment", description = "Which side the mount hearts fill from.", options = ["Left", "Right"])
-    var mountAlignment = ALIGN_RIGHT
-    //?}
-
-    val levelOffsetY get() = 4 - levelTextHeight
-
-    //? if >=1.21.6 {
-    @Switch(
-        title = "Overlay Locator Bar",
-        description = "Draw the locator bar's waypoints over the experience / jump bar instead of replacing it."
-    )
-    var overlayLocatorBar = false
-    //?}
+    protected abstract val homeAnchorX: Float
+    protected abstract val homeAnchorY: Float
 
     override val quarterTurns get() = side.coerceIn(BOTTOM, RIGHT)
 
     override val mirrored get() = reverseDirection != (quarterTurns == TOP || quarterTurns == RIGHT)
 
-    override val naturalWidth get() = 182f
-
-    override val naturalHeight get() = 49f
-
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - naturalHeight
-
-    override fun Tree.addDependencies() {
-        hideUnless("experienceLevel", "levelTextHeight")
-    }
-
+    // the distance from the bottom edge becomes the distance from the docked edge, and the offset
+    // from the screen centre carries over to the free axis so a rotated cluster keeps its layout
     override fun defaultOriginX(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
-        LEFT -> 0f
-        RIGHT -> screenWidth - naturalHeight
-        else -> screenWidth / 2f - naturalWidth / 2f
+        LEFT -> fromBottom(screenWidth, screenHeight)
+        RIGHT -> screenWidth - naturalHeight - fromBottom(screenWidth, screenHeight)
+        else -> vanillaOriginX(screenWidth, screenHeight)
     }
 
     override fun defaultOriginY(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
-        TOP -> 0f
-        BOTTOM -> screenHeight - naturalHeight
-        else -> screenHeight / 2f - naturalWidth / 2f
+        TOP -> fromBottom(screenWidth, screenHeight)
+        BOTTOM -> vanillaOriginY(screenWidth, screenHeight)
+        else -> screenHeight / 2f + vanillaOriginX(screenWidth, screenHeight) - screenWidth / 2f
     }
+
+    private fun fromBottom(screenWidth: Int, screenHeight: Int) =
+        screenHeight - vanillaOriginY(screenWidth, screenHeight) - naturalHeight
 
     // pinned against the docked edge and centred along the free axis
     override val anchorX get() = when (quarterTurns) {
         LEFT -> 0f
         RIGHT -> 1f
-        else -> 0.5f
+        else -> homeAnchorX
     }
 
     override val anchorY get() = when (quarterTurns) {
         TOP -> 0f
-        BOTTOM -> 1f
+        BOTTOM -> homeAnchorY
         else -> 0.5f
     }
 
@@ -305,13 +251,105 @@ class HotbarHud : VanillaHud("vanillahud-hotbar.json", "Hotbar", Category.PLAYER
         const val LEFT = 1
         const val TOP = 2
         const val RIGHT = 3
+    }
+}
 
+class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
+    @Switch(
+        title = "Animation",
+        description = "Slide the selected-slot highlight between positions instead of snapping."
+    )
+    var animation = false
+
+    override val naturalWidth get() = 182f
+
+    override val naturalHeight get() = 22f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - naturalHeight
+
+    override val homeAnchorX get() = 0.5f
+    override val homeAnchorY get() = 1f
+}
+
+abstract class StatBarHud(
+    hudId: String,
+    title: String,
+    // 1.8.9 draws every bar in one pass so it has no alignment hook
+    @Suppress("UNUSED_PARAMETER") defaultAlignment: Int,
+    private val rightSide: Boolean,
+    private val aboveFirstRow: Boolean,
+) : RotatableHud(hudId, title) {
+    //? if >1.8.9 {
+    @Dropdown(title = "Alignment", description = "Which side the icons fill from.", options = ["Left", "Right"])
+    var fillSide = defaultAlignment
+    //?}
+
+    override val naturalWidth get() = 81f
+    override val naturalHeight get() = 9f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
+        screenWidth / 2f + if (rightSide) 10f else -91f
+
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
+        screenHeight - if (aboveFirstRow) 49f else 39f
+
+    override val homeAnchorX get() = if (rightSide) 1f else 0f
+    override val homeAnchorY get() = 1f
+
+    companion object {
         const val ALIGN_LEFT = 0
         const val ALIGN_RIGHT = 1
-
-        /** vanilla centres the experience level this far above the bottom of the screen */
-        const val LEVEL_CENTER_Y = 30.5f
     }
+}
+
+class HealthHud : StatBarHud("vanillahud-health.json", "Health", StatBarHud.ALIGN_LEFT, rightSide = false, aboveFirstRow = false) {
+    @Switch(title = "Animation", description = "Animate the health bar when taking damage / healing.")
+    var animation = true
+
+    @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
+    var hardcoreHearts = 0
+}
+
+class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_LEFT, rightSide = false, aboveFirstRow = true)
+
+class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false) {
+    @Switch(title = "Animation", description = "Animate the hunger bar when it shakes.")
+    var animation = true
+}
+
+class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = true)
+
+class MountHealthHud : StatBarHud("vanillahud-mount.json", "Mount Health", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false)
+
+class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience Bar") {
+    //? if >=1.21.6 {
+    @Switch(
+        title = "Overlay Locator Bar",
+        description = "Draw the locator bar's waypoints over the experience / jump bar instead of replacing it."
+    )
+    var overlayLocatorBar = false
+    //?}
+
+    override val naturalWidth get() = 182f
+    override val naturalHeight get() = 5f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
+
+    override val homeAnchorX get() = 0.5f
+    override val homeAnchorY get() = 1f
+}
+
+class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Experience Level") {
+    override val naturalWidth get() = 18f
+    override val naturalHeight get() = 9f
+
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
+
+    override val homeAnchorX get() = 0.5f
+    override val homeAnchorY get() = 1f
 }
 
 class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
@@ -1215,6 +1253,13 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
 object Huds {
     private val hotbarProvider = HotbarHud()
+    private val healthProvider = HealthHud()
+    private val armorProvider = ArmorHud()
+    private val hungerProvider = HungerHud()
+    private val airProvider = AirHud()
+    private val mountHealthProvider = MountHealthHud()
+    private val experienceBarProvider = ExperienceBarHud()
+    private val experienceLevelProvider = ExperienceLevelHud()
     private val actionBarProvider = ActionBarHud()
     private val heldItemTooltipProvider = HeldItemTooltipHud()
     private val titleProvider = TitleHud()
@@ -1228,6 +1273,13 @@ object Huds {
     //?}
 
     val hotbar: HotbarHud get() = HudTransform.live(hotbarProvider)
+    val health: HealthHud get() = HudTransform.live(healthProvider)
+    val armor: ArmorHud get() = HudTransform.live(armorProvider)
+    val hunger: HungerHud get() = HudTransform.live(hungerProvider)
+    val air: AirHud get() = HudTransform.live(airProvider)
+    val mountHealth: MountHealthHud get() = HudTransform.live(mountHealthProvider)
+    val experienceBar: ExperienceBarHud get() = HudTransform.live(experienceBarProvider)
+    val experienceLevel: ExperienceLevelHud get() = HudTransform.live(experienceLevelProvider)
     val actionBar: ActionBarHud get() = HudTransform.live(actionBarProvider)
     val heldItemTooltip: HeldItemTooltipHud get() = HudTransform.live(heldItemTooltipProvider)
     val title: TitleHud get() = HudTransform.live(titleProvider)
@@ -1243,14 +1295,16 @@ object Huds {
     val all: Array<VanillaHud>
         //? if > 1.8.9 {
         get() = arrayOf(
-            hotbarProvider, actionBarProvider, heldItemTooltipProvider, titleProvider,
+            hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider, mountHealthProvider,
+            experienceBarProvider, experienceLevelProvider, actionBarProvider, heldItemTooltipProvider, titleProvider,
             subtitleProvider,
             scoreboardProvider, tabListProvider, bossBarProvider, statusEffectsProvider,
             closedCaptionsProvider,
         )
         //?} else {
         /*get() = arrayOf(
-            hotbarProvider, actionBarProvider, heldItemTooltipProvider,
+            hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider, mountHealthProvider,
+            experienceBarProvider, experienceLevelProvider, actionBarProvider, heldItemTooltipProvider,
             titleProvider, subtitleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
         )
         *///?}
