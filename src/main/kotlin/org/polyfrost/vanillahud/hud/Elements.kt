@@ -328,8 +328,6 @@ class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIG
 
 class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = true)
 
-class MountHealthHud : StatBarHud("vanillahud-mount.json", "Mount Health", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false)
-
 class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience Bar") {
     //? if >=1.21.6 {
     @Switch(
@@ -1281,7 +1279,6 @@ object Huds {
     private val armorProvider = ArmorHud()
     private val hungerProvider = HungerHud()
     private val airProvider = AirHud()
-    private val mountHealthProvider = MountHealthHud()
     private val experienceBarProvider = ExperienceBarHud()
     private val experienceLevelProvider = ExperienceLevelHud()
     private val actionBarProvider = ActionBarHud()
@@ -1301,7 +1298,6 @@ object Huds {
     val armor: ArmorHud get() = HudTransform.live(armorProvider)
     val hunger: HungerHud get() = HudTransform.live(hungerProvider)
     val air: AirHud get() = HudTransform.live(airProvider)
-    val mountHealth: MountHealthHud get() = HudTransform.live(mountHealthProvider)
     val experienceBar: ExperienceBarHud get() = HudTransform.live(experienceBarProvider)
     val experienceLevel: ExperienceLevelHud get() = HudTransform.live(experienceLevelProvider)
     val actionBar: ActionBarHud get() = HudTransform.live(actionBarProvider)
@@ -1319,7 +1315,7 @@ object Huds {
     val all: Array<VanillaHud>
         //? if > 1.8.9 {
         get() = arrayOf(
-            hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider, mountHealthProvider,
+            hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider,
             experienceBarProvider, experienceLevelProvider, actionBarProvider, heldItemTooltipProvider, titleProvider,
             subtitleProvider,
             scoreboardProvider, tabListProvider, bossBarProvider, statusEffectsProvider,
@@ -1327,7 +1323,7 @@ object Huds {
         )
         //?} else {
         /*get() = arrayOf(
-            hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider, mountHealthProvider,
+            hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider,
             experienceBarProvider, experienceLevelProvider, actionBarProvider, heldItemTooltipProvider,
             titleProvider, subtitleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
         )

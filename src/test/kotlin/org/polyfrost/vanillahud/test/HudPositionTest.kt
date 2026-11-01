@@ -140,7 +140,7 @@ class HudPositionTest {
         assertEquals(1f, hud.unrotatedWidth, 0f)
 
         hud.next = 2f
-        hud.locked = false
+        hud.movedByUser = true
         HudManager.isConfigUiOpen = true
         assertEquals(2f, hud.unrotatedWidth, 0f)
         assertEquals(2, hud.measures, "a measure taken outside a preview is not the answer inside one")
@@ -151,7 +151,7 @@ class HudPositionTest {
         val hud = MeasureCountHud()
         HudManager.guiScreenWidth = 100f
         HudManager.guiScreenHeight = MEASURE_SCREEN_H
-        hud.locked = false
+        hud.movedByUser = true
         HudManager.isConfigUiOpen = true
 
         VanillaHud.refreshAll()

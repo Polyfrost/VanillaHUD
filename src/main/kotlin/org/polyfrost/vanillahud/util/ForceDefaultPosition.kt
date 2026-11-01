@@ -80,6 +80,12 @@ object ForceDefaultPosition {
         }
     }
 
+    private fun unmarkCustomized(hud: VanillaHud) {
+        unwritten.remove(hud.hudId)
+        val state = customized ?: return
+        if (state.ids.remove(hud.hudId)) write(state)
+    }
+
     private fun flushBacklog() {
         if (unwritten.isEmpty()) return
         if (throttled(flushedAt)) return
@@ -98,10 +104,13 @@ object ForceDefaultPosition {
         VanillaHud.keepLevelAboveBar()
         for (hud in HudManager.activeInstances.filterIsInstance<VanillaHud>()) {
             hud.restoreDefaultAnchor()
-            if (!hud.locked || (hud.isAnchored && !hud.onDefaultAnchor)) {
+            val moved = hud.movedByUser
+            hud.movedByUser = false
+            if (hud.anchoredByHand || (moved && !hud.backAtDefault)) {
                 markCustomized(hud)
                 continue
             }
+            if (moved) unmarkCustomized(hud)
             if (customized(hud) != false) continue
             if (forced.add(hud.hudId)) hud.queueForceDefault()
         }

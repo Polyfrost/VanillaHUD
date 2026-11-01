@@ -35,6 +35,7 @@ import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.item.PolyItemIcon
 import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -273,7 +274,7 @@ object HudCapture {
         val contentB = l.contentY + hud.height * drawn
         val boxR = l.boxX + hud.boxWidth * l.scale
         val boxB = l.boxY + hud.boxHeight * l.scale
-        fun snap(v: Float, edge: Float, to: Float) = if (kotlin.math.abs(v - edge) <= tolerance) to else v
+        fun snap(v: Float, edge: Float, to: Float) = if (abs(v - edge) <= tolerance) to else v
         val left = snap(m.x(minOf(x0, x1).toFloat(), 0f), l.contentX, l.boxX)
         val right = snap(m.x(maxOf(x0, x1).toFloat(), 0f), contentR, boxR)
         val top = snap(m.y(0f, minOf(y0, y1).toFloat()), l.contentY, l.boxY)

@@ -29,6 +29,11 @@ import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.math.abs
 
+private fun drag(hud: VanillaHud) {
+    if (hud.backAtDefault) hud.relativeX += 7f
+    hud.movedByUser = true
+}
+
 class TitlePositionTest {
 
     companion object {
@@ -120,7 +125,6 @@ class TitlePositionTest {
         ConfigManager.active().delete("huds/${hud.id}")
         @Suppress("UNCHECKED_CAST")
         val made = hud.make() as T
-        made.locked = true
         made.useGuiScale = true
         made.customScale = 1f
         HudManager.activeInstances.add(made)
@@ -249,14 +253,13 @@ class TitlePositionTest {
     fun `an unlocked hud keeps the section the user dropped it in`() {
         screen(LAPTOP_W, LAPTOP_H)
         val hud = fresh(StrayHud())
-        hud.locked = false
+        drag(hud)
         hud.cancelForceDefault()
         hud.section = Section.BottomRight
 
         VanillaHud.refreshAll()
         assertEquals(Section.BottomRight, hud.section, "converting a hud the user placed would move it later")
 
-        hud.locked = true
         VanillaHud.refreshAll()
         assertEquals(Section.BottomRight, hud.section, "locking it again must not revive the conversion")
     }
@@ -896,7 +899,7 @@ class TitlePositionTest {
 
         assertEquals(Section.TopLeft, hud.section, "the latched conversion has to be retried on the new tree")
 
-        hud.locked = false
+        drag(hud)
         screen(MONITOR_W, MONITOR_H)
         VanillaHud.refreshAll()
         val settled = hud.measures
@@ -905,7 +908,7 @@ class TitlePositionTest {
         VanillaHud.refreshAll()
 
         assertTrue(hud.measures > settled, "and the seed key named a screen the new position was never measured on")
-        hud.locked = true
+        hud.movedByUser = false
 
         hud.queueForceDefault()
         VanillaHud.forgetProfileStateAll()
@@ -999,10 +1002,9 @@ class TitlePositionTest {
             assertEquals(12f, hud.relativeX, 0.01f, "which would rewrite the offsets along with it")
 
             val dragged = fresh(UnreadableWriteHud())
-            dragged.locked = false
+            drag(dragged)
             ForceDefaultPosition.tick()
 
-            dragged.locked = true
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"))
             ForceDefaultPosition.invalidate()
 
@@ -1071,9 +1073,8 @@ class TitlePositionTest {
             hud.relativeX = 40f
             hud.relativeY = 20f
 
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
-            hud.locked = true
 
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"))
             ForceDefaultPosition.invalidate()
@@ -1107,13 +1108,12 @@ class TitlePositionTest {
             val hud = fresh(DragCancelHud())
             hud.queueForceDefault()
 
-            hud.locked = false
+            drag(hud)
             hud.relativeX = 40f
             hud.relativeY = 20f
 
             ForceDefaultPosition.tick()
 
-            hud.locked = true
             hud.applyForceDefault()
 
             assertEquals(40f, hud.relativeX, 0.01f, "a hud the user has hold of is not the reset's to move")
@@ -1346,9 +1346,8 @@ class TitlePositionTest {
             hud.relativeX = 40f
             hud.relativeY = 20f
 
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
-            hud.locked = true
 
             ForceDefaultPosition.invalidate()
             ForceDefaultPosition.tick()
@@ -1383,16 +1382,14 @@ class TitlePositionTest {
             ForceDefaultPosition.nanos = { 0L }
 
             val hud = fresh(WriteRetryHud())
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
 
-            hud.locked = true
             ForceDefaultPosition.tick()
 
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"))
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
-            hud.locked = true
 
             val written = Files.readAllLines(file)
             assertTrue(hud.hudId in written, "a drag the disk refused has to reach it once it will take one")
@@ -1417,10 +1414,9 @@ class TitlePositionTest {
             ForceDefaultPosition.nanos = { 0L }
 
             val hud = fresh(FlushKeepHud())
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
 
-            hud.locked = true
             ForceDefaultPosition.tick()
 
             Files.delete(file)
@@ -1459,13 +1455,12 @@ class TitlePositionTest {
             ForceDefaultPosition.nanos = { 0L }
 
             val hud = fresh(WritePaceHud())
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
             ForceDefaultPosition.tick()
 
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"))
             ForceDefaultPosition.tick()
-            hud.locked = true
 
             assertEquals(
                 listOf(KEPT_ID), Files.readAllLines(file),
@@ -1473,9 +1468,8 @@ class TitlePositionTest {
             )
 
             val other = fresh(WritePaceOtherHud())
-            other.locked = false
+            drag(other)
             ForceDefaultPosition.tick()
-            other.locked = true
 
             val written = Files.readAllLines(file)
             assertTrue(hud.hudId in written, "the drag the disk refused still has to reach it")
@@ -1528,17 +1522,15 @@ class TitlePositionTest {
             ForceDefaultPosition.invalidate()
 
             val dragged = fresh(ProfileScopeDragHud())
-            dragged.locked = false
+            drag(dragged)
             ForceDefaultPosition.tick()
-            dragged.locked = true
 
             makeProfile(SCOPE_PROFILE)
             ForceDefaultPosition.invalidate()
 
             val other = fresh(ProfileScopeOtherHud())
-            other.locked = false
+            drag(other)
             ForceDefaultPosition.tick()
-            other.locked = true
 
             val written = Files.readAllLines(ConfigManager.active().folder.resolve("vanillahud-customized"))
             assertTrue(other.hudId in written, "a drag made in this profile has to be recorded in it")
@@ -1592,7 +1584,7 @@ class TitlePositionTest {
         VanillaHud.refreshAll()
 
         hud.queueForceDefault()
-        hud.locked = false
+        drag(hud)
         hud.relativeX = 40f
         hud.relativeY = 20f
 
@@ -1601,7 +1593,6 @@ class TitlePositionTest {
         assertEquals(40f, hud.relativeX, 0.01f, "a hud the user has hold of is not the reset's to move")
         assertEquals(20f, hud.relativeY, 0.01f)
 
-        hud.locked = true
         VanillaHud.refreshAll()
         assertEquals(
             40f, hud.relativeX, 0.01f,
@@ -1809,9 +1800,8 @@ class TitlePositionTest {
         val had = if (Files.isRegularFile(file)) Files.readAllLines(file) else null
         try {
             val hud = fresh(RelockRetryHud())
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
-            hud.locked = true
 
             Files.createDirectories(file.parent)
             Files.write(file, listOf(KEPT_ID))
@@ -1822,10 +1812,9 @@ class TitlePositionTest {
             )
             ForceDefaultPosition.invalidate()
 
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
 
-            hud.locked = true
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"))
             ForceDefaultPosition.tick()
 
@@ -2496,9 +2485,8 @@ class TitlePositionTest {
 
             var clockReads = 0
             ForceDefaultPosition.nanos = { clockReads++; 0L }
-            hud.locked = false
+            drag(hud)
             ForceDefaultPosition.tick()
-            hud.locked = true
             assertEquals(
                 0, clockReads,
                 "a hud the list already names must not reach the retry pacing, let alone the write",
@@ -2522,9 +2510,8 @@ class TitlePositionTest {
             unwritableList(file)
 
             val dragged = fresh(BacklogProfileHud())
-            dragged.locked = false
+            drag(dragged)
             ForceDefaultPosition.tick()
-            dragged.locked = true
             Files.delete(file)
 
             makeProfile(FLUSH_PROFILE)
@@ -2556,9 +2543,8 @@ class TitlePositionTest {
             unwritableList(file)
 
             val dragged = fresh(WriteRaceHud())
-            dragged.locked = false
+            drag(dragged)
             ForceDefaultPosition.tick()
-            dragged.locked = true
             Files.delete(file)
 
             makeProfile(RACE_PROFILE)
@@ -2602,11 +2588,10 @@ class TitlePositionTest {
         VanillaHud.refreshAll()
         assertTrue(hud.anchorsToVanillaOrigin(), "a hud that never moved has to read as being on its default")
 
-        hud.locked = false
+        drag(hud)
         try {
             assertFalse(hud.anchorsToVanillaOrigin(), "a hud the user has hold of is theirs to move")
         } finally {
-            hud.locked = true
         }
     }
 

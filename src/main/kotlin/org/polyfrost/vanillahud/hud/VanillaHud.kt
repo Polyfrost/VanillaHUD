@@ -35,7 +35,6 @@ abstract class VanillaHud(
     private var recompose by mutableIntStateOf(0)
 
     init {
-        locked = true
         currentSchema = posSchema
         showBackground = false
         bgRadius = 0f
@@ -121,12 +120,31 @@ abstract class VanillaHud(
 
     private val positionSchemaReady: Boolean get() = posSchema == currentSchema
 
+    internal var movedByUser = false
+
+    val pinned: Boolean
+        get() = !movedByUser && (ForceDefaultPosition.customized(this) != true || matchesDefaultPosition(fallback = false))
+
+    override fun updateRelativeX(absX: Float) {
+        super.updateRelativeX(absX)
+        noteUserMove()
+    }
+
+    override fun updateRelativeY(absY: Float) {
+        super.updateRelativeY(absY)
+        noteUserMove()
+    }
+
+    private fun noteUserMove() {
+        if (tree != null && !HudInternals.systemReposition() && previewing()) movedByUser = true
+    }
+
     private fun ensureSection() {
         if (tree == null || !positionSchemaReady) return
         val wantedAnchor = preferredGrowthAnchor.takeIf { growthAnchor == HudAnchor.Auto && it != HudAnchor.Auto }
         if (sectionChecked && wantedAnchor == null) return
         val customized = ForceDefaultPosition.customized(this)
-        if (!locked || isAnchored || customized != false) {
+        if (!pinned || isAnchored || customized != false) {
             sectionChecked = customized != null
             return
         }
@@ -216,7 +234,13 @@ abstract class VanillaHud(
 
     /** true while this HUD holds its default anchor, false once the user anchors it by hand */
     val onDefaultAnchor: Boolean
-        get() = locked && isAnchored && anchorParent === defaultAnchorTarget
+        get() = pinned && isAnchored && anchorParent === defaultAnchorTarget
+
+    val anchoredByHand: Boolean
+        get() = isAnchored && anchorParent !== defaultAnchorTarget
+
+    val backAtDefault: Boolean
+        get() = !anchoredByHand && matchesDefaultPosition(fallback = false)
 
     private fun holdDefaultAnchor(target: VanillaHud, screenWidth: Int, screenHeight: Int) {
         asSystemWrite {
@@ -246,7 +270,7 @@ abstract class VanillaHud(
 
     fun applyForceDefault() {
         if (!forcePending || tree == null || !positionSchemaReady) return
-        if (!locked || (isAnchored && !onDefaultAnchor)) {
+        if (!pinned || (isAnchored && !onDefaultAnchor)) {
             forcePending = false
             return
         }
@@ -287,7 +311,7 @@ abstract class VanillaHud(
     }
 
     fun anchorsToVanillaOrigin(): Boolean =
-        tree != null && locked && positionSchemaReady && isAtDefaultPosition(fallback = true)
+        tree != null && pinned && positionSchemaReady && isAtDefaultPosition(fallback = true)
 
     /** re-derives the stored position each frame since relative coords drift when the measured size changes */
     fun pinToVanillaOrigin(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale) {
@@ -589,10 +613,7 @@ abstract class VanillaHud(
         /**
          * Whether HUDs should be drawing demo content instead of whatever the game has.
          *
-         * The editor and the settings page both want it. The settings page used to be gated on
-         * `hud.locked == false`, but [locked] means "still pinned to the vanilla origin" here, so
-         * it is true for every element until the user drags that one somewhere else: previews
-         * were off on the settings page for exactly the elements nobody had touched yet.
+         * The editor and the settings page both want it.
          */
         @JvmStatic
         fun previewing(): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen

@@ -15,10 +15,8 @@ import net.minecraft.client.gui.Hud;
 *///?} else {
 /*import net.minecraft.client.gui.GameGui;
 *///?}
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -130,29 +128,6 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "extractFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;hasEffect(Lnet/minecraft/core/Holder;)Z"))
     private boolean vanillahud$forceNoHunger(boolean original) {
         return !vanillahud$editing(Huds.INSTANCE.getHunger()) && original;
-    }
-
-    // the player stands in for a mount, since the preview has to draw this row without one
-    //~ if >=26 'renderVehicleHealth' -> 'extractVehicleHealth'
-    @ModifyExpressionValue(method = "extractVehicleHealth", at = @At(value = "INVOKE",
-            //~ if >=26.2 'gui/Gui;' -> 'gui/Hud;'
-            target = "Lnet/minecraft/client/gui/Hud;getPlayerVehicleWithHealth()Lnet/minecraft/world/entity/LivingEntity;"))
-    private LivingEntity vanillahud$forceMount(LivingEntity original) {
-        return vanillahud$editing(Huds.INSTANCE.getMountHealth()) ? Minecraft.getInstance().player : original;
-    }
-
-    //~ if >=26 'renderVehicleHealth' -> 'extractVehicleHealth'
-    @ModifyExpressionValue(method = "extractVehicleHealth", at = @At(value = "INVOKE",
-            //~ if >=26.2 'gui/Gui;' -> 'gui/Hud;'
-            target = "Lnet/minecraft/client/gui/Hud;getVehicleMaxHearts(Lnet/minecraft/world/entity/LivingEntity;)I"))
-    private int vanillahud$forceMountHearts(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getMountHealth()) ? 10 : original;
-    }
-
-    //~ if >=26 'renderVehicleHealth' -> 'extractVehicleHealth'
-    @ModifyExpressionValue(method = "extractVehicleHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getHealth()F"))
-    private float vanillahud$forceMountHealth(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getMountHealth()) ? 20F : original;
     }
 
     //~ if >=26 'renderItemHotbar' -> 'extractItemHotbar'

@@ -99,7 +99,7 @@ public abstract class UprightIconMixin extends GuiElement {
         if (v == 18) hud = Huds.INSTANCE.getAir();
         else if (v == 27) hud = Huds.INSTANCE.getHunger();
         else if (v == 9) hud = x < LegacyDrawContext.INSTANCE.guiWidth() / 2
-                ? Huds.INSTANCE.getArmor() : Huds.INSTANCE.getMountHealth();
+                ? Huds.INSTANCE.getArmor() : Huds.INSTANCE.getHunger();
         else hud = Huds.INSTANCE.getHealth();
 
         if (!hud.shouldDraw()) return;

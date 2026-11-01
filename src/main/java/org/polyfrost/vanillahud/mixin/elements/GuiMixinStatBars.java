@@ -107,7 +107,7 @@ public class GuiMixinStatBars {
             at = @At(value = "INVOKE", target = BLIT), index = X
     )
     private int vanillahud$mountX(int x) {
-        return vanillahud$right(x, Huds.INSTANCE.getMountHealth().getFillSide());
+        return vanillahud$right(x, Huds.INSTANCE.getHunger().getFillSide());
     }
     //?}
 }

@@ -20,7 +20,7 @@ object HudElementCompat {
         replaceIcons(VanillaHudElements.ARMOR_BAR) { Huds.armor }
         replaceIcons(VanillaHudElements.HEALTH_BAR) { Huds.health }
         replaceIcons(VanillaHudElements.FOOD_BAR) { Huds.hunger }
-        replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.mountHealth }
+        replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.hunger }
         replace(VanillaHudElements.INFO_BAR) { Huds.experienceBar }
         wrap(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.experienceLevel }, HudTransform::beginText, { ctx -> HudTransform.endText(ctx, Huds.experienceLevel) })
         replace(VanillaHudElements.HELD_ITEM_TOOLTIP) { Huds.heldItemTooltip }

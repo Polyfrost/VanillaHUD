@@ -21,7 +21,6 @@ import org.polyfrost.vanillahud.hud.HealthHud
 import org.polyfrost.vanillahud.hud.HeldItemTooltipHud
 import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.HungerHud
-import org.polyfrost.vanillahud.hud.MountHealthHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
@@ -66,7 +65,6 @@ class HudResizeTest {
         ConfigManager.active().delete("huds/${hud.id}")
         @Suppress("UNCHECKED_CAST")
         val instance = hud.make() as T
-        instance.locked = true
         instance.useGuiScale = true
         instance.customScale = 1f
         HudManager.activeInstances.add(instance)
@@ -91,14 +89,13 @@ class HudResizeTest {
         val armor = ArmorHud()
         val hunger = HungerHud()
         val air = AirHud()
-        val mount = MountHealthHud()
         val xp = ExperienceBarHud()
         val level = ExperienceLevelHud()
     }
 
     private fun cluster(): List<VanillaHud> {
         val c = Cluster()
-        return listOf(fresh(c.hotbar), fresh(c.health), fresh(c.armor), fresh(c.hunger), fresh(c.air), fresh(c.mount), fresh(c.xp), fresh(c.level))
+        return listOf(fresh(c.hotbar), fresh(c.health), fresh(c.armor), fresh(c.hunger), fresh(c.air), fresh(c.xp), fresh(c.level))
     }
 
     private fun vanillaLayout(w: Int, h: Int): List<Pair<Float, Float>> {
@@ -109,7 +106,6 @@ class HudResizeTest {
             cx - 91f to h - 49f,
             cx + 10f to h - 39f,
             cx + 10f to h - 49f,
-            cx + 10f to h - 39f,
             cx - 91f to h - 29f,
             cx - 9f to h - 35f,
         )
@@ -140,7 +136,7 @@ class HudResizeTest {
         }
 
         hotbar.cancelForceDefault()
-        hotbar.locked = false
+        hotbar.movedByUser = true
         hotbar.x = 20f
         hotbar.y = 50f
         val expected = vanillaLayout(640, 360)
@@ -176,7 +172,7 @@ class HudResizeTest {
         val hotbar = huds[0]
         val health = huds[1]
 
-        health.locked = false
+        health.movedByUser = true
         health.x = 12f
         health.y = 34f
         resetHudPosition(health)
@@ -191,7 +187,7 @@ class HudResizeTest {
         resetAllHudProperties(health)
         assertBackOnHotbar(hotbar, health)
 
-        hotbar.locked = false
+        hotbar.movedByUser = true
         hotbar.x = 20f
         hotbar.y = 50f
         health.x = 12f
@@ -205,7 +201,7 @@ class HudResizeTest {
         val huds = cluster()
         huds.forEach(::settled)
         val health = huds[1]
-        health.locked = false
+        health.movedByUser = true
         health.clearAnchor()
         health.x = 12f
         health.y = 34f
@@ -220,7 +216,7 @@ class HudResizeTest {
         val hud = fresh(HeldItemTooltipHud())
         settled(hud)
         hud.cancelForceDefault()
-        hud.locked = false
+        hud.movedByUser = true
         hud.x = 600f
         hud.y = 340f
         val fromCentre = hud.x - 320f

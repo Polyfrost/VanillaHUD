@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 10
+    private const val SCHEMA_VERSION = 11
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -37,7 +37,6 @@ object HudConfigMigrator {
         "vanillahud-armor.json" to mapOf("armorAlignment" to "fillSide"),
         "vanillahud-hunger.json" to mapOf("hungerAnimation" to "animation", "hungerAlignment" to "fillSide"),
         "vanillahud-air.json" to mapOf("airAlignment" to "fillSide"),
-        "vanillahud-mount.json" to mapOf("mountAlignment" to "fillSide"),
         "vanillahud-experience.json" to mapOf("overlayLocatorBar" to "overlayLocatorBar"),
         "vanillahud-experience-level.json" to emptyMap(),
     )
@@ -128,6 +127,10 @@ object HudConfigMigrator {
         if (from < 8) splitHotbarCluster(folder)
         if (from < 9) adoptDesignerOptions(folder)
         if (from < 10) dropUnusedPadding(folder)
+        if (from < 11) {
+            try { Files.deleteIfExists(folder.resolve("huds").resolve("vanillahud-mount.json")) } catch (_: Throwable) {}
+            unlockAll(folder)
+        }
 
         writeStamp(stamp)
     }
@@ -320,6 +323,21 @@ object HudConfigMigrator {
         font.addProperty("value", "Minecraft")
         obj.add("font", font)
         for (key in DROPPED_STYLE_KEYS) obj.remove(key)
+    }
+
+    /** the customized file now tracks which HUDs follow vanilla, so locking is the user's choice again */
+    private fun unlockAll(folder: Path) {
+        val hudsDir = folder.resolve("huds")
+        if (!Files.isDirectory(hudsDir)) return
+        Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { files ->
+            for (path in files) try {
+                val obj = readObject(path) ?: continue
+                if (!isLocked(obj)) continue
+                obj.addProperty("locked", false)
+                writeObject(path, obj)
+            } catch (_: Throwable) {
+            }
+        }
     }
 
     /** padding now always grows the box, so what only ever applied behind a background must not move HUDs without one */
