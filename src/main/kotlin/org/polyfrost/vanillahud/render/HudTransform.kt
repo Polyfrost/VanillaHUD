@@ -137,8 +137,8 @@ object HudTransform {
             val fy = hud?.frameY
             p.hx = fx ?: 0f
             p.hy = fy ?: 0f
-            p.gx = if (anchored || fx == null) defX else fx
-            p.gy = if (anchored || fy == null) defY else fy
+            p.gx = if (fx == null || anchored && !editing) defX else fx
+            p.gy = if (fy == null || anchored && !editing) defY else fy
             p.valid = !editing
             p.w = w
             p.h = h
@@ -189,7 +189,7 @@ object HudTransform {
         push(graphics)
         val pose = graphics.pose()
         val drawn = s * src.elementScale
-        HudCapture.place(gx, gy, s, gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
+        HudCapture.place(p.hx, p.hy, gx, gy, s, gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
         //? if <=1.21.5 && >1.8.9 {
         /*pose.translate(gx + src.contentOffsetX * s, gy + src.contentOffsetY * s, 0f)
         pose.scale(drawn, drawn, 1f)

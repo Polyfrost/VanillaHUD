@@ -29,6 +29,7 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardScore;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
+import org.polyfrost.vanillahud.render.HudCapture;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.polyfrost.vanillahud.render.ScoreboardBackground;
 import org.polyfrost.vanillahud.render.TextBackdrop;
@@ -286,7 +287,9 @@ public class GuiMixinScoreboard {
                                         boolean roundTop, boolean roundBottom) {
         if ((color >>> 24) == 0) return;
         TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, Huds.INSTANCE.getScoreboard().getRadius(),
-                roundTop, roundBottom, (a, b, c, d) -> original.call(a, b, c, d, color));
+                roundTop, roundBottom, (a, b, c, d) -> {
+                    if (!HudCapture.fill(LegacyDrawContext.INSTANCE, a, b, c, d, color)) original.call(a, b, c, d, color);
+                });
     }
 
     // rows are drawn bottom first, so the top one is found by counting down the rows vanilla

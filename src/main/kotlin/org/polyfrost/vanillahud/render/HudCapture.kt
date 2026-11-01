@@ -118,6 +118,11 @@ object HudCapture {
         var boxX = 0f
         var boxY = 0f
         var scale = 1f
+        var frameX = 0f
+        var frameY = 0f
+        var shownX = 0f
+        var shownY = 0f
+        var shownScale = 1f
         var hud: VanillaHud? = null
         var recording = ArrayList<Any>()
         var shown = ArrayList<Any>()
@@ -139,7 +144,12 @@ object HudCapture {
             if (!sameOps(done, l.shown)) l.hud?.capturedDrawsChanged()
             l.recording = l.shown.also { it.clear() }
             l.shown = done
-            val items = done.filterIsInstance<Item>()
+            l.shownX = l.frameX
+            l.shownY = l.frameY
+            l.shownScale = l.scale
+            val items = done.filterIsInstance<Item>().map { i ->
+                Item(i.stack, (i.x - l.frameX) / l.scale, (i.y - l.frameY) / l.scale, i.size / l.scale).also { it.decorated = i.decorated }
+            }
             val old = l.items
             if (items.size != old.size || items.indices.any { !items[it].same(old[it]) }) {
                 l.items = items.map { i -> Item(i.stack.copy(), i.x, i.y, i.size).also { it.decorated = i.decorated } }
@@ -162,8 +172,10 @@ object HudCapture {
     }
 
     /** where the open element landed on screen, which is what a stretched background has to line up with */
-    fun place(boxX: Float, boxY: Float, scale: Float, contentX: Float, contentY: Float) {
+    fun place(frameX: Float, frameY: Float, boxX: Float, boxY: Float, scale: Float, contentX: Float, contentY: Float) {
         val l = active ?: return
+        l.frameX = frameX
+        l.frameY = frameY
         l.boxX = boxX
         l.boxY = boxY
         l.scale = scale
@@ -603,13 +615,12 @@ object HudCapture {
     @Composable
     fun Replay(hud: VanillaHud, width: Float, height: Float) {
         val layer = remember(hud.javaClass) { layer(hud.javaClass) }
-        val live = HudTransform.live(hud)
         fun RenderContext.painting(x: Float, y: Float, draw: RenderContext.() -> Unit) {
-            val s = live.frameScale
+            val s = layer.shownScale
             save()
             translate(x, y)
             if (s != 1f) scale(1f / s, 1f / s)
-            translate(-live.frameX, -live.frameY)
+            translate(-layer.shownX, -layer.shownY)
             draw()
             restore()
         }
@@ -620,10 +631,9 @@ object HudCapture {
                 painting(x, y) { replay(ops, 0, split) }
             }
             for ((i, item) in layer.items.withIndex()) key(i) {
-                val s = live.frameScale
                 PolyItemIcon(
-                    item.stack, item.size / s,
-                    PolyModifier.absoluteAt((item.x - live.frameX) / s, (item.y - live.frameY) / s),
+                    item.stack, item.size,
+                    PolyModifier.absoluteAt(item.x, item.y),
                     decorations = item.decorated,
                 )
             }
@@ -653,7 +663,7 @@ private object SpriteBitmaps {
     fun of(sprite: TextureAtlasSprite): PolyBitmap? {
         val name = sprite.contents().name()
         val folder = when (sprite.atlasLocation().path) {
-            "textures/atlas/gui.png" -> "textures/gui/sprites/"
+            "textures/atlas/gui.png" -> if (name.path.startsWith("mob_effect/")) "textures/" else "textures/gui/sprites/"
             "textures/atlas/mob_effects.png" -> "textures/mob_effect/"
             else -> return null
         }

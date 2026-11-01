@@ -55,8 +55,7 @@ object TextBackdrop {
             HudCapture.background { fill.fill(x0, y0, x1, y1) }
             return
         }
-        val span = if (roundTop && roundBottom) (y1 - y0) / 2 else y1 - y0
-        val r = if (roundTop || roundBottom) min(radius, min((x1 - x0) / 2, span)) else 0
+        val r = segmentRadius(x0, y0, x1, y1, radius, roundTop, roundBottom)
         if (r <= 0) {
             fill.fill(x0, y0, x1, y1)
             return
@@ -77,17 +76,18 @@ object TextBackdrop {
     @JvmStatic
     fun roundedClip(
         graphics: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int,
-        bx0: Int, by0: Int, bx1: Int, by1: Int, radius: Int, fill: RectFill,
+        bx0: Int, by0: Int, bx1: Int, by1: Int, radius: Int,
+        roundTop: Boolean, roundBottom: Boolean, fill: RectFill,
     ) {
         if (x1 <= x0 || y1 <= y0) return
-        val r = min(radius, min((bx1 - bx0) / 2, (by1 - by0) / 2))
-        val touchesCorner = y0 < by0 + r || y1 > by1 - r
+        val r = segmentRadius(bx0, by0, bx1, by1, radius, roundTop, roundBottom)
+        val touchesCorner = (roundTop && y0 < by0 + r) || (roundBottom && y1 > by1 - r)
         if (r <= 0 || !touchesCorner) {
             fill.fill(x0, y0, x1, y1)
             return
         }
         if (HudCapture.capturing) {
-            HudCapture.rounded(bx0, by0, bx1, by1, r) { fill.fill(x0, y0, x1, y1) }
+            HudCapture.rounded(bx0, if (roundTop) by0 else by0 - r, bx1, if (roundBottom) by1 else by1 + r, r) { fill.fill(x0, y0, x1, y1) }
             return
         }
         scaled(graphics) {
@@ -95,12 +95,19 @@ object TextBackdrop {
             val sx1 = x1 * SUBPIXELS
             val sbx0 = bx0 * SUBPIXELS
             val sbx1 = bx1 * SUBPIXELS
-            strips(by0 * SUBPIXELS, by1 * SUBPIXELS, r * SUBPIXELS, true, true, y0 * SUBPIXELS, y1 * SUBPIXELS) { a, b, c ->
+            strips(by0 * SUBPIXELS, by1 * SUBPIXELS, r * SUBPIXELS, roundTop, roundBottom, y0 * SUBPIXELS, y1 * SUBPIXELS) { a, b, c ->
                 val left = max(sx0, sbx0 + c)
                 val right = min(sx1, sbx1 - c)
                 if (right > left) fill.fill(left, a, right, b)
             }
         }
+    }
+
+    private fun segmentRadius(x0: Int, y0: Int, x1: Int, y1: Int, radius: Int, roundTop: Boolean, roundBottom: Boolean): Int {
+        if (!roundTop && !roundBottom) return 0
+        val span = if (roundTop && roundBottom) (y1 - y0) / 2 else y1 - y0
+        val limit = min((x1 - x0) / 2, span)
+        return if (limit <= 0) 0 else radius.coerceIn(0, limit)
     }
 
     private fun withAlpha(argb: Int, textAlpha: Int): Int {

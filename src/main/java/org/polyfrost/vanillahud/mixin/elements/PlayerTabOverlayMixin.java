@@ -88,11 +88,16 @@ public abstract class PlayerTabOverlayMixin {
     private int vanillahud$shapeX0, vanillahud$shapeX1, vanillahud$shapeTop, vanillahud$shapeBottom;
 
     @Unique
+    private boolean vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom;
+
+    @Unique
     private void vanillahud$markShape(int x0, int y0, int x1, int y1, boolean header, boolean footer) {
         this.vanillahud$shapeX0 = x0;
         this.vanillahud$shapeX1 = x1;
-        if (!header) this.vanillahud$shapeTop = y0;
-        this.vanillahud$shapeBottom = footer ? Integer.MAX_VALUE / 2 : y1;
+        this.vanillahud$shapeTop = y0;
+        this.vanillahud$shapeBottom = y1;
+        this.vanillahud$shapeRoundTop = !header;
+        this.vanillahud$shapeRoundBottom = !footer;
     }
 
     @Unique
@@ -125,7 +130,6 @@ public abstract class PlayerTabOverlayMixin {
     private void vanillahud$headerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
         this.vanillahud$headerDrawn = (argb >>> 24) != 0;
-        this.vanillahud$shapeTop = y0;
         vanillahud$fill(original, graphics, x0, y0, x1, y1, argb, true, false);
     }
 
@@ -244,7 +248,8 @@ public abstract class PlayerTabOverlayMixin {
         slotRight.set(x2);
         if ((color >>> 24) == 0) return;
         TextBackdrop.roundedClip(graphics, x1, y1, x2, y2, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
-                Huds.INSTANCE.getTabList().getRadius(), (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
+                Huds.INSTANCE.getTabList().getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
+                (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
     }
 
     // at clamped GUI scales names overflow their column into the numeric ping so clip them
@@ -421,11 +426,16 @@ public abstract class PlayerTabOverlayMixin {
     private int vanillahud$shapeX0, vanillahud$shapeX1, vanillahud$shapeTop, vanillahud$shapeBottom;
 
     @Unique
+    private boolean vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom;
+
+    @Unique
     private void vanillahud$markShape(int x0, int y0, int x1, int y1, boolean header, boolean footer) {
         this.vanillahud$shapeX0 = x0;
         this.vanillahud$shapeX1 = x1;
-        if (!header) this.vanillahud$shapeTop = y0;
-        this.vanillahud$shapeBottom = footer ? Integer.MAX_VALUE / 2 : y1;
+        this.vanillahud$shapeTop = y0;
+        this.vanillahud$shapeBottom = y1;
+        this.vanillahud$shapeRoundTop = !header;
+        this.vanillahud$shapeRoundBottom = !footer;
     }
 
     @Unique
@@ -463,7 +473,6 @@ public abstract class PlayerTabOverlayMixin {
     private void vanillahud$headerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
         this.vanillahud$headerDrawn = (argb >>> 24) != 0;
-        this.vanillahud$shapeTop = y0;
         vanillahud$fill(original, x0, y0, x1, y1, argb, true, false);
     }
 
@@ -482,7 +491,8 @@ public abstract class PlayerTabOverlayMixin {
         int argb = Huds.INSTANCE.getTabList().getTabWidgetArgb();
         if ((argb >>> 24) == 0) return;
         TextBackdrop.roundedClip(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
-                Huds.INSTANCE.getTabList().getRadius(), (a, b, c, d) -> original.call(a, b, c, d, argb));
+                Huds.INSTANCE.getTabList().getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
+                (a, b, c, d) -> original.call(a, b, c, d, argb));
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
