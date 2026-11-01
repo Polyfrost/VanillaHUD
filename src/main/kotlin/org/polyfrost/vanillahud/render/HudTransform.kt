@@ -83,6 +83,8 @@ object HudTransform {
         var h = 0
         var natW = 0f
         var natH = 0f
+        var boxW = 0f
+        var boxH = 0f
         var turns = 0
         var rev = 0
         var scoreboardRev = 0
@@ -115,7 +117,7 @@ object HudTransform {
         val natW = src.unrotatedWidth
         val natH = src.unrotatedHeight
         val p = placements.getOrPut(provider.javaClass) { Placement() }
-        if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns ||
+        if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns || p.boxW != src.boxWidth || p.boxH != src.boxHeight ||
             p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
             p.huds != HudManager.activeInstances.size || p.hud !== resolvedHud || p.schema != (resolvedHud?.posSchema ?: 0) ||
             resolvedHud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }
@@ -142,6 +144,8 @@ object HudTransform {
             p.h = h
             p.natW = natW
             p.natH = natH
+            p.boxW = src.boxWidth
+            p.boxH = src.boxHeight
             p.turns = turns
             p.rev = VanillaHud.positionRevision
             p.scoreboardRev = HudInternals.scoreboardRevision
@@ -155,14 +159,16 @@ object HudTransform {
         val gx = p.gx
         val gy = p.gy
 
+        HudCapture.begin(src)
         var scissored = false
         val tab = src as? TabListHud
         if (tab != null && tab.animation && !editing) {
             val frac = tab.clipFraction()
             if (frac < 1f) {
                 val foreign = if (frac > 0f) tab.foreignBounds() else null
-                val top = if (foreign != null) gy + (foreign.top - oy) * s else gy - tab.backgroundTop * s
-                val clipH = (foreign?.height ?: src.height) * s
+                val tabScale = s * src.elementScale
+                val top = if (foreign != null) gy + (foreign.top - oy) * tabScale else gy - tab.backgroundTop * tabScale
+                val clipH = (foreign?.height ?: src.height) * tabScale
                 graphics.enableScissor(0, floor(top).toInt(), w, ceil(top + clipH * frac).toInt())
                 scissored = true
             }
@@ -182,9 +188,11 @@ object HudTransform {
 
         push(graphics)
         val pose = graphics.pose()
+        val drawn = s * src.elementScale
+        HudCapture.place(gx, gy, s, gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
         //? if <=1.21.5 && >1.8.9 {
-        /*pose.translate(gx, gy, 0f)
-        pose.scale(s, s, 1f)
+        /*pose.translate(gx + src.contentOffsetX * s, gy + src.contentOffsetY * s, 0f)
+        pose.scale(drawn, drawn, 1f)
         if (turned) {
             pose.translate(rotW / 2f, rotH / 2f, 0f)
             pose.mulPose(Axis.ZP.rotation(theta))
@@ -193,8 +201,8 @@ object HudTransform {
             pose.translate(-ox, -oy, 0f)
         }
         *///?} else {
-        pose.translate(gx, gy)
-        pose.scale(s, s)
+        pose.translate(gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
+        pose.scale(drawn, drawn)
         if (turned) {
             pose.translate(rotW / 2f, rotH / 2f)
             pose.rotate(theta)
@@ -330,5 +338,6 @@ object HudTransform {
         mirror2Y = if (mirrorDepth > 0) mirrors[mirrorDepth - 1] else Float.NaN
         pop(graphics)
         if (state == SCISSORED) graphics.disableScissor()
+        HudCapture.end()
     }
 }

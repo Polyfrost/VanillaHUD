@@ -5,6 +5,7 @@ package org.polyfrost.vanillahud.compat
 import net.minecraft.client.render.Window
 import net.minecraft.client.render.platform.GlStateManager
 import org.lwjgl.opengl.GL11
+import org.polyfrost.vanillahud.render.HudCapture
 
 /**
  * Stands in for the draw context the HUD render path hands around on the newer versions.
@@ -26,6 +27,7 @@ object LegacyDrawContext {
     fun pose(): LegacyPose = LegacyPose
 
     fun enableScissor(x0: Int, y0: Int, x1: Int, y1: Int) {
+        HudCapture.clipStart(this, x0, y0, x1, y1)
         val window = window()
         val factor = window.scale.coerceAtLeast(1)
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
@@ -39,6 +41,7 @@ object LegacyDrawContext {
     }
 
     fun disableScissor() {
+        HudCapture.clipEnd()
         GL11.glDisable(GL11.GL_SCISSOR_TEST)
     }
 }

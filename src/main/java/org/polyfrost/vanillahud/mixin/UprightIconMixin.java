@@ -84,6 +84,7 @@ import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.compat.LegacyIconBatch;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.VanillaHud;
+import org.polyfrost.vanillahud.render.HudCapture;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -105,7 +106,7 @@ public abstract class UprightIconMixin extends GuiElement {
         HudTransform.beginIcons(LegacyDrawContext.INSTANCE, hud);
         y += HudTransform.mirrorShift(y, y + height);
         int turns = HudTransform.getIconTurns();
-        if (turns == 0) {
+        if (turns == 0 || HudCapture.isActive()) {
             original.call(self, x, y, u, v, width, height);
         } else {
             LegacyIconBatch.quad(x, y, u, v, width, height, width, height, 256, 256, this.drawOffset, turns);

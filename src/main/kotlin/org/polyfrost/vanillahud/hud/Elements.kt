@@ -199,6 +199,8 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
 
 /** an element that can dock to any screen edge, rotating a quarter turn for the left and right ones */
 abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, title, Category.PLAYER) {
+    override val composeBackground get() = true
+
     @Dropdown(
         title = "Side",
         description = "Which screen edge the element docks against. Left and Right rotate it a quarter turn.",
@@ -272,6 +274,8 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
     override val homeAnchorY get() = 1f
 }
 
+private fun activeHotbar() = HudManager.activeInstances.firstOrNull { it is HotbarHud } as HotbarHud?
+
 abstract class StatBarHud(
     hudId: String,
     title: String,
@@ -296,6 +300,10 @@ abstract class StatBarHud(
 
     override val homeAnchorX get() = if (rightSide) 1f else 0f
     override val homeAnchorY get() = 1f
+
+    // a rotated bar docks to its own screen edge, so it has no hotbar anchor
+    override val defaultAnchorTarget: VanillaHud?
+        get() = activeHotbar()?.takeIf { quarterTurns == BOTTOM && it.quarterTurns == BOTTOM }
 
     companion object {
         const val ALIGN_LEFT = 0
@@ -339,6 +347,10 @@ class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience 
 
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
+
+    // a rotated bar docks to its own screen edge, so it has no hotbar anchor
+    override val defaultAnchorTarget: VanillaHud?
+        get() = activeHotbar()?.takeIf { quarterTurns == BOTTOM && it.quarterTurns == BOTTOM }
 }
 
 class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Experience Level") {
@@ -350,6 +362,10 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
 
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
+
+    // a rotated bar docks to its own screen edge, so it has no hotbar anchor
+    override val defaultAnchorTarget: VanillaHud?
+        get() = activeHotbar()?.takeIf { quarterTurns == BOTTOM && it.quarterTurns == BOTTOM }
 }
 
 class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
@@ -393,6 +409,13 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
 }
 
 class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Category.INFO) {
+    init {
+        showBackground = true
+        bgColor = 0x4C000000
+    }
+
+    val radius: Int get() = bgRadius.roundToInt()
+
     @Dropdown(
         title = "Show Score Points",
         subcategory = "Score Points",
@@ -422,17 +445,6 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     @Color(title = "Title Background Color")
     var titleColor = PolyColor(0x66000000)
 
-    @Color(title = "Background Color")
-    var backgroundColor = PolyColor(0x4C000000)
-
-    @Switch(title = "Rounded Corners")
-    var rounded: Boolean = false
-
-    @Slider(title = "Corner Radius", min = 0f, max = 10f)
-    var cornerRadius = 2f
-
-    val radius: Int get() = if (rounded) cornerRadius.roundToInt() else 0
-
     @Switch(
         title = "Keep Background Colour",
         subcategory = "Background Image",
@@ -458,16 +470,25 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     )
     var backgroundImageMode: Int = 0
 
-    @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
-    var textType: Int = 0
+    override val stretchesBackground get() = true
 
-    val titleBgColor: Int get() = titleColor.argb
+    val titleBgColor: Int get() = if (showBackground) titleColor.argb else 0
 
-    val bodyBgColor: Int get() = backgroundColor.argb
+    val bodyBgColor: Int get() = if (showBackground) bgArgb else 0
 
     val hasCustomBackground: Boolean get() = backgroundImagePath.isNotBlank()
 
-    val textShadow: Boolean get() = textType == 1
+    private val imageScale: Float get() = elementScale.coerceAtLeast(0.001f)
+
+    fun imageX0(x: Int): Int = x - (contentOffsetX / imageScale).roundToInt()
+
+    fun imageY0(y: Int): Int = y - (contentOffsetY / imageScale).roundToInt()
+
+    fun imageX1(x: Int): Int = imageX0(x - width.roundToInt()) + (boxWidth / imageScale).roundToInt()
+
+    fun imageY1(y: Int): Int = imageY0(y - height.roundToInt()) + (boxHeight / imageScale).roundToInt()
+
+    val textShadow: Boolean get() = showShadow
 
     //? if > 1.8.9 {
     fun showScorePoints(scores: Collection<PlayerScoreEntry>): Boolean {
@@ -521,7 +542,6 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         hideUnless("scoreboardTitle", "persistentTitle", "titleColor")
         hideUnless<String>("backgroundImagePath", "keepBackgroundColor") { !it.isNullOrEmpty() }
         hideUnless<String>("backgroundImagePath", "backgroundImageMode") { !it.isNullOrEmpty() }
-        hideUnless("rounded", "cornerRadius")
     }
 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width - 1f
@@ -646,6 +666,9 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
 class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) {
     init {
+        showBackground = true
+        showShadow = true
+        bgColor = 0x80000000.toInt()
         TabListManager.ensureLoaded()
     }
 
@@ -670,9 +693,6 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         max = 1000f
     )
     var animationDuration = 400f
-
-    @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
-    var textType: Int = 1
 
     @Switch(title = "Fix TabList Entry Width", description = "Stop long names from being squashed when the tab list is wider than the screen.")
     var fixWidth: Boolean = false
@@ -731,24 +751,17 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     @Color(title = "Header Background Color")
     var headerBgColor = PolyColor(0x80000000.toInt())
 
-    @Color(title = "Body Background Color")
-    var bodyBgColor = PolyColor(0x80000000.toInt())
-
     @Color(title = "Footer Background Color")
     var footerBgColor = PolyColor(0x80000000.toInt())
 
-    @Switch(title = "Rounded Corners")
-    var rounded: Boolean = false
+    val radius: Int get() = bgRadius.roundToInt()
 
-    @Slider(title = "Corner Radius", min = 0f, max = 10f)
-    var cornerRadius = 2f
-
-    val radius: Int get() = if (rounded) cornerRadius.roundToInt() else 0
+    override val stretchesBackground get() = true
 
     val tabWidgetArgb: Int get() = tabWidgetColor.argb
-    val headerBgArgb: Int get() = headerBgColor.argb
-    val bodyBgArgb: Int get() = bodyBgColor.argb
-    val footerBgArgb: Int get() = footerBgColor.argb
+    val headerBgArgb: Int get() = if (showBackground) headerBgColor.argb else 0
+    val bodyBgArgb: Int get() = if (showBackground) bgArgb else 0
+    val footerBgArgb: Int get() = if (showBackground) footerBgColor.argb else 0
 
     fun hidesPing(ping: Int): Boolean {
         if (previewing) return false
@@ -771,7 +784,6 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     override fun Tree.addDependencies() {
         hideUnless("animation", "animationDuration")
-        hideUnless("rounded", "cornerRadius")
         hideUnless("showHead", "betterHatLayer")
         val pingColors = arrayOf("pingLevelOne", "pingLevelTwo", "pingLevelThree", "pingLevelFour", "pingLevelFive", "pingLevelSix")
         hideUnless("showPing", "numberPing", "pingType", "hideFalsePing", *pingColors)
@@ -1018,6 +1030,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 }
 
 abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, title, Category.INFO) {
+    override val elementScale get() = 1f
+
+    override val innerScale get() = scale.coerceAtLeast(0.001f)
+
     abstract val instantFade: Boolean
     abstract val autoTitleScale: Boolean
     abstract val scale: Float
@@ -1060,11 +1076,14 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
 }
 
 class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
+    init {
+        textScale = 4f
+    }
+
+    val titleScale: Float get() = textScale
+
     @Switch(title = "Instant Fade", description = "Skip the fade in and fade out of the title.")
     override var instantFade = false
-
-    @Slider(title = "Scale", min = 0.5f, max = 8f)
-    var titleScale = 4f
 
     @Switch(
         title = "Auto Scale",
@@ -1072,7 +1091,7 @@ class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
     )
     override var autoTitleScale = false
 
-    override val scale get() = titleScale
+    override val scale get() = textScale
     override val placeholder get() = "Title"
     override val topOffset get() = -40f
 
@@ -1083,8 +1102,11 @@ class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
 }
 
 class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
-    @Slider(title = "Scale", min = 0.5f, max = 8f)
-    var subtitleScale = 2f
+    init {
+        textScale = 2f
+    }
+
+    val subtitleScale: Float get() = textScale
 
     @Switch(title = "Instant Fade", description = "Skip the fade in and fade out of the subtitle.")
     override var instantFade = false
@@ -1095,7 +1117,7 @@ class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
     )
     override var autoTitleScale = false
 
-    override val scale get() = subtitleScale
+    override val scale get() = textScale
     override val placeholder get() = "Subtitle"
     override val topOffset get() = 10f
 
@@ -1107,6 +1129,8 @@ class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
 
 //? if > 1.8.9 {
 class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Effects", Category.PLAYER) {
+    override val composeBackground get() = true
+
     override val naturalWidth get() = 50f
     override val naturalHeight get() = 50f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth - width
@@ -1176,25 +1200,25 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 }
 
 class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed Captioning", Category.INFO) {
-    @Color(title = "Text Color")
-    var captionTextColor = PolyColor(0xFFFFFFFF.toInt())
+    init {
+        showBackground = true
+        showShadow = true
+        bgColor = 0xCC000000.toInt()
+    }
 
-    @Color(
-        title = "Background Color",
-        description = "Overrides the vanilla text background opacity setting for closed captions."
-    )
-    var captionBgColor = PolyColor(0xCC000000.toInt())
+    override val managesTextColor get() = true
 
-    @Dropdown(title = "Text Shadow", options = ["No Shadow", "Shadow"])
-    var textType: Int = 1
+    override val stretchesBackground get() = true
 
-    val captionBgArgb: Int get() = captionBgColor.argb
+    override val everyFillIsBackground get() = true
 
-    val textShadow: Boolean get() = textType == 1
+    val captionBgArgb: Int get() = if (showBackground) bgArgb else 0
+
+    val textShadow: Boolean get() = showShadow
 
     fun captionTextArgb(vanilla: Int): Int {
         val fade = vanilla and 0xFF
-        val color = captionTextColor.argb
+        val color = PolyColor(textColor, textChroma, textChromaSpeed).argb
         val a = color ushr 24 and 0xFF
         val r = (color ushr 16 and 0xFF) * fade / 255
         val g = (color ushr 8 and 0xFF) * fade / 255

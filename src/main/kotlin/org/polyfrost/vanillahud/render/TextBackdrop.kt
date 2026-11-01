@@ -17,11 +17,13 @@ object TextBackdrop {
     fun draw(graphics: GuiGraphicsExtractor, hud: BackdropHud, x: Int, y: Int, width: Int, height: Int, textColor: Int) {
         if (!hud.background || width <= 0) return
         val textAlpha = if (textColor ushr 24 == 0) 255 else textColor ushr 24
-        val x0 = x - hud.paddingX.roundToInt()
-        val y0 = y - hud.paddingY.roundToInt()
-        val x1 = x + width + hud.paddingX.roundToInt()
-        val y1 = y + height + hud.paddingY.roundToInt()
-        val radius = if (hud.rounded) min(hud.cornerRadius.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
+        val innerScale = hud.innerScale
+        val box = hud.elementScale.coerceAtLeast(0.001f) * innerScale
+        val x0 = if (hud.staticWidth) x - (hud.contentOffsetX / box).roundToInt() else x - (hud.padLeft / innerScale).roundToInt()
+        val y0 = if (hud.staticWidth) y - (hud.contentOffsetY / box).roundToInt() else y - (hud.padTop / innerScale).roundToInt()
+        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / box).roundToInt() else x + width + (hud.padRight / innerScale).roundToInt()
+        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / box).roundToInt() else y + height + (hud.padBottom / innerScale).roundToInt()
+        val radius = min(hud.radius, min(x1 - x0, y1 - y0) / 2)
         val border = if (hud.border) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
         val fill = withAlpha(hud.textBgColor.argb, textAlpha)
         if (border <= 0) {
@@ -49,10 +51,18 @@ object TextBackdrop {
         roundTop: Boolean, roundBottom: Boolean, fill: RectFill,
     ) {
         if (x1 <= x0 || y1 <= y0) return
+        if (HudCapture.stretching) {
+            HudCapture.background { fill.fill(x0, y0, x1, y1) }
+            return
+        }
         val span = if (roundTop && roundBottom) (y1 - y0) / 2 else y1 - y0
         val r = if (roundTop || roundBottom) min(radius, min((x1 - x0) / 2, span)) else 0
         if (r <= 0) {
             fill.fill(x0, y0, x1, y1)
+            return
+        }
+        if (HudCapture.capturing) {
+            HudCapture.rounded(x0, if (roundTop) y0 else y0 - r, x1, if (roundBottom) y1 else y1 + r, r) { fill.fill(x0, y0, x1, y1) }
             return
         }
         scaled(graphics) {
@@ -74,6 +84,10 @@ object TextBackdrop {
         val touchesCorner = y0 < by0 + r || y1 > by1 - r
         if (r <= 0 || !touchesCorner) {
             fill.fill(x0, y0, x1, y1)
+            return
+        }
+        if (HudCapture.capturing) {
+            HudCapture.rounded(bx0, by0, bx1, by1, r) { fill.fill(x0, y0, x1, y1) }
             return
         }
         scaled(graphics) {
@@ -165,6 +179,10 @@ object TextBackdrop {
         radius: Int, border: Int, inner: Int, color: Int,
     ) {
         if (color ushr 24 == 0) return
+        if (HudCapture.capturing) {
+            HudCapture.rounded(x0, y0, x1, y1, radius, border) { fill(graphics, x0, y0, x1, y1, color) }
+            return
+        }
         scaled(graphics) {
             val sx0 = x0 * SUBPIXELS
             val sx1 = x1 * SUBPIXELS

@@ -95,8 +95,10 @@ object ForceDefaultPosition {
     @Synchronized
     fun tick() {
         flushBacklog()
+        VanillaHud.keepLevelAboveBar()
         for (hud in HudManager.activeInstances.filterIsInstance<VanillaHud>()) {
-            if (!hud.locked || hud.isAnchored) {
+            hud.restoreDefaultAnchor()
+            if (!hud.locked || (hud.isAnchored && !hud.onDefaultAnchor)) {
                 markCustomized(hud)
                 continue
             }

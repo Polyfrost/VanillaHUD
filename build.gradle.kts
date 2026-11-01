@@ -10,6 +10,7 @@ plugins {
     id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT" apply false
     id("ploceus") version "1.17.4" apply false
     id("org.jetbrains.kotlin.jvm") version "2.4.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.20"
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.2.0"
     id("dev.detekt") version "2.0.0-alpha.6"
@@ -56,6 +57,8 @@ repositories {
         filter { groups.forEach(::includeGroup) }
     }
 
+    // libraries.minecraft.net lacks the arm/ppc/riscv/freebsd natives that OneConfig's pom lists
+    strictMaven("https://repo.maven.apache.org/maven2", "LwjglCentral", "org.lwjgl")
     mavenCentral()
     google()
     maven("https://maven.ornithemc.net/releases") { name = "OrnitheMC" }

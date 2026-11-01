@@ -13,6 +13,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.BossEvent
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.scores.Objective
 import net.minecraft.world.scores.ScoreHolder
 import net.minecraft.world.phys.Vec3
@@ -108,6 +110,13 @@ object DemoData {
         }
     }
 
+    private val hotbar by lazy {
+        listOf(Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.BOW, Items.APPLE).map { ItemStack(it) }
+    }
+
+    @JvmStatic
+    fun demoHotbarItem(slot: Int): ItemStack = hotbar.getOrElse(slot) { ItemStack.EMPTY }
+
     @JvmStatic
     fun demoBossEvents(): List<LerpingBossEvent> = listOf(
         LerpingBossEvent(
@@ -123,11 +132,13 @@ object DemoData {
     )
 }
 //?} else {
-/*import net.minecraft.scoreboard.Scoreboard
+/*import net.minecraft.item.Items
+import net.minecraft.scoreboard.Scoreboard
 import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.scoreboard.criterion.ScoreboardCriterion
 import net.minecraft.text.LiteralText
 import net.minecraft.text.Text
+import net.minecraft.world.item.ItemStack
 
 // 1.8.9 has no subtitles and no HUD status effects, so only the scoreboard and the boss bar
 // have anything to preview. Its scoreboard is addressed by owner name and its display names
@@ -164,6 +175,16 @@ object DemoData {
     private fun putScore(scoreboard: Scoreboard, objective: ScoreboardObjective, name: String, value: Int) {
         scoreboard.getScore(name, objective).set(value)
     }
+
+    private val hotbar by lazy {
+        arrayOfNulls<ItemStack>(9).also { slots ->
+            listOf(Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.BOW, Items.APPLE)
+                .forEachIndexed { i, item -> slots[i] = ItemStack(item) }
+        }
+    }
+
+    @JvmStatic
+    fun demoHotbar(): Array<ItemStack?> = hotbar
 
     /** the 1.8.9 boss bar is a single bar of static state, so the preview is just its name */
     @JvmStatic

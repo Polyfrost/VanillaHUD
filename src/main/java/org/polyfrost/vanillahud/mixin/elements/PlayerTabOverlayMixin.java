@@ -169,7 +169,7 @@ public abstract class PlayerTabOverlayMixin {
             at = @At("HEAD")
     )
     private void vanillahud$pushTextShadow(CallbackInfo ci) {
-        TextShadowHook.push(Huds.INSTANCE.getTabList().getTextType() != 0);
+        TextShadowHook.push(Huds.INSTANCE.getTabList().getShowShadow());
     }
 
     @Inject(

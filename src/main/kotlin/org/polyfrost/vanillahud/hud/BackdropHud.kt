@@ -3,9 +3,9 @@ package org.polyfrost.vanillahud.hud
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
-import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import kotlin.math.roundToInt
 
 abstract class BackdropHud(
     hudId: String,
@@ -13,26 +13,16 @@ abstract class BackdropHud(
     category: Category,
     defaultBgColor: Int = 0x50000000,
 ) : VanillaHud(hudId, title, category) {
-    @Dropdown(title = "Text Type", subcategory = "Text", options = ["No Shadow", "Shadow"])
-    var textType: Int = 1
+    init {
+        showShadow = true
+        bgColor = defaultBgColor
+    }
 
-    @Switch(title = "Background", subcategory = "Background")
-    var background = false
+    val background: Boolean get() = showBackground
 
-    @Color(title = "Background Color", subcategory = "Background")
-    var textBgColor = PolyColor(defaultBgColor)
+    val textBgColor: PolyColor get() = PolyColor(bgColor, bgChroma, bgChromaSpeed)
 
-    @Slider(title = "Padding X", subcategory = "Background", min = 0f, max = 10f)
-    var paddingX = 2f
-
-    @Slider(title = "Padding Y", subcategory = "Background", min = 0f, max = 10f)
-    var paddingY = 2f
-
-    @Switch(title = "Rounded Corners", subcategory = "Background")
-    var rounded = false
-
-    @Slider(title = "Corner Radius", subcategory = "Background", min = 0f, max = 10f)
-    var cornerRadius = 2f
+    val radius: Int get() = bgRadius.roundToInt()
 
     @Switch(title = "Border", subcategory = "Background")
     var border = false
@@ -43,13 +33,12 @@ abstract class BackdropHud(
     @Color(title = "Border Color", subcategory = "Background")
     var borderColor = PolyColor(0xFF000000.toInt())
 
-    val textShadow: Boolean get() = textType == 1
+    val textShadow: Boolean get() = showShadow
 
     override fun Tree.addDependencies() = backdropDependencies()
 
     protected fun Tree.backdropDependencies() {
-        hideUnless("background", "textBgColor", "paddingX", "paddingY", "rounded", "cornerRadius", "border", "borderSize", "borderColor")
-        hideUnless("rounded", "cornerRadius")
+        hideUnless("showBackground", "border", "borderSize", "borderColor")
         hideUnless("border", "borderSize", "borderColor")
     }
 }

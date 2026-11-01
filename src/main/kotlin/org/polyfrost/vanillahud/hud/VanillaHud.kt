@@ -5,14 +5,21 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 //?} else {
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.mixin.access.IGui
+import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import kotlin.math.abs
@@ -21,10 +28,17 @@ abstract class VanillaHud(
     val hudId: String,
     title: String,
     category: Category,
-) : LegacyHud(hudId, title, category) {
+) : Hud(hudId, title, category) {
+    private var shownSize = 0L
+
+    /** read by [Content] so a bump recomposes it, which contentChanged() alone does not do */
+    private var recompose by mutableIntStateOf(0)
+
     init {
         locked = true
         currentSchema = posSchema
+        showBackground = false
+        bgRadius = 0f
     }
 
     override fun addCallbacks(tree: Tree) {
@@ -165,10 +179,10 @@ abstract class VanillaHud(
     }
 
     fun scaledOriginX(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
-        defaultOriginX(screenWidth, screenHeight) + (1f - scale) * width * anchorX
+        defaultOriginX(screenWidth, screenHeight) + (1f - scale * elementScale) * width * anchorX - contentOffsetX * scale
 
     fun scaledOriginY(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
-        defaultOriginY(screenWidth, screenHeight) + (1f - scale) * height * anchorY
+        defaultOriginY(screenWidth, screenHeight) + (1f - scale * elementScale) * height * anchorY - contentOffsetY * scale
 
     override fun multipleInstancesAllowed() = false
     override fun deletable() = false
@@ -197,9 +211,42 @@ abstract class VanillaHud(
         forcePending = false
     }
 
+    /** the HUD this one follows until the user moves it, as the status bars follow the hotbar in vanilla */
+    protected open val defaultAnchorTarget: VanillaHud? get() = null
+
+    /** true while this HUD holds its default anchor, false once the user anchors it by hand */
+    val onDefaultAnchor: Boolean
+        get() = locked && isAnchored && anchorParent === defaultAnchorTarget
+
+    private fun holdDefaultAnchor(target: VanillaHud, screenWidth: Int, screenHeight: Int) {
+        asSystemWrite {
+            positionRevision++
+            anchorTo(target, HudAnchor.TopLeft, HudAnchor.TopLeft)
+            anchorOffsetX = defaultOriginX(screenWidth, screenHeight) - target.defaultOriginX(screenWidth, screenHeight)
+            anchorOffsetY = defaultOriginY(screenWidth, screenHeight) - target.defaultOriginY(screenWidth, screenHeight)
+        }
+    }
+
+    /**
+     * OneConfig's reset only knows about the screen position, so it either clears the anchor or
+     * leaves a dragged offset in place. A stored position back on its default is how a reset shows up.
+     */
+    fun restoreDefaultAnchor() {
+        val target = defaultAnchorTarget?.takeIf { it.tree != null } ?: return
+        if (tree == null || !positionSchemaReady || !matchesDefaultPosition(fallback = false)) return
+        if (isAnchored && anchorParent !== target) return
+        val w = HudManager.guiScreenWidth.toInt()
+        val h = HudManager.guiScreenHeight.toInt()
+        if (w <= 0 || h <= 0) return
+        val offsetX = defaultOriginX(w, h) - target.defaultOriginX(w, h)
+        val offsetY = defaultOriginY(w, h) - target.defaultOriginY(w, h)
+        if (isAnchored && abs(anchorOffsetX - offsetX) < 1e-3f && abs(anchorOffsetY - offsetY) < 1e-3f) return
+        holdDefaultAnchor(target, w, h)
+    }
+
     fun applyForceDefault() {
         if (!forcePending || tree == null || !positionSchemaReady) return
-        if (!locked || isAnchored) {
+        if (!locked || (isAnchored && !onDefaultAnchor)) {
             forcePending = false
             return
         }
@@ -209,16 +256,24 @@ abstract class VanillaHud(
         try {
             syncRenderedSize()
             captureDefaults()
-            val (dx, dy) = defaultPosition()
-            placeAt(dx, dy)
+            val target = defaultAnchorTarget?.takeIf { it.tree != null }
+            if (target != null) {
+                holdDefaultAnchor(target, w, h)
+            } else {
+                if (isAnchored) asSystemWrite { clearAnchor() }
+                val (dx, dy) = defaultPosition()
+                placeAt(dx, dy)
+            }
             forcePending = false
         } catch (_: Throwable) {
             measureOwed = true
         }
     }
 
-    private fun isAtDefaultPosition(fallback: Boolean = false): Boolean {
-        if (isAnchored) return false
+    private fun isAtDefaultPosition(fallback: Boolean = false): Boolean =
+        !isAnchored && matchesDefaultPosition(fallback)
+
+    private fun matchesDefaultPosition(fallback: Boolean): Boolean {
         return try {
             val relXDef = getProperty("relativeX").getMetadata<Float?>("default") ?: return fallback
             val relYDef = getProperty("relativeY").getMetadata<Float?>("default") ?: return fallback
@@ -257,8 +312,8 @@ abstract class VanillaHud(
         if (screenSame && !measure) return
         try {
             val scale = effectiveScale
-            if (screenSame && (width * scale).coerceAtLeast(1f) == seed!!.hudW &&
-                (height * scale).coerceAtLeast(1f) == seed.hudH
+            if (screenSame && (boxWidth * scale).coerceAtLeast(1f) == seed!!.hudW &&
+                (boxHeight * scale).coerceAtLeast(1f) == seed.hudH
             ) {
                 measureOwed = false
                 return
@@ -304,13 +359,59 @@ abstract class VanillaHud(
     val unrotatedWidth: Float get() = measuredWidth()
     val unrotatedHeight: Float get() = measuredHeight()
 
-    override val width: Float get() = if (turned) measuredHeight() else measuredWidth()
-    override val height: Float get() = if (turned) measuredWidth() else measuredHeight()
+    open val width: Float get() = if (turned) measuredHeight() else measuredWidth()
+    open val height: Float get() = if (turned) measuredWidth() else measuredHeight()
+
+    /** whether Compose paints this HUD's background, the others draw theirs in the game's own pass */
+    protected open val composeBackground: Boolean get() = false
+
+    /** the Designer's size and resize handles change [textScale], and here that sizes the whole element with its background */
+    open val elementScale: Float get() = textScale
+
+    /** text whose colour the game's pass already resolved from [textColor] */
+    open val managesTextColor: Boolean get() = false
+
+    /** the background the game draws for this element stretches to the box, which only matters once the box differs from the content */
+    open val stretchesBackground: Boolean get() = false
+
+    open val everyFillIsBackground: Boolean get() = false
+
+    val customBackgroundBox: Boolean get() = bgRadius > 0f || pads || staticWidth
+
+    /** the scale the game applies itself inside this element's pose, as a title does */
+    open val innerScale: Float get() = 1f
+
+    val bgArgb: Int get() = PolyColor(bgColor, bgChroma, bgChromaSpeed).argb
+
+    private val pads: Boolean get() = padLeft != 0f || padRight != 0f || padTop != 0f || padBottom != 0f
+
+    private val drawnWidth: Float get() = width * elementScale
+
+    private val drawnHeight: Float get() = height * elementScale
+
+    val boxWidth: Float
+        get() = if (staticWidth) maxOf(staticW, drawnWidth) else drawnWidth + (padLeft + padRight) * elementScale
+
+    val boxHeight: Float
+        get() = if (staticWidth) maxOf(staticH, drawnHeight) else drawnHeight + (padTop + padBottom) * elementScale
+
+    /** where the content sits inside the box, zero unless the Designer's padding or static size is in use */
+    val contentOffsetX: Float
+        get() = when {
+            staticWidth -> (boxWidth - drawnWidth) * alignment.name.let { if ("Left" in it) 0f else if ("Right" in it) 1f else 0.5f }
+            else -> padLeft * elementScale
+        }
+
+    val contentOffsetY: Float
+        get() = when {
+            staticWidth -> (boxHeight - drawnHeight) * alignment.name.let { if ("Top" in it) 0f else if ("Bottom" in it) 1f else 0.5f }
+            else -> padTop * elementScale
+        }
 
     private fun syncRenderedSize() {
         val scale = effectiveScale
-        val w = (width * scale).coerceAtLeast(1f)
-        val h = (height * scale).coerceAtLeast(1f)
+        val w = (boxWidth * scale).coerceAtLeast(1f)
+        val h = (boxHeight * scale).coerceAtLeast(1f)
         if (w != renderedW || h != renderedH) {
             positionRevision++
             renderedW = w
@@ -375,8 +476,20 @@ abstract class VanillaHud(
 
     private fun measureKey(): Int = HudManager.guiScreenWidth.toInt() * 31 + if (previewing) 1 else 0
 
-    override fun update() = false
-    override fun hasBackground() = false
+    override fun update(): Boolean {
+        val size = boxWidth.toBits().toLong() * 31 + boxHeight.toBits()
+        if (size != shownSize) {
+            shownSize = size
+            recompose++
+            contentChanged()
+        }
+        return true
+    }
+
+    /** repaints only this HUD, since OneConfig can't see what the game's pass drew */
+    fun capturedDrawsChanged() = contentChanged()
+
+    override fun minimumSize(): Pair<Float, Float> = boxWidth to boxHeight
 
     override fun defaultPosition(): Pair<Float, Float> {
         if (tree != null) syncRenderedSize()
@@ -385,12 +498,14 @@ abstract class VanillaHud(
         return Pair(scaledOriginX(w, h), scaledOriginY(w, h))
     }
 
-    //? if > 1.8.9 {
-    override fun render(mcCtx: GuiGraphicsExtractor) {}
-    //?} else
-    //override fun render() {}
+    @Composable
+    override fun Content() {
+        key(recompose) { HudCapture.Replay(this, boxWidth, boxHeight) }
+    }
 
-    override fun shouldShow() = false
+    override fun hasBackground() = composeBackground
+    override fun canMergeBackground() = composeBackground
+    override fun shouldShow() = hasContent()
 
     companion object {
         private var currentSchema: Int? = null
@@ -417,6 +532,7 @@ abstract class VanillaHud(
         @JvmStatic
         fun beginFrame(graphics: GuiGraphicsExtractor) {
             HudTransform.resetFrame()
+            HudCapture.beginFrame()
             if (!HudManager.isEditing) {
                 HudManager.guiScreenWidth = graphics.guiWidth().toFloat()
                 HudManager.guiScreenHeight = graphics.guiHeight().toFloat()
@@ -452,6 +568,15 @@ abstract class VanillaHud(
                 } catch (_: Throwable) {
                 }
             }
+        }
+
+        /** the level overlaps the bar, and OneConfig paints HUDs in list order with no z setting to ask for */
+        fun keepLevelAboveBar() {
+            val huds = HudManager.activeInstances
+            val bar = huds.indexOfFirst { it is ExperienceBarHud }
+            val level = huds.indexOfFirst { it is ExperienceLevelHud }
+            if (bar < 0 || level < 0 || level > bar) return
+            huds.add(huds.removeAt(level))
         }
 
         fun forgetProfileStateAll() {

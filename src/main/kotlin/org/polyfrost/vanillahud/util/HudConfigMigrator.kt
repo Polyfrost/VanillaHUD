@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 8
+    private const val SCHEMA_VERSION = 10
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -49,6 +49,11 @@ object HudConfigMigrator {
     )
 
     private val ROTATION_KEYS = listOf("side", "reverseDirection")
+
+    private val DROPPED_STYLE_KEYS = listOf(
+        "style", "background", "textBgColor", "paddingX", "paddingY", "rounded", "cornerRadius", "textType",
+        "backgroundColor", "bodyBgColor", "captionBgColor", "captionTextColor", "titleScale", "subtitleScale",
+    )
 
     private val DROPPED_HOTBAR_KEYS = listOf("experienceBar", "experienceLevel", "levelTextHeight")
 
@@ -121,6 +126,8 @@ object HudConfigMigrator {
         if (from < 6) mergeHotbarCluster(folder)
         if (from < 7) recentreTabList(folder)
         if (from < 8) splitHotbarCluster(folder)
+        if (from < 9) adoptDesignerOptions(folder)
+        if (from < 10) dropUnusedPadding(folder)
 
         writeStamp(stamp)
     }
@@ -239,6 +246,94 @@ object HudConfigMigrator {
             if (obj.remove("relativeX") == null) return
             writeObject(path, obj)
         } catch (_: Throwable) {
+        }
+    }
+
+    /** moves the options OneConfig's Designer now owns onto its keys, and replaces its stored defaults with vanilla's */
+    private fun adoptDesignerOptions(folder: Path) {
+        val hudsDir = folder.resolve("huds")
+        if (!Files.isDirectory(hudsDir)) return
+        Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { files ->
+            for (path in files) try {
+                val obj = readObject(path) ?: continue
+                adoptDesignerOptions(path.fileName.toString(), obj)
+                writeObject(path, obj)
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    private fun adoptDesignerOptions(file: String, obj: JsonObject) {
+        fun bool(key: String, default: Boolean) = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asBoolean ?: default
+        fun float(key: String, default: Float) = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asFloat ?: default
+        fun shadow(default: Int) = (obj.get("textType")?.takeIf { it.isJsonPrimitive }?.asInt ?: default) == 1
+        fun color(key: String, default: Int): Int {
+            val rgba = obj.get(key)?.takeIf { it.isJsonObject }?.asJsonObject?.getAsJsonArray("value") ?: return default
+            if (rgba.size() != 4) return default
+            return (rgba[3].asInt shl 24) or (rgba[0].asInt shl 16) or (rgba[1].asInt shl 8) or rgba[2].asInt
+        }
+        val radius = if (bool("rounded", false)) float("cornerRadius", 2f) else 0f
+        when (file) {
+            "vanillahud-actionbar.json", "vanillahud-bossbar.json", "vanillahud-itemtooltip.json",
+            "vanillahud-title.json", "vanillahud-subtitle.json" -> {
+                val default = if (file == "vanillahud-bossbar.json") 0x78000000 else 0x50000000
+                obj.addProperty("showBackground", bool("background", false))
+                obj.addProperty("bgColor", color("textBgColor", default))
+                obj.addProperty("bgRadius", radius)
+                obj.addProperty("showShadow", shadow(1))
+                val padX = float("paddingX", 2f)
+                val padY = float("paddingY", 2f)
+                obj.addProperty("padLeft", padX)
+                obj.addProperty("padRight", padX)
+                obj.addProperty("padTop", padY)
+                obj.addProperty("padBottom", padY)
+                if (file == "vanillahud-title.json") obj.addProperty("textScale", float("titleScale", 4f))
+                if (file == "vanillahud-subtitle.json") obj.addProperty("textScale", float("subtitleScale", 2f))
+            }
+            "vanillahud-scoreboard.json" -> {
+                obj.addProperty("showBackground", true)
+                obj.addProperty("bgColor", color("backgroundColor", 0x4C000000))
+                obj.addProperty("bgRadius", radius)
+                obj.addProperty("showShadow", shadow(0))
+            }
+            TAB_FILE -> {
+                obj.addProperty("showBackground", true)
+                obj.addProperty("bgColor", color("bodyBgColor", 0x80000000.toInt()))
+                obj.addProperty("bgRadius", radius)
+                obj.addProperty("showShadow", shadow(1))
+            }
+            "vanillahud-closedcaptions.json" -> {
+                obj.addProperty("showBackground", true)
+                obj.addProperty("bgColor", color("captionBgColor", 0xCC000000.toInt()))
+                obj.addProperty("textColor", color("captionTextColor", -1))
+                obj.addProperty("bgRadius", 0f)
+                obj.addProperty("showShadow", shadow(1))
+            }
+            else -> {
+                obj.addProperty("showBackground", false)
+                obj.addProperty("bgRadius", 0f)
+                obj.addProperty("showShadow", false)
+            }
+        }
+        val font = JsonObject()
+        font.addProperty("class", "org.polyfrost.oneconfig.api.hud.v1.Font")
+        font.addProperty("value", "Minecraft")
+        obj.add("font", font)
+        for (key in DROPPED_STYLE_KEYS) obj.remove(key)
+    }
+
+    /** padding now always grows the box, so what only ever applied behind a background must not move HUDs without one */
+    private fun dropUnusedPadding(folder: Path) {
+        val hudsDir = folder.resolve("huds")
+        if (!Files.isDirectory(hudsDir)) return
+        Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { files ->
+            for (path in files) try {
+                val obj = readObject(path) ?: continue
+                if (obj.get("showBackground")?.takeIf { it.isJsonPrimitive }?.asBoolean == true) continue
+                for (key in listOf("padLeft", "padRight", "padTop", "padBottom")) obj.addProperty(key, 0f)
+                writeObject(path, obj)
+            } catch (_: Throwable) {
+            }
         }
     }
 

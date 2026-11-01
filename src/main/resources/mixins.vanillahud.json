@@ -9,6 +9,11 @@
     },
     "client": [
         "GuiFrameMixin",
+        "DrawCaptureMixin",
+        "CaptureFontMixin",
+        "CaptureItemMixin",
+        "CaptureTextureMixin",
+        "CaptureColorMixin",
         "UprightIconMixin",
         "PlayerFaceRendererMixin",
         "ScoreboardRevisionMixin",

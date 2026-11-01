@@ -11,7 +11,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.polyfrost.vanillahud.hud.HotbarHud;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
+//? if > 1.8.9
+import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -84,7 +87,7 @@ public abstract class GuiMixinHotbar {
     private void vanillahud$setup(DeltaTracker deltaTracker, HotbarHud hud) {
         Player player = vanillahud$getCameraPlayer();
         int selected;
-        if (player == null) {
+        if (player == null || VanillaHud.previewing()) {
             selected = 0;
         } else {
             //? if >=1.21.5 {
@@ -164,7 +167,7 @@ public abstract class GuiMixinHotbar {
             Player player, ItemStack stack, int seed, Operation<Void> original) {
         HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
-        original.call(self, graphics, x, y, deltaTracker, player, stack, seed);
+        original.call(self, graphics, x, y, deltaTracker, player, VanillaHud.previewing() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
         HudTransform.endUpright(graphics, Huds.INSTANCE.getHotbar());
     }
     //?} else {
@@ -193,7 +196,7 @@ public abstract class GuiMixinHotbar {
     @Unique
     private void vanillahud$setup(HotbarHud hud) {
         Player player = Minecraft.getInstance().player;
-        int selected = player == null ? 0 : player.inventory.selectedSlot;
+        int selected = player == null || VanillaHud.previewing() ? 0 : player.inventory.selectedSlot;
 
         long now = System.nanoTime();
         float elapsedTicks = vanillahud$animNanos == 0L ? 0f : (now - vanillahud$animNanos) / 50_000_000f;
