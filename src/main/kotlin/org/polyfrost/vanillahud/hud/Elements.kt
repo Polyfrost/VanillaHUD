@@ -394,6 +394,13 @@ class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience 
 }
 
 class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Experience Level") {
+    init {
+        showShadow = true
+        fullShadow = true
+        textColor = 0xFF80FF20.toInt()
+        shadowColor = 0xFF000000.toInt()
+    }
+
     override val naturalWidth get() = 18f
     override val naturalHeight get() = 9f
 
@@ -1131,7 +1138,7 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
 
     override fun hasLiveData() = active()
 
-    override fun shouldShow() = previewing || (active() && !text().isNullOrEmpty())
+    override fun shouldShow() = previewing || frozen || (active() && !text().isNullOrEmpty())
 
     override fun hasContent() = shouldShow()
 

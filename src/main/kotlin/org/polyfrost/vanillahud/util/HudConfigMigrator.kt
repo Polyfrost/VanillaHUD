@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 11
+    private const val SCHEMA_VERSION = 12
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -131,6 +131,7 @@ object HudConfigMigrator {
             try { Files.deleteIfExists(folder.resolve("huds").resolve("vanillahud-mount.json")) } catch (_: Throwable) {}
             unlockAll(folder)
         }
+        if (from < 12) resetLevelText(folder)
 
         writeStamp(stamp)
     }
@@ -352,6 +353,17 @@ object HudConfigMigrator {
                 writeObject(path, obj)
             } catch (_: Throwable) {
             }
+        }
+    }
+
+    /** the experience level's outline moved from vanilla's draws to the hud's own shadow and colour options */
+    private fun resetLevelText(folder: Path) {
+        val path = folder.resolve("huds").resolve("vanillahud-experience-level.json")
+        try {
+            val obj = readObject(path) ?: return
+            for (key in listOf("showShadow", "fullShadow", "textColor", "shadowColor")) obj.remove(key)
+            writeObject(path, obj)
+        } catch (_: Throwable) {
         }
     }
 

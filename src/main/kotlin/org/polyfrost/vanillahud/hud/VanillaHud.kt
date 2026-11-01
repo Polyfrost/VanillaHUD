@@ -43,6 +43,9 @@ abstract class VanillaHud(
     override fun addCallbacks(tree: Tree) {
         super.addCallbacks(tree)
         tree.addDependencies()
+        tree.onAllProps { id, p ->
+            if (id !in LAYOUT_KEYS) p.addCallback { resnapshot = true; false }
+        }
     }
 
     protected open fun Tree.addDependencies() {}
@@ -361,7 +364,49 @@ abstract class VanillaHud(
         seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor)
     }
 
-    val previewing: Boolean get() = HudManager.isConfigUiOpen || HudManager.isEditorOpen && !liveThisFrame()
+    val previewing: Boolean
+        get() = HudManager.isConfigUiOpen || HudManager.isEditorOpen && when (snapshot) {
+            Snapshot.NONE -> !liveThisFrame()
+            Snapshot.DEMO -> true
+            Snapshot.RECORDING, Snapshot.FROZEN -> false
+        }
+
+    private enum class Snapshot { NONE, DEMO, RECORDING, FROZEN }
+
+    private var snapshot = Snapshot.NONE
+    private var resnapshot = false
+    private var drewPreview = false
+    private var frozenW = 0f
+    private var frozenH = 0f
+
+    /** the editor shows the game's draws from just before it opened, so live content holds still while it's moved */
+    val frozen: Boolean get() = snapshot == Snapshot.FROZEN
+
+    private fun liveNow(): Boolean = mc.player != null && try {
+        hasLiveData()
+    } catch (_: Throwable) {
+        false
+    }
+
+    private fun updateSnapshot() {
+        val was = snapshot
+        snapshot = when {
+            !HudManager.isEditorOpen -> Snapshot.NONE
+            was == Snapshot.NONE || resnapshot -> when {
+                !liveNow() -> Snapshot.DEMO
+                was == Snapshot.NONE && !drewPreview && HudCapture.hasDraws(this) -> Snapshot.FROZEN
+                else -> Snapshot.RECORDING
+            }
+            was == Snapshot.RECORDING -> if (HudCapture.hasDraws(this)) Snapshot.FROZEN else Snapshot.DEMO
+            else -> was
+        }
+        resnapshot = false
+        if (snapshot == Snapshot.FROZEN && was != Snapshot.FROZEN) {
+            frozenW = measuredWidth()
+            frozenH = measuredHeight()
+        }
+        drewPreview = previewing
+    }
 
     private var liveFrame = -1L
     private var live = false
@@ -398,11 +443,11 @@ abstract class VanillaHud(
     protected open val exampleText: String? get() = null
 
     /** content size before [quarterTurns] is applied which is what the render transform works in */
-    val unrotatedWidth: Float get() = measuredWidth()
-    val unrotatedHeight: Float get() = measuredHeight()
+    val unrotatedWidth: Float get() = if (frozen) frozenW else measuredWidth()
+    val unrotatedHeight: Float get() = if (frozen) frozenH else measuredHeight()
 
-    open val width: Float get() = if (turned) measuredHeight() else measuredWidth()
-    open val height: Float get() = if (turned) measuredWidth() else measuredHeight()
+    open val width: Float get() = if (turned) unrotatedHeight else unrotatedWidth
+    open val height: Float get() = if (turned) unrotatedWidth else unrotatedHeight
 
     /** whether Compose paints this HUD's background, the others draw theirs in the game's own pass */
     protected open val composeBackground: Boolean get() = false
@@ -547,7 +592,7 @@ abstract class VanillaHud(
 
     override fun hasBackground() = composeBackground
     override fun canMergeBackground() = composeBackground
-    override fun shouldShow() = hasContent()
+    override fun shouldShow() = frozen || hasContent()
 
     companion object {
         private var currentSchema: Int? = null
@@ -575,6 +620,7 @@ abstract class VanillaHud(
         fun beginFrame(graphics: GuiGraphicsExtractor) {
             HudTransform.resetFrame()
             HudCapture.beginFrame()
+            for (hud in HudManager.activeInstances) if (hud is VanillaHud) hud.updateSnapshot()
             if (!HudManager.isEditing) {
                 HudManager.guiScreenWidth = graphics.guiWidth().toFloat()
                 HudManager.guiScreenHeight = graphics.guiHeight().toFloat()
@@ -637,6 +683,12 @@ abstract class VanillaHud(
         fun previewing(): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen
     }
 }
+
+/** moving or scaling a frozen HUD keeps its snapshot, any other option records it again */
+private val LAYOUT_KEYS = setOf(
+    "relativeX", "relativeY", "section", "anchorOffsetX", "anchorOffsetY", "anchorTargetId", "anchorPoint",
+    "selfAnchorPoint", "layoutRefW", "layoutRefH", "growthAnchor", "posSchema", "locked", "customScale", "textScale",
+)
 
 private fun cell(f: Float) = if (f < 0.25f) 0 else if (f < 0.75f) 1 else 2
 

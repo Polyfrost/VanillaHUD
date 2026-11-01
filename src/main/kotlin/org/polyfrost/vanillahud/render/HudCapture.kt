@@ -34,6 +34,7 @@ import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.item.PolyItemIcon
+import org.polyfrost.vanillahud.hud.ExperienceLevelHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
 import kotlin.math.abs
@@ -140,6 +141,10 @@ object HudCapture {
     fun beginFrame() {
         open.clear()
         for (l in layers.values) {
+            if (l.hud?.frozen == true) {
+                l.recording.clear()
+                continue
+            }
             val done = l.recording
             if (!sameOps(done, l.shown)) l.hud?.capturedDrawsChanged()
             l.recording = l.shown.also { it.clear() }
@@ -162,6 +167,8 @@ object HudCapture {
         val y = b[it]
         if (x is Item && y is Item) x.same(y) else x == y
     }
+
+    fun hasDraws(hud: VanillaHud): Boolean = layers[hud.javaClass]?.shown?.isNotEmpty() == true
 
     fun begin(hud: VanillaHud) {
         open.add(layer(hud.javaClass).also { it.hud = hud })
@@ -465,6 +472,8 @@ object HudCapture {
     }
 
     private fun addRuns(l: Layer, hud: VanillaHud, m: Pose, runs: List<Run0>, x: Int, y: Int, color: Int, shadow: Boolean) {
+        // vanilla outlines the experience level with four black draws, the hud's own shadow replaces them
+        if (hud is ExperienceLevelHud && color and 0xFFFFFF == 0) return
         var cursor = x.toFloat()
         for (r in runs) {
             val run = styled(hud, r)
@@ -485,11 +494,10 @@ object HudCapture {
         })
     }
 
-    // black is left alone because vanilla outlines the experience level by drawing it in black
     private fun runColor(hud: VanillaHud, styled: Int?, color: Int): Int {
         if (styled != null) return (color and 0xFF000000.toInt()) or styled
         val custom = hud.textColor != -1 || hud.textChroma
-        if (!custom || hud.managesTextColor || color and 0xFFFFFF == 0) return color
+        if (!custom || hud.managesTextColor) return color
         val picked = PolyColor(hud.textColor, hud.textChroma, hud.textChromaSpeed).argb
         val alpha = (picked ushr 24) * (color ushr 24) / 255
         return (alpha shl 24) or (picked and 0xFFFFFF)
