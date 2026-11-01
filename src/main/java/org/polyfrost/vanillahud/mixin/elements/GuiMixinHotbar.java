@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.polyfrost.vanillahud.hud.HotbarHud;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hook.TextShadowHook;
 import org.polyfrost.vanillahud.render.HudTransform;
 //? if > 1.8.9
 import org.polyfrost.vanillahud.util.DemoData;
@@ -166,7 +167,12 @@ public abstract class GuiMixinHotbar {
             Player player, ItemStack stack, int seed, Operation<Void> original) {
         HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
-        original.call(self, graphics, x, y, deltaTracker, player, Huds.INSTANCE.getHotbar().getPreviewing() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
+        TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());
+        try {
+            original.call(self, graphics, x, y, deltaTracker, player, Huds.INSTANCE.getHotbar().getPreviewing() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
+        } finally {
+            TextShadowHook.pop();
+        }
         HudTransform.endUpright(graphics, Huds.INSTANCE.getHotbar());
     }
     //?} else {
@@ -237,7 +243,12 @@ public abstract class GuiMixinHotbar {
                                  Operation<Void> original) {
         HudTransform.beginUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
-        original.call(self, slot, x, y, tickDelta, player);
+        TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());
+        try {
+            original.call(self, slot, x, y, tickDelta, player);
+        } finally {
+            TextShadowHook.pop();
+        }
         HudTransform.endUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar());
     }
     *///?}

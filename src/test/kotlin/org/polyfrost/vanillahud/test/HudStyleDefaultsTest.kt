@@ -62,6 +62,7 @@ class HudStyleDefaultsTest {
         assertFalse(board.textShadow)
         assertVanillaBox(board)
         assertEquals(true, ActionBarHud().textShadow)
+        assertEquals(true, HotbarHud().showShadow)
         assertEquals(4f, TitleHud().titleScale)
         assertEquals(2f, SubtitleHud().subtitleScale)
     }

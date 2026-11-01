@@ -261,6 +261,10 @@ abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, ti
 }
 
 class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
+    init {
+        showShadow = true
+    }
+
     @Switch(
         title = "Animation",
         description = "Slide the selected-slot highlight between positions instead of snapping."

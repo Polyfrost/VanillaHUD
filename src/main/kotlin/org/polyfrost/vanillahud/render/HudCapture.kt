@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
+import net.minecraft.network.chat.FormattedText
 import net.minecraft.network.chat.Style
 import net.minecraft.util.FormattedCharSequence
 //?} else {
@@ -37,6 +38,7 @@ import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -44,6 +46,11 @@ import kotlin.math.sin
 private val FORMAT_CODE = Regex("§.")
 
 private val COLOR_CODE = Regex("§[0-9a-fA-F]")
+
+private val LEGACY_COLORS = intArrayOf(
+    0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xFFAA00, 0xAAAAAA,
+    0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF,
+)
 
 // what an untouched HUD stores, which leaves the text to the game's own shadow colour
 private const val DEFAULT_SHADOW = 0x40000000
@@ -355,7 +362,7 @@ object HudCapture {
             while (i < text.length) {
                 val c = text[i++]
                 if (c == '§' && i < text.length) append(c).append(text[i++])
-                else if (font.width(c.toString()) > 0) append(c)
+                else if (font.getWidth(c) > 0) append(c)
             }
         }
     }
@@ -374,11 +381,11 @@ object HudCapture {
         val l = active ?: return false
         val hud = l.hud ?: return false
         //? if >=1.21.6 {
-        if (color ushr 24 != 0) addRuns(l, hud, pose(g), listOf(Run0("", null, text)), x, y, color, shadow)
+        if (color ushr 24 != 0) addRuns(l, hud, pose(g), legacyRuns(text), x, y, color, shadow)
         //?} elif > 1.8.9 {
-        /*addRuns(l, hud, pose(g), listOf(Run0("", null, text)), x, y, fontColor(color, blending = true), shadow)
+        /*addRuns(l, hud, pose(g), legacyRuns(text), x, y, fontColor(color, blending = true), shadow)
         *///?} else {
-        /*addRuns(l, hud, pose(g), listOf(Run0("", null, drawableText(text))), x, y, fontColor(color, GL11.glIsEnabled(GL11.GL_BLEND)), shadow)
+        /*addRuns(l, hud, pose(g), legacyRuns(drawableText(text)), x, y, fontColor(color, GL11.glIsEnabled(GL11.GL_BLEND)), shadow)
         *///?}
         return true
     }
@@ -422,6 +429,29 @@ object HudCapture {
 
     private class Run0(val codes: String, val rgb: Int?, val text: String)
 
+    private fun legacyRuns(text: String): List<Run0> {
+        if ('§' !in text) return listOf(Run0("", null, text))
+        val runs = ArrayList<Run0>()
+        val sb = StringBuilder()
+        var rgb: Int? = null
+        var i = 0
+        while (i < text.length) {
+            val c = text[i]
+            val color = if (c == '§' && i + 1 < text.length) "0123456789abcdefr".indexOf(text[i + 1].lowercaseChar()) else -1
+            if (color < 0) {
+                sb.append(c)
+                i++
+                continue
+            }
+            if (sb.isNotEmpty()) runs += Run0("", rgb, sb.toString())
+            sb.clear()
+            rgb = LEGACY_COLORS.getOrNull(color)
+            i += 2
+        }
+        if (sb.isNotEmpty()) runs += Run0("", rgb, sb.toString())
+        return runs
+    }
+
     private fun addRuns(l: Layer, hud: VanillaHud, m: Pose, runs: List<Run0>, x: Int, y: Int, color: Int, shadow: Boolean) {
         var cursor = x.toFloat()
         for (r in runs) {
@@ -459,12 +489,48 @@ object HudCapture {
         if (hud.font == Font.Poppins) poppins(hud).measureTextWidth(text.replace(FORMAT_CODE, ""))
         else Minecraft.getInstance().font.width(text).toFloat()
 
+    private var measuringHud: VanillaHud? = null
+
+    fun <T> measuring(hud: VanillaHud, measure: () -> T): T {
+        val outer = measuringHud
+        measuringHud = hud
+        try {
+            return measure()
+        } finally {
+            measuringHud = outer
+        }
+    }
+
+    private fun poppinsHud(): VanillaHud? = (measuringHud ?: active?.hud)?.takeIf { it.font == Font.Poppins }
+
+    @JvmStatic
+    fun fontWidth(width: Int, text: String): Int {
+        val hud = poppinsHud() ?: return width
+        return ceil(widthOf(hud, styled(hud, Run0("", null, text)))).toInt()
+    }
+
+    //? if > 1.8.9 {
+    @JvmStatic
+    fun fontWidth(width: Int, text: FormattedText): Int =
+        if (poppinsHud() == null) width else fontWidth(width, text.string)
+
+    @JvmStatic
+    fun fontWidth(width: Int, text: FormattedCharSequence): Int {
+        if (poppinsHud() == null) return width
+        val plain = StringBuilder()
+        text.accept { _, _, codepoint -> plain.appendCodePoint(codepoint); true }
+        return fontWidth(width, plain.toString())
+    }
+    //?}
+
     private fun RenderContext.drawRun(op: Run) {
         val hud = op.hud
         val shadow = PolyColor(hud.shadowColor, hud.shadowChroma, hud.shadowChromaSpeed).argb
         if (hud.font == Font.Poppins) {
             val plain = op.text.replace(FORMAT_CODE, "")
             val font = poppins(hud)
+            val metrics = font.metrics
+            translate(0f, (Minecraft.getInstance().font.lineHeight - metrics.descent - metrics.ascent) / 2f)
             if (op.shadow) text(plain, op.x + hud.shadowOffsetX / 2f, op.y + hud.shadowOffsetY / 2f, PolyColor(shadow), font)
             text(plain, op.x, op.y, PolyColor(op.color), font)
         } else if (op.shadow && hud.fullShadow) {

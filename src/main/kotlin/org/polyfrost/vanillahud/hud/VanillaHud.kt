@@ -475,7 +475,7 @@ abstract class VanillaHud(
 
     protected fun textWidth(text: () -> String?): Float =
         try {
-            text()?.let { mc.font.width(it).toFloat() } ?: naturalWidth
+            text()?.let { HudCapture.measuring(this) { mc.font.width(it).toFloat() } } ?: naturalWidth
         } catch (_: Throwable) {
             naturalWidth
         }
@@ -500,7 +500,7 @@ abstract class VanillaHud(
         if (!measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp ||
             measuredEpoch != epoch
         ) {
-            measured = measure()
+            measured = HudCapture.measuring(this, measure)
             measuredValid = true
             measuredStamp = stamp
             measuredEpoch = epoch
