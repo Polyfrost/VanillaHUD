@@ -23,7 +23,6 @@ import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
 import net.minecraft.client.player.LocalPlayer;
 import org.polyfrost.vanillahud.hud.ExperienceBarHud;
 import org.polyfrost.vanillahud.hud.Huds;
-import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -81,7 +80,7 @@ public class GuiMixinLocatorBar {
     @Unique
     private static boolean vanillahud$overlaysLocator() {
         ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
-        if (!hud.getOverlayLocatorBar() || VanillaHud.previewing()) return false;
+        if (!hud.getOverlayLocatorBar() || hud.getPreviewing()) return false;
         Minecraft minecraft = Minecraft.getInstance();
         return minecraft.player.jumpableVehicle() != null || minecraft.gameMode.hasExperience();
     }
@@ -89,7 +88,7 @@ public class GuiMixinLocatorBar {
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/waypoints/ClientWaypointManager;hasWaypoints()Z"))
     private boolean vanillahud$keepBarUnderLocator(boolean original) {
-        return original && !VanillaHud.previewing() && !vanillahud$overlaysLocator();
+        return original && !Huds.INSTANCE.getExperienceBar().getPreviewing() && !vanillahud$overlaysLocator();
     }
 
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE",
@@ -117,7 +116,7 @@ public class GuiMixinLocatorBar {
         if (bar instanceof ExperienceBar && !Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
         //?} else
         //if (bar instanceof ExperienceBarRenderer && !Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
-        if (!VanillaHud.previewing()) {
+        if (!Huds.INSTANCE.getExperienceBar().getPreviewing()) {
             original.call(bar, graphics, delta);
             return;
         }

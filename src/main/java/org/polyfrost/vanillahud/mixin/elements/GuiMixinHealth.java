@@ -10,8 +10,6 @@ import net.minecraft.world.entity.player.Player;
 /*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
-//? if > 1.8.9
-import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.injection.At;
 //? if > 1.8.9
@@ -52,7 +50,7 @@ public class GuiMixinHealth {
         *///?}
 
         original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
-                currentHealth, oldHealth, absorption, blink && !VanillaHud.previewing() && Huds.INSTANCE.getHealth().getAnimation());
+                currentHealth, oldHealth, absorption, blink && !Huds.INSTANCE.getHealth().getPreviewing() && Huds.INSTANCE.getHealth().getAnimation());
 
         //? if <=1.21.6 && >1.8.9 {
         /*HudTransform.endIcons(graphics);

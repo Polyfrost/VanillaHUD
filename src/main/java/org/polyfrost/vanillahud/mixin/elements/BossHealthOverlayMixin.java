@@ -17,7 +17,6 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.client.gui.BossBar;
 import net.minecraft.client.gui.GameGui;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
-import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.render.HudTransform;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
@@ -171,7 +170,7 @@ public class BossHealthOverlayMixin {
     /*
     @WrapMethod(method = "renderBossBars")
     private void vanillahud$boss(Operation<Void> original) {
-        if ((BossBar.name == null || BossBar.timer <= 0) && !VanillaHud.previewing()) return;
+        if ((BossBar.name == null || BossBar.timer <= 0) && !Huds.INSTANCE.getBossBar().getPreviewing()) return;
 
         BossBarHud hud = Huds.INSTANCE.getBossBar();
         if (!hud.shouldDraw()) return;

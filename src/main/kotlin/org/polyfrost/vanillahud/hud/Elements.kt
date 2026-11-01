@@ -4,11 +4,15 @@ package org.polyfrost.vanillahud.hud
 import net.minecraft.client.gui.components.LerpingBossEvent
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
+import net.minecraft.tags.FluidTags
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 //?} else {
-/*import net.minecraft.client.gui.BossBar
+/*import net.minecraft.block.material.Material
+import net.minecraft.client.gui.BossBar
+import net.minecraft.entity.living.LivingEntity
 import net.minecraft.client.network.PlayerInfo
 import net.minecraft.scoreboard.ScoreboardScore
 import net.minecraft.scoreboard.team.Team
@@ -45,12 +49,12 @@ class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Cate
     override val anchorY get() = 1f
 
     //? if > 1.8.9 {
-    override fun hasContent() =
-        previewing || hudAccessor?.let { it.overlay != null && it.overlayMessageTime > 0 } ?: true
+    override fun hasLiveData() = hudAccessor?.let { it.overlay != null && it.overlayMessageTime > 0 } == true
     //?} else {
-    /*override fun hasContent() =
-        previewing || hudAccessor?.let { !it.overlayText.isNullOrEmpty() && it.overlayMessageCooldown > 0 } ?: true
+    /*override fun hasLiveData() = hudAccessor?.let { !it.overlayText.isNullOrEmpty() && it.overlayMessageCooldown > 0 } == true
     *///?}
+
+    override fun hasContent() = previewing || hudAccessor == null || hasLiveData()
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
@@ -123,36 +127,36 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
     override val anchorY get() = 0f
 
     //? if > 1.8.9 {
-    private fun bossEvents(): Collection<LerpingBossEvent> {
-        val live = try {
-            //? if >=26.2 {
-            (mc.gui.hud.bossOverlay as IBossHealthOverlay).events.values
-            //?} else {
-            /*(mc.gui.bossOverlay as IBossHealthOverlay).events.values
-            *///?}
-        } catch (_: Throwable) {
-            emptyList()
-        }
-        if (previewing) return DemoData.demoBossEvents()
-        return live
+    private fun liveBossEvents(): Collection<LerpingBossEvent> = try {
+        //? if >=26.2 {
+        (mc.gui.hud.bossOverlay as IBossHealthOverlay).events.values
+        //?} else {
+        /*(mc.gui.bossOverlay as IBossHealthOverlay).events.values
+        *///?}
+    } catch (_: Throwable) {
+        emptyList()
     }
+
+    private fun bossEvents(): Collection<LerpingBossEvent> =
+        if (previewing) DemoData.demoBossEvents() else liveBossEvents()
+
+    override fun hasLiveData() = liveBossEvents().isNotEmpty()
     //?} else {
     /*// 1.8.9 shows at most one bar, and only for as long as the server keeps refreshing its timer
-    private fun bossNames(): List<String> {
-        if (previewing) return listOf(DemoData.demoBossName())
-        return try {
-            val name = BossBar.name
-            if (name.isNullOrEmpty() || BossBar.timer <= 0) emptyList() else listOf(name)
-        } catch (_: Throwable) {
-            emptyList()
-        }
+    private fun liveBossNames(): List<String> = try {
+        val name = BossBar.name
+        if (name.isNullOrEmpty() || BossBar.timer <= 0) emptyList() else listOf(name)
+    } catch (_: Throwable) {
+        emptyList()
     }
+
+    private fun bossNames(): List<String> =
+        if (previewing) listOf(DemoData.demoBossName()) else liveBossNames()
+
+    override fun hasLiveData() = liveBossNames().isNotEmpty()
     *///?}
 
-    //? if > 1.8.9 {
-    override fun hasContent() = previewing || bossEvents().isNotEmpty()
-    //?} else
-    //override fun hasContent() = previewing || bossNames().isNotEmpty()
+    override fun hasContent() = previewing || hasLiveData()
 
     private class Size(val width: Float, val height: Float)
 
@@ -272,9 +276,19 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
 
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
+
+    override fun hasLiveData() = mc.player?.isSpectator == false
 }
 
 private fun activeHotbar() = HudManager.activeInstances.firstOrNull { it is HotbarHud } as HotbarHud?
+
+//? if > 1.8.9 {
+private fun statusBarsShown() = mc.gameMode?.canHurtPlayer() == true
+private fun experienceShown() = mc.gameMode?.hasExperience() == true
+//?} else {
+/*private fun statusBarsShown() = mc.interactionManager?.hasStatusBars() == true
+private fun experienceShown() = mc.interactionManager?.hasXpBar() == true
+*///?}
 
 abstract class StatBarHud(
     hudId: String,
@@ -317,16 +331,31 @@ class HealthHud : StatBarHud("vanillahud-health.json", "Health", StatBarHud.ALIG
 
     @RadioButton(title = "Hardcore Hearts", description = "When to render hardcore hearts.", options = arrayOf("Default", "Always Hardcore", "Always Regular"))
     var hardcoreHearts = 0
+
+    override fun hasLiveData() = statusBarsShown()
 }
 
-class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_LEFT, rightSide = false, aboveFirstRow = true)
+class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_LEFT, rightSide = false, aboveFirstRow = true) {
+    //? if > 1.8.9 {
+    override fun hasLiveData() = statusBarsShown() && (mc.player?.armorValue ?: 0) > 0
+    //?} else
+    //override fun hasLiveData() = statusBarsShown() && (mc.player?.armorProtection ?: 0) > 0
+}
 
 class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false) {
     @Switch(title = "Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
+
+    override fun hasLiveData() = statusBarsShown() && mc.player?.let { it.vehicle !is LivingEntity } == true
 }
 
-class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = true)
+class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = true) {
+    //? if > 1.8.9 {
+    override fun hasLiveData() = statusBarsShown() &&
+        mc.player?.let { it.isEyeInFluid(FluidTags.WATER) || it.airSupply < it.maxAirSupply } == true
+    //?} else
+    //override fun hasLiveData() = statusBarsShown() && mc.player?.isSubmergedIn(Material.WATER) == true
+}
 
 class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience Bar") {
     //? if >=1.21.6 {
@@ -343,6 +372,15 @@ class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
 
+    //? if >=1.21.6 {
+    override fun hasLiveData() = experienceShown() || mc.player?.let {
+        it.jumpableVehicle() != null || it.connection.waypointManager.hasWaypoints()
+    } == true
+    //?} elif > 1.8.9 {
+    /*override fun hasLiveData() = experienceShown() || mc.player?.jumpableVehicle() != null
+    *///?} else
+    //override fun hasLiveData() = experienceShown() || mc.player?.isRidingRideableMob == true
+
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
 
@@ -357,6 +395,11 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
+
+    //? if > 1.8.9 {
+    override fun hasLiveData() = experienceShown() && (mc.player?.experienceLevel ?: 0) > 0
+    //?} else
+    //override fun hasLiveData() = experienceShown() && (mc.player?.xpLevel ?: 0) > 0
 
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
@@ -382,15 +425,17 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
     override val anchorY get() = 1f
 
     //? if > 1.8.9 {
-    override fun hasContent() = previewing || hudAccessor?.let {
+    override fun hasLiveData() = hudAccessor?.let {
         !it.lastToolHighlight.isEmpty && (!fadeOut || it.toolHighlightTimer > 0)
-    } ?: true
+    } == true
     //?} else {
     /*// 1.8.9 leaves selectedItem null rather than holding an empty stack
-    override fun hasContent() = previewing || hudAccessor?.let {
+    override fun hasLiveData() = hudAccessor?.let {
         it.lastToolHighlight != null && (!fadeOut || it.itemSelectedTimer > 0)
-    } ?: true
+    } == true
     *///?}
+
+    override fun hasContent() = previewing || hudAccessor == null || hasLiveData()
 
     override fun measuredWidth(): Float {
         if (previewing) return super.measuredWidth()
@@ -562,6 +607,8 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         return scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR) != null ||
             scoreboard.getPlayersTeam(player.scoreboardName) != null
     }
+
+    override fun hasLiveData() = mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR) != null
     //?} else {
     /*override fun hasContent(): Boolean {
         if (previewing) return true
@@ -570,6 +617,8 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         return scoreboard.getDisplayObjective(SIDEBAR_SLOT) != null ||
             scoreboard.getTeamOfMember(player.name) != null
     }
+
+    override fun hasLiveData() = mc.level?.scoreboard?.getDisplayObjective(SIDEBAR_SLOT) != null
     *///?}
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
@@ -829,9 +878,14 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     // the open state only updates partway through vanilla's render, after the transform has already measured,
     // so the held key covers the frame the list opens on
     //? if > 1.8.9 {
-    override fun shouldShow() = previewing || isRendering() || mc.options.keyPlayerList.isDown
-    //?} else
-    //override fun shouldShow() = previewing || isRendering() || mc.options.playerListKey.isPressed
+    override fun shouldShow() = previewing() || isRendering() || mc.options.keyPlayerList.isDown
+
+    override fun hasLiveData() = mc.connection?.listedOnlinePlayers?.let { it.size > 1 || it.isNotEmpty() && !mc.isLocalServer } == true
+    //?} else {
+    /*override fun shouldShow() = previewing() || isRendering() || mc.options.playerListKey.isPressed
+
+    override fun hasLiveData() = mc.networkHandler?.onlinePlayers?.let { it.size > 1 || it.isNotEmpty() && !mc.isIntegratedServerRunning } == true
+    *///?}
 
     override fun hasContent() = shouldShow()
 
@@ -918,7 +972,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     private fun measureHeaderFooter(header: Component?, footer: Component?, screenWidth: Int) {
     //?} else
     //private fun measureHeaderFooter(header: Text?, footer: Text?, screenWidth: Int) {
-        if (header == hfHeader && footer == hfFooter && screenWidth == hfScreenWidth) return
+        if (!HudManager.isEditing && header == hfHeader && footer == hfFooter && screenWidth == hfScreenWidth) return
         val font = mc.font
         var width = 0
         var height = 0
@@ -1055,6 +1109,8 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
         //return hudAccessor?.let { it.titleText != null && it.titleTime > 0 } == true
     }
 
+    override fun hasLiveData() = active()
+
     override fun shouldShow() = previewing || (active() && !text().isNullOrEmpty())
 
     override fun hasContent() = shouldShow()
@@ -1136,7 +1192,9 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
     override val anchorX get() = 1f
     override val anchorY get() = 0f
 
-    override fun hasContent() = previewing || mc.player?.activeEffects?.isNotEmpty() ?: true
+    override fun hasLiveData() = mc.player?.activeEffects?.isNotEmpty() == true
+
+    override fun hasContent() = previewing || mc.player == null || hasLiveData()
 
     private class Counts(val beneficial: Int, val harmful: Int)
 
@@ -1236,6 +1294,9 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
         val overlay = hudAccessor?.subtitleOverlay as? ISubtitleOverlay ?: return emptyList()
         return overlay.audibleSubtitles.mapNotNull { (it as? ISubtitle)?.subtitleText }
     }
+
+    override fun hasLiveData() = mc.options.showSubtitles().get() &&
+        (hudAccessor?.subtitleOverlay as? ISubtitleOverlay)?.subtitles?.isNotEmpty() == true
 
     private class Size(val width: Float, val height: Float)
 

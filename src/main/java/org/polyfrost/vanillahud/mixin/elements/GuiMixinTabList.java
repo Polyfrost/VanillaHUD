@@ -12,6 +12,7 @@ import org.polyfrost.vanillahud.render.HudTransform;
 
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
+import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -70,7 +71,7 @@ public class GuiMixinTabList {
     )
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (hud.getPreviewing()) {
+        if (VanillaHud.previewing()) {
             hud.resetOpen();
             return true;
         }
@@ -97,7 +98,7 @@ public class GuiMixinTabList {
             target = "Lnet/minecraft/client/options/KeyBinding;isPressed()Z"))
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (hud.getPreviewing()) {
+        if (VanillaHud.previewing()) {
             hud.resetOpen();
             return true;
         }

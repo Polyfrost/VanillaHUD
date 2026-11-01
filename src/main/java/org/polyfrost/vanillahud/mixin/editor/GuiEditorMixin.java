@@ -66,7 +66,13 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
-        return VanillaHud.previewing();
+        return hud.getPreviewing();
+    }
+
+    @Unique
+    private static boolean vanillahud$statusBars() {
+        return vanillahud$editing(Huds.INSTANCE.getHealth()) || vanillahud$editing(Huds.INSTANCE.getArmor())
+                || vanillahud$editing(Huds.INSTANCE.getHunger()) || vanillahud$editing(Huds.INSTANCE.getAir());
     }
 
     @ModifyExpressionValue(
@@ -229,7 +235,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;canHurtPlayer()Z"))
     private boolean vanillahud$forceHealthHungerAir(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$statusBars() || original;
     }
 
     @ModifyExpressionValue(
@@ -242,18 +248,18 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAirSupply()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 299 : original;
+        return vanillahud$editing(Huds.INSTANCE.getAir()) ? 299 : original;
     }
 
     //? if <=1.21.5 {
     /*@ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpLevelVisible(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
     }
 
     @ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 30 : original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) ? 30 : original;
     }
 
     @ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;jumpableVehicle()Lnet/minecraft/world/entity/PlayerRideableJumping;"))
@@ -279,7 +285,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
     private boolean vanillahud$forceXpHasExperience(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
     }
 
     @ModifyExpressionValue(
@@ -290,19 +296,19 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 30 : original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) ? 30 : original;
     }
     //?}
 
     //? if <=1.21.5 {
     /*@ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || original;
     }
     *///?} else {
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || original;
     }
     //?}
 
@@ -314,7 +320,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
     private boolean vanillahud$forceTabListKey(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getTabList()) || original;
+        return VanillaHud.previewing() || original;
     }
 
     @ModifyExpressionValue(
@@ -325,7 +331,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"))
     private boolean vanillahud$forceTabListLocal(boolean original) {
-        return !vanillahud$editing(Huds.INSTANCE.getTabList()) && original;
+        return !VanillaHud.previewing() && original;
     }
 
     @ModifyExpressionValue(
@@ -368,6 +374,7 @@ import net.minecraft.item.Items;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
+import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.util.DemoData;
@@ -393,11 +400,20 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static boolean vanillahud$editing(VanillaHud hud) {
-        return VanillaHud.previewing();
+        return hud.getPreviewing();
+    }
+
+    @Unique
+    private static boolean vanillahud$statusBars() {
+        return vanillahud$editing(Huds.INSTANCE.getHealth()) || vanillahud$editing(Huds.INSTANCE.getArmor())
+                || vanillahud$editing(Huds.INSTANCE.getHunger()) || vanillahud$editing(Huds.INSTANCE.getAir());
     }
 
     @WrapMethod(method = "render")
     private void vanillahud$forceActionBarAndTitle(float tickDelta, Operation<Void> original) {
+        // a HEAD inject would run inside this wrapper, after the demo fields go in, so hasLiveData would read the demo as live.
+        // starting the frame here caches previewing from the real fields first
+        VanillaHud.beginFrame(LegacyDrawContext.INSTANCE);
         boolean actionBar = vanillahud$editing(Huds.INSTANCE.getActionBar());
         boolean titles = vanillahud$editing(Huds.INSTANCE.getTitle());
         String message = this.overlayMessage;
@@ -469,19 +485,19 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/ClientPlayerInteractionManager;hasStatusBars()Z"))
     private boolean vanillahud$forceStatusBars(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$statusBars() || original;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/ClientPlayerInteractionManager;hasXpBar()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;getArmorProtection()I"))
     private int vanillahud$forceArmor(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 20 : original;
+        return vanillahud$editing(Huds.INSTANCE.getArmor()) ? 20 : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
@@ -554,20 +570,20 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;isSubmergedIn(Lnet/minecraft/block/material/Material;)Z"))
     private boolean vanillahud$forceAirVisible(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) || original;
+        return vanillahud$editing(Huds.INSTANCE.getAir()) || original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/LocalPlayer;getBreath()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 299 : original;
+        return vanillahud$editing(Huds.INSTANCE.getAir()) ? 299 : original;
     }
 
     // both reads gate the level text, so neither carries an ordinal on purpose
     @ModifyExpressionValue(method = "renderXpBar", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/player/LocalPlayer;xpLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHotbar()) ? 30 : original;
+        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) ? 30 : original;
     }
 
     // the tab list is hidden unless the key is held, and hidden again on a single player
@@ -575,13 +591,13 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/options/KeyBinding;isPressed()Z"))
     private boolean vanillahud$forceTabListKey(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getTabList()) || original;
+        return VanillaHud.previewing() || original;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))
     private boolean vanillahud$forceTabListLocal(boolean original) {
-        return !vanillahud$editing(Huds.INSTANCE.getTabList()) && original;
+        return !VanillaHud.previewing() && original;
     }
 
     // ordinal 1 is the sidebar lookup: 0 is the team coloured slot and 2 feeds the tab list

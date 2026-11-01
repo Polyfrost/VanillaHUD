@@ -361,7 +361,23 @@ abstract class VanillaHud(
         seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor)
     }
 
-    val previewing: Boolean get() = previewing()
+    val previewing: Boolean get() = HudManager.isConfigUiOpen || HudManager.isEditorOpen && !liveThisFrame()
+
+    private var liveFrame = -1L
+    private var live = false
+
+    private fun liveThisFrame(): Boolean {
+        if (mc.player == null) return false
+        if (liveFrame != frame) {
+            live = try {
+                hasLiveData()
+            } catch (_: Throwable) {
+                false
+            }
+            liveFrame = frame
+        }
+        return live
+    }
 
     fun shouldDraw(): Boolean {
         if (!HudManager.isEditing && hidden) return false
@@ -376,6 +392,8 @@ abstract class VanillaHud(
     }
 
     open fun hasContent(): Boolean = true
+
+    protected open fun hasLiveData(): Boolean = false
 
     protected open val exampleText: String? get() = null
 

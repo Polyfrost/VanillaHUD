@@ -12,7 +12,6 @@ import net.minecraft.client.gui.Hud;
 /*import net.minecraft.client.gui.Gui;
 *///?} else {
 /*import net.minecraft.client.gui.GameGui;
-import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 *///?}
 import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,17 +28,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 *///?}
 public class GuiFrameMixin {
 
-    //? if = 1.8.9 {
-    /*@Inject(method = "render", at = @At("HEAD"))
-    private void vanillahud$beginFrame(float tickDelta, CallbackInfo ci) {
-        VanillaHud.beginFrame(LegacyDrawContext.INSTANCE);
-    }
-    *///?} elif <26 {
+    // 1.8.9 starts the frame in GuiEditorMixin's render wrapper
+    //? if <26 && >1.8.9 {
     /*@Inject(method = "render", at = @At("HEAD"))
     private void vanillahud$beginFrame(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
         VanillaHud.beginFrame(graphics);
     }
-    *///?} else {
+    *///?} elif >=26 {
     @Inject(method = "extractRenderState", at = @At("HEAD"))
     private void vanillahud$beginFrame(GuiGraphicsExtractor graphics, DeltaTracker delta, CallbackInfo ci) {
         VanillaHud.beginFrame(graphics);
