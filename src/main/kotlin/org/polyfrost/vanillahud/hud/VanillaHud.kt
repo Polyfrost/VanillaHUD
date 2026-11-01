@@ -255,7 +255,7 @@ abstract class VanillaHud(
      * OneConfig's reset only knows about the screen position, so it either clears the anchor or
      * leaves a dragged offset in place. A stored position back on its default is how a reset shows up.
      */
-    fun restoreDefaultAnchor() {
+    open fun restoreDefaultAnchor() {
         val target = defaultAnchorTarget?.takeIf { it.tree != null } ?: return
         if (tree == null || !positionSchemaReady || !matchesDefaultPosition(fallback = false)) return
         if (isAnchored && anchorParent !== target) return

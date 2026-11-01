@@ -424,9 +424,25 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
     override val naturalWidth get() = 70f
     override val naturalHeight get() = 11f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f + vanillaDrop
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
+
+    override val defaultAnchorTarget: VanillaHud?
+        get() = activeHotbar()?.takeIf { it.quarterTurns == RotatableHud.BOTTOM }
+
+    private val vanillaDrop get() = if (Huds.heldItemTooltip.previewing || statusBarsShown()) 0f else 14f
+
+    // how much of vanilla's creative drop anchorOffsetY already holds, saved with it so a restart doesn't add it again
+    @Include
+    var appliedDrop = 0f
+
+    override fun restoreDefaultAnchor() {
+        val drop = vanillaDrop
+        if (drop != appliedDrop && isAnchored && !anchoredByHand) anchorOffsetY += drop - appliedDrop
+        appliedDrop = drop
+        super.restoreDefaultAnchor()
+    }
 
     //? if > 1.8.9 {
     override fun hasLiveData() = hudAccessor?.let {
