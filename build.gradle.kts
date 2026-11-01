@@ -57,8 +57,6 @@ repositories {
         filter { groups.forEach(::includeGroup) }
     }
 
-    // libraries.minecraft.net lacks the arm/ppc/riscv/freebsd natives that OneConfig's pom lists
-    strictMaven("https://repo.maven.apache.org/maven2", "LwjglCentral", "org.lwjgl")
     mavenCentral()
     google()
     maven("https://maven.ornithemc.net/releases") { name = "OrnitheMC" }
