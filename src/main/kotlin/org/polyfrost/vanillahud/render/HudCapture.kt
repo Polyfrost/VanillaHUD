@@ -34,6 +34,8 @@ import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.item.PolyItemIcon
+import net.fabricmc.loader.api.FabricLoader
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.ExperienceLevelHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
@@ -126,6 +128,7 @@ object HudCapture {
         var shownY = 0f
         var shownScale = 1f
         var hud: VanillaHud? = null
+        var ran = false
         var recording = ArrayList<Any>()
         var shown = ArrayList<Any>()
         var items by mutableStateOf<List<Item>>(emptyList())
@@ -142,7 +145,10 @@ object HudCapture {
     fun beginFrame() {
         open.clear()
         for (l in layers.values) {
-            if (l.hud?.frozen == true) {
+            val ran = l.ran
+            l.ran = false
+            val hud = l.hud
+            if (hud != null && !ran && gnetum && wouldDraw(hud)) {
                 l.recording.clear()
                 continue
             }
@@ -169,10 +175,17 @@ object HudCapture {
         if (x is Item && y is Item) x.same(y) else x == y
     }
 
-    fun hasDraws(hud: VanillaHud): Boolean = layers[hud.javaClass]?.shown?.isNotEmpty() == true
+    // Gnetum runs each HUD element on only one of its passes, and on none while it holds the HUD's
+    // framerate down, so an element that skipped a frame keeps what it drew last time
+    private val gnetum = FabricLoader.getInstance().isModLoaded("gnetum")
+
+    private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isEditing || hud.hasContent())
 
     fun begin(hud: VanillaHud) {
-        open.add(layer(hud.javaClass).also { it.hud = hud })
+        open.add(layer(hud.javaClass).also {
+            it.hud = hud
+            it.ran = true
+        })
     }
 
     fun end() {

@@ -87,7 +87,7 @@ public abstract class GuiMixinHotbar {
     private void vanillahud$setup(DeltaTracker deltaTracker, HotbarHud hud) {
         Player player = vanillahud$getCameraPlayer();
         int selected;
-        if (player == null || hud.getPreviewing()) {
+        if (player == null || hud.showsDemo()) {
             selected = 0;
         } else {
             //? if >=1.21.5 {
@@ -169,7 +169,7 @@ public abstract class GuiMixinHotbar {
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
         TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());
         try {
-            original.call(self, graphics, x, y, deltaTracker, player, Huds.INSTANCE.getHotbar().getPreviewing() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
+            original.call(self, graphics, x, y, deltaTracker, player, Huds.INSTANCE.getHotbar().showsDemo() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
         } finally {
             TextShadowHook.pop();
         }
@@ -201,7 +201,7 @@ public abstract class GuiMixinHotbar {
     @Unique
     private void vanillahud$setup(HotbarHud hud) {
         Player player = Minecraft.getInstance().player;
-        int selected = player == null || hud.getPreviewing() ? 0 : player.inventory.selectedSlot;
+        int selected = player == null || hud.showsDemo() ? 0 : player.inventory.selectedSlot;
 
         long now = System.nanoTime();
         float elapsedTicks = vanillahud$animNanos == 0L ? 0f : (now - vanillahud$animNanos) / 50_000_000f;

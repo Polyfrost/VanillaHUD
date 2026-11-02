@@ -5,8 +5,10 @@ import net.minecraft.client.gui.components.LerpingBossEvent
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
 import net.minecraft.tags.FluidTags
+import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.scores.DisplaySlot
+import net.minecraft.world.scores.Objective
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
 //?} else {
@@ -14,10 +16,12 @@ import net.minecraft.world.scores.PlayerTeam
 import net.minecraft.client.gui.BossBar
 import net.minecraft.entity.living.LivingEntity
 import net.minecraft.client.network.PlayerInfo
+import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.scoreboard.ScoreboardScore
 import net.minecraft.scoreboard.team.Team
 import net.minecraft.text.Text
 *///?}
+import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -30,6 +34,7 @@ import org.polyfrost.vanillahud.mixin.access.ISubtitle
 import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.DemoData
+import org.polyfrost.vanillahud.util.EditorSnapshot
 import org.polyfrost.vanillahud.util.TabListManager
 import kotlin.math.roundToInt
 
@@ -40,7 +45,6 @@ class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Cate
     )
     var rainbowTimer = true
 
-    override val exampleText get() = "Action Bar"
     override val naturalWidth get() = 60f
     override val naturalHeight get() = 11f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
@@ -50,8 +54,18 @@ class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Cate
 
     //? if > 1.8.9 {
     override fun hasLiveData() = hudAccessor?.let { it.overlay != null && it.overlayMessageTime > 0 } == true
+
+    fun previewMessage(): Component =
+        EditorSnapshot.hold("actionBar") { hudAccessor?.overlay?.takeIf { hasLiveData() } } ?: Component.literal("Action Bar")
+
+    override val exampleText get() = previewMessage().string
     //?} else {
     /*override fun hasLiveData() = hudAccessor?.let { !it.overlayText.isNullOrEmpty() && it.overlayMessageCooldown > 0 } == true
+
+    fun previewMessage(): String =
+        EditorSnapshot.hold("actionBar") { hudAccessor?.overlayText?.takeIf { hasLiveData() } } ?: "Action Bar"
+
+    override val exampleText get() = previewMessage()
     *///?}
 
     override fun hasContent() = previewing || hudAccessor == null || hasLiveData()
@@ -138,7 +152,10 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
     }
 
     private fun bossEvents(): Collection<LerpingBossEvent> =
-        if (previewing) DemoData.demoBossEvents() else liveBossEvents()
+        if (previewing) previewBossEvents() else liveBossEvents()
+
+    fun previewBossEvents(): Collection<LerpingBossEvent> =
+        EditorSnapshot.hold("bossBar") { liveBossEvents().toList().ifEmpty { null } } ?: DemoData.demoBossEvents()
 
     override fun hasLiveData() = liveBossEvents().isNotEmpty()
     //?} else {
@@ -151,7 +168,10 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
     }
 
     private fun bossNames(): List<String> =
-        if (previewing) listOf(DemoData.demoBossName()) else liveBossNames()
+        if (previewing) listOf(previewBossName()) else liveBossNames()
+
+    fun previewBossName(): String =
+        EditorSnapshot.hold("bossBar") { liveBossNames().firstOrNull() } ?: DemoData.demoBossName()
 
     override fun hasLiveData() = liveBossNames().isNotEmpty()
     *///?}
@@ -282,6 +302,18 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
     override val homeAnchorY get() = 1f
 
     override fun hasLiveData() = mc.player?.isSpectator == false
+
+    override fun hasContent() = previewing || hasLiveData()
+
+    fun showsDemo(): Boolean = previewing && EditorSnapshot.hold("hotbar") { hasItems().takeIf { it } } == null
+
+    private fun hasItems(): Boolean {
+        val inventory = mc.player?.takeIf { hasLiveData() }?.inventory ?: return false
+        //? if > 1.8.9 {
+        return (0..8).any { !inventory.getItem(it).isEmpty }
+        //?} else
+        //return inventory.items.take(9).any { it != null }
+    }
 }
 
 private fun activeHotbar() = HudManager.activeInstances.firstOrNull { it is HotbarHud } as HotbarHud?
@@ -427,7 +459,6 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
     @Switch(title = "Instant Fade")
     var instantFade: Boolean = false
 
-    override val exampleText get() = "Diamond Sword"
     override val naturalWidth get() = 70f
     override val naturalHeight get() = 11f
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
@@ -455,11 +486,21 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
     override fun hasLiveData() = hudAccessor?.let {
         !it.lastToolHighlight.isEmpty && (!fadeOut || it.toolHighlightTimer > 0)
     } == true
+
+    fun previewItem(): ItemStack =
+        EditorSnapshot.hold("heldItem") { hudAccessor?.lastToolHighlight?.takeIf { hasLiveData() } } ?: DemoData.demoHotbarItem(0)
+
+    override val exampleText get() = previewItem().hoverName.string
     //?} else {
     /*// 1.8.9 leaves selectedItem null rather than holding an empty stack
     override fun hasLiveData() = hudAccessor?.let {
         it.lastToolHighlight != null && (!fadeOut || it.itemSelectedTimer > 0)
     } == true
+
+    fun previewItem(): ItemStack =
+        EditorSnapshot.hold("heldItem") { hudAccessor?.lastToolHighlight?.takeIf { hasLiveData() } } ?: DemoData.demoHotbar()[0]!!
+
+    override val exampleText get() = previewItem().legacyHoverName
     *///?}
 
     override fun hasContent() = previewing || hudAccessor == null || hasLiveData()
@@ -564,7 +605,6 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     fun showScorePoints(scores: Collection<PlayerScoreEntry>): Boolean {
     //?} else
     //fun showScorePoints(scores: Collection<ScoreboardScore>): Boolean {
-        if (previewing) return scoreboardPoints == 2
         if (hideRepeatingScores && areScoresRepeating(scores)) return false
         return scoreboardPoints == 2 || (scoreboardPoints == 1 && !areScoresConsecutive(scores))
     }
@@ -636,6 +676,10 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     }
 
     override fun hasLiveData() = mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR) != null
+
+    fun previewObjective(): Objective? =
+        EditorSnapshot.hold("scoreboard") { mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR) }
+            ?: DemoData.demoScoreboardObjective()
     //?} else {
     /*override fun hasContent(): Boolean {
         if (previewing) return true
@@ -646,6 +690,10 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     }
 
     override fun hasLiveData() = mc.level?.scoreboard?.getDisplayObjective(SIDEBAR_SLOT) != null
+
+    fun previewObjective(): ScoreboardObjective? =
+        EditorSnapshot.hold("scoreboard") { mc.level?.scoreboard?.getDisplayObjective(SIDEBAR_SLOT) }
+            ?: DemoData.demoScoreboardObjective()
     *///?}
 
     private class Size(val width: Float, val scores: Int, val title: Boolean)
@@ -664,7 +712,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     //? if > 1.8.9 {
     private fun measureSize(): Size? {
-        val objective = (if (previewing) DemoData.demoScoreboardObjective()
+        val objective = (if (previewing) previewObjective()
         else mc.level?.scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)) ?: return null
         val font = mc.font
         val scoreboard = objective.scoreboard
@@ -692,7 +740,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     }
     //?} else {
     /*private fun measureSize(): Size? {
-        val objective = (if (previewing) DemoData.demoScoreboardObjective()
+        val objective = (if (previewing) previewObjective()
         else mc.level?.scoreboard?.getDisplayObjective(SIDEBAR_SLOT)) ?: return null
         val font = mc.font
         val scoreboard = objective.scoreboard
@@ -940,10 +988,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     private fun players(): List<PlayerInfo> = try {
         //? if > 1.8.9 {
-        val real = mc.connection?.listedOnlinePlayers?.take(playerLimit) ?: emptyList()
+        val real = mc.connection?.listedOnlinePlayers?.toList() ?: emptyList()
         //?} else
-        //val real = mc.networkHandler?.onlinePlayers?.take(playerLimit) ?: emptyList()
-        if (previewing) TabListManager.previewInfo(playerLimit) else real
+        //val real = mc.networkHandler?.onlinePlayers?.toList() ?: emptyList()
+        if (previewing) previewPlayers("tabMeasure", real) else real.take(playerLimit)
     } catch (_: Throwable) {
         emptyList()
     }
@@ -976,13 +1024,25 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     *///?}
 
     //? if > 1.8.9 {
-    private fun tabText(editing: Component, live: () -> Component?, show: Boolean): Component? {
+    private fun tabText(editing: (Component?) -> Component, live: () -> Component?, show: Boolean): Component? {
     //?} else
-    //private fun tabText(editing: Text, live: () -> Text?, show: Boolean): Text? {
+    //private fun tabText(editing: (Text?) -> Text, live: () -> Text?, show: Boolean): Text? {
         if (!show) return null
-        if (previewing) return editing
-        return try { live() } catch (_: Throwable) { null }
+        val text = try { live() } catch (_: Throwable) { null }
+        return if (previewing) editing(text) else text
     }
+
+    /** each caller gets its own [key] because the mixin's list is sorted and the measured one isn't */
+    fun previewPlayers(key: String, live: List<PlayerInfo>): List<PlayerInfo> =
+        EditorSnapshot.hold(key) { live.takeIf { hasLiveData() } }?.take(playerLimit) ?: TabListManager.previewInfo(playerLimit)
+
+    //? if > 1.8.9 {
+    fun previewHeader(live: Component?): Component = EditorSnapshot.hold("tabHeader") { live } ?: PREVIEW_HEADER
+    fun previewFooter(live: Component?): Component = EditorSnapshot.hold("tabFooter") { live } ?: PREVIEW_FOOTER
+    //?} else {
+    /*fun previewHeader(live: Text?): Text = EditorSnapshot.hold("tabHeader") { live } ?: PREVIEW_HEADER
+    fun previewFooter(live: Text?): Text = EditorSnapshot.hold("tabFooter") { live } ?: PREVIEW_FOOTER
+    *///?}
 
     //? if > 1.8.9 {
     private var hfHeader: Component? = null
@@ -1075,8 +1135,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var height = rows * line
 
         val overlay = tabOverlay()
-        val header = tabText(PREVIEW_HEADER, { overlay?.header }, showHeader)
-        val footer = tabText(PREVIEW_FOOTER, { overlay?.footer }, showFooter)
+        val header = tabText(::previewHeader, { overlay?.header }, showHeader)
+        val footer = tabText(::previewFooter, { overlay?.footer }, showFooter)
         measureHeaderFooter(header, footer, screenWidth)
         width = maxOf(width, hfWidth)
         height += hfHeight
@@ -1117,7 +1177,22 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
     abstract val autoTitleScale: Boolean
     abstract val scale: Float
     protected abstract val placeholder: String
-    protected abstract fun text(): String?
+    //? if > 1.8.9 {
+    protected abstract fun live(): Component?
+    private fun text(): String? = live()?.string
+
+    fun previewText(): Component =
+        EditorSnapshot.hold(hudId) { live()?.takeIf { active() && it.string.isNotEmpty() } } ?: Component.literal(placeholder)
+
+    private fun previewString(): String = previewText().string
+    //?} else {
+    /*protected abstract fun live(): String?
+    private fun text(): String? = live()
+
+    fun previewText(): String = EditorSnapshot.hold(hudId) { live()?.takeIf { active() && it.isNotEmpty() } } ?: placeholder
+
+    private fun previewString(): String = previewText()
+    *///?}
     protected abstract val topOffset: Float
 
     override val naturalWidth get() = 120f
@@ -1138,14 +1213,14 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
 
     override fun hasLiveData() = active()
 
-    override fun shouldShow() = previewing || frozen || (active() && !text().isNullOrEmpty())
+    override fun shouldShow() = previewing || (active() && !text().isNullOrEmpty())
 
     override fun hasContent() = shouldShow()
 
     private fun width(): Float? = measureOnce({
         if (!shouldShow()) Long.MIN_VALUE
         else mix(mix(mix(0L, previewing), scale.toBits()), text()?.hashCode() ?: 0)
-    }) { mc.font.width(if (previewing) placeholder else text() ?: placeholder) * scale }
+    }) { mc.font.width(if (previewing) previewString() else text() ?: placeholder) * scale }
 
     override fun measuredWidth(): Float = try {
         width() ?: naturalWidth
@@ -1177,9 +1252,9 @@ class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
     override val topOffset get() = -40f
 
     //? if > 1.8.9 {
-    override fun text(): String? = hudAccessor?.title?.string
+    override fun live(): Component? = hudAccessor?.title
     //?} else
-    //override fun text(): String? = hudAccessor?.titleText
+    //override fun live(): String? = hudAccessor?.titleText
 }
 
 class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
@@ -1203,9 +1278,9 @@ class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
     override val topOffset get() = 10f
 
     //? if > 1.8.9 {
-    override fun text(): String? = hudAccessor?.subtitle?.string
+    override fun live(): Component? = hudAccessor?.subtitle
     //?} else
-    //override fun text(): String? = hudAccessor?.subtitleText
+    //override fun live(): String? = hudAccessor?.subtitleText
 }
 
 //? if > 1.8.9 {
@@ -1223,13 +1298,16 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 
     override fun hasContent() = previewing || mc.player == null || hasLiveData()
 
+    fun previewEffects(): Collection<MobEffectInstance> =
+        EditorSnapshot.hold("effects") { mc.player?.activeEffects?.toList()?.ifEmpty { null } } ?: DemoData.demoEffects()
+
     private class Counts(val beneficial: Int, val harmful: Int)
 
     private fun counts(): Counts? = measureOnce({ frame }) { measureCounts() }
 
     private fun measureCounts(): Counts? {
         val real = mc.player?.activeEffects ?: emptyList()
-        val effects = if (previewing) DemoData.demoEffects() else real
+        val effects = if (previewing) previewEffects() else real
         var beneficial = 0
         var harmful = 0
         for (effect in effects) {

@@ -400,7 +400,6 @@ import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
 import org.polyfrost.vanillahud.render.TextBackdrop;
-import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -455,7 +454,7 @@ public abstract class PlayerTabOverlayMixin {
     private Text vanillahud$header(Text original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (!hud.getShowHeader()) return null;
-        return hud.getPreviewing() ? DemoData.demoTabHeader() : original;
+        return hud.getPreviewing() ? hud.previewHeader(original) : original;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
@@ -463,7 +462,7 @@ public abstract class PlayerTabOverlayMixin {
             opcode = Opcodes.GETFIELD))
     private Text vanillahud$footer(Text original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        Text footer = !hud.getShowFooter() ? null : hud.getPreviewing() ? DemoData.demoTabFooter() : original;
+        Text footer = !hud.getShowFooter() ? null : hud.getPreviewing() ? hud.previewFooter(original) : original;
         this.vanillahud$hasFooter = footer != null;
         return footer;
     }

@@ -8,7 +8,6 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.hud.Huds;
-import org.polyfrost.vanillahud.util.TabListManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -19,7 +18,7 @@ public abstract class PlayerTabOverlayMixin {
     @ModifyReturnValue(method = "getPlayerInfos", at = @At("RETURN"))
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         if (!Huds.INSTANCE.getTabList().getPreviewing()) return original;
-        return TabListManager.INSTANCE.previewInfo(Huds.INSTANCE.getTabList().getPlayerLimit());
+        return Huds.INSTANCE.getTabList().previewPlayers("tabPlayers", original);
     }
 
     @ModifyExpressionValue(
@@ -32,7 +31,7 @@ public abstract class PlayerTabOverlayMixin {
     )
     private Component vanillahud$header(Component header) {
         if (!Huds.INSTANCE.getTabList().getShowHeader()) return null;
-        if (Huds.INSTANCE.getTabList().getPreviewing()) return Component.literal("Tab List");
+        if (Huds.INSTANCE.getTabList().getPreviewing()) return Huds.INSTANCE.getTabList().previewHeader(header);
         return header;
     }
 
@@ -46,7 +45,7 @@ public abstract class PlayerTabOverlayMixin {
     )
     private Component vanillahud$footer(Component footer) {
         if (!Huds.INSTANCE.getTabList().getShowFooter()) return null;
-        if (Huds.INSTANCE.getTabList().getPreviewing()) return Component.literal("VanillaHUD");
+        if (Huds.INSTANCE.getTabList().getPreviewing()) return Huds.INSTANCE.getTabList().previewFooter(footer);
         return footer;
     }
 }
@@ -60,7 +59,6 @@ import net.minecraft.client.gui.overlay.PlayerTabOverlay;
 import net.minecraft.client.network.PlayerInfo;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
-import org.polyfrost.vanillahud.util.TabListManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -73,7 +71,7 @@ public abstract class PlayerTabOverlayMixin {
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (!hud.getPreviewing()) return original;
-        return TabListManager.INSTANCE.previewInfo(hud.getPlayerLimit());
+        return hud.previewPlayers("tabPlayers", original);
     }
 }
 *///?}

@@ -24,8 +24,6 @@ import org.polyfrost.vanillahud.hud.BossBarHud;
 import org.polyfrost.vanillahud.render.TextBackdrop;
 //? if > 1.8.9
 import org.polyfrost.vanillahud.hook.TextShadowHook;
-//? if > 1.8.9
-import org.polyfrost.vanillahud.util.DemoData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -164,7 +162,7 @@ public class BossHealthOverlayMixin {
             return original;
         }
 
-        return DemoData.demoBossEvents();
+        return Huds.INSTANCE.getBossBar().previewBossEvents();
     }
     //?} else {
     /*
