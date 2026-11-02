@@ -42,6 +42,7 @@ import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.round
 import kotlin.math.sin
 
 private val FORMAT_CODE = Regex("§.")
@@ -544,6 +545,7 @@ object HudCapture {
     //?}
 
     private fun RenderContext.drawRun(op: Run) {
+        deviceTransform()?.let { (sx, sy, tx, ty) -> translate(snap(op.x, sx, tx) - op.x, snap(op.y, sy, ty) - op.y) }
         val hud = op.hud
         val shadow = PolyColor(hud.shadowColor, hud.shadowChroma, hud.shadowChromaSpeed).argb
         if (hud.font == Font.Poppins) {
@@ -569,7 +571,14 @@ object HudCapture {
             when (val op = ops[i]) {
                 is Quad -> withPose(op.m) {
                     if (op.bitmap == null) rect(op.x0, op.y0, op.x1 - op.x0, op.y1 - op.y0, PolyColor(op.color))
-                    else renderer.image(op.bitmap, op.x0, op.y0, op.x1 - op.x0, op.y1 - op.y0, op.u0, op.v0, op.u1, op.v1, op.color, FilterQuality.None)
+                    else {
+                        val t = deviceTransform()
+                        val x0 = if (t == null) op.x0 else snap(op.x0, t[0], t[2])
+                        val y0 = if (t == null) op.y0 else snap(op.y0, t[1], t[3])
+                        val x1 = if (t == null) op.x1 else snap(op.x1, t[0], t[2])
+                        val y1 = if (t == null) op.y1 else snap(op.y1, t[1], t[3])
+                        renderer.image(op.bitmap, x0, y0, x1 - x0, y1 - y0, op.u0, op.v0, op.u1, op.v1, op.color, FilterQuality.None)
+                    }
                 }
                 is Run -> withPose(op.m) { drawRun(op) }
                 is Rounded -> withPose(op.m) {
@@ -595,6 +604,8 @@ object HudCapture {
         }
         repeat(clips) { restore() }
     }
+
+    private fun snap(v: Float, scale: Float, offset: Float) = (round(v * scale + offset) - offset) / scale
 
     private inline fun RenderContext.withPose(m: Pose, draw: RenderContext.() -> Unit) {
         save()

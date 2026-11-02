@@ -76,6 +76,7 @@ public class UprightIconMixin {
 // renderStatusBars, so each bar's icons are told apart by their row in icons.png and given
 // the transform of their own element. Argentum batches these blits and draws them later,
 // losing any GL rotation around them, so rotated icons are turned upright in LegacyIconBatch.
+// While a capture runs, icons skip Argentum's batch so the capture hook on drawTexture records them.
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.GameGui;
@@ -106,7 +107,9 @@ public abstract class UprightIconMixin extends GuiElement {
         HudTransform.beginIcons(LegacyDrawContext.INSTANCE, hud);
         y += HudTransform.mirrorShift(y, y + height);
         int turns = HudTransform.getIconTurns();
-        if (turns == 0 || HudCapture.isActive()) {
+        if (HudCapture.isActive()) {
+            this.drawTexture(x, y, u, v, width, height);
+        } else if (turns == 0) {
             original.call(self, x, y, u, v, width, height);
         } else {
             LegacyIconBatch.quad(x, y, u, v, width, height, width, height, 256, 256, this.drawOffset, turns);
