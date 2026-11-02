@@ -102,8 +102,10 @@ object HudTransform {
 
     private val placements = HashMap<Class<out VanillaHud>, Placement>()
 
+    /** [part] tells apart the game's HUD elements that draw into the same [provider], see [HudCapture.begin] */
     @JvmStatic
-    fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
+    @JvmOverloads
+    fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud, part: Int = 0) {
         val editing = HudManager.isEditing
         val resolvedHud = resolveCached(provider)
         val src = resolvedHud ?: provider
@@ -159,7 +161,7 @@ object HudTransform {
         val gx = p.gx
         val gy = p.gy
 
-        HudCapture.begin(src)
+        HudCapture.begin(src, part)
         var scissored = false
         val tab = src as? TabListHud
         if (tab != null && tab.animation && !editing) {
@@ -215,8 +217,9 @@ object HudTransform {
 
     /** marks a layer whose sprites are standalone icons so each one can be kept upright */
     @JvmStatic
-    fun beginIcons(graphics: GuiGraphicsExtractor, provider: VanillaHud) {
-        begin(graphics, provider)
+    @JvmOverloads
+    fun beginIcons(graphics: GuiGraphicsExtractor, provider: VanillaHud, part: Int = 0) {
+        begin(graphics, provider, part)
         if (iconDepth++ == 0) iconTurns = drawTurns(live(provider))
     }
 

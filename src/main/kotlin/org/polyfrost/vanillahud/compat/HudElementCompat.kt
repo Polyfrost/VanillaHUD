@@ -20,7 +20,8 @@ object HudElementCompat {
         replaceIcons(VanillaHudElements.ARMOR_BAR) { Huds.armor }
         replaceIcons(VanillaHudElements.HEALTH_BAR) { Huds.health }
         replaceIcons(VanillaHudElements.FOOD_BAR) { Huds.hunger }
-        replaceIcons(VanillaHudElements.MOUNT_HEALTH) { Huds.hunger }
+        // its own part, since Gnetum can run it on a different pass than the food bar
+        replaceIcons(VanillaHudElements.MOUNT_HEALTH, part = 1) { Huds.hunger }
         replace(VanillaHudElements.INFO_BAR) { Huds.experienceBar }
         wrap(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.experienceLevel }, HudTransform::beginText, { ctx -> HudTransform.endText(ctx, Huds.experienceLevel) })
         replace(VanillaHudElements.HELD_ITEM_TOOLTIP) { Huds.heldItemTooltip }
@@ -48,8 +49,8 @@ object HudElementCompat {
     private fun replace(id: Identifier, hud: () -> VanillaHud) = wrap(id, hud, HudTransform::begin, HudTransform::end)
 
     /** layers built from standalone icons where each sprite is kept upright inside the rotation */
-    private fun replaceIcons(id: Identifier, hud: () -> VanillaHud) =
-        wrap(id, hud, HudTransform::beginIcons, HudTransform::endIcons)
+    private fun replaceIcons(id: Identifier, part: Int = 0, hud: () -> VanillaHud) =
+        wrap(id, hud, { ctx, element -> HudTransform.beginIcons(ctx, element, part) }, HudTransform::endIcons)
 
     private fun wrap(
         id: Identifier,

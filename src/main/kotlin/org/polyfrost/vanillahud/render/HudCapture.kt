@@ -38,6 +38,7 @@ import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.ExperienceLevelHud
 import org.polyfrost.vanillahud.hud.VanillaHud
+import java.util.TreeMap
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -116,6 +117,13 @@ object HudCapture {
         fun same(o: Item) = x == o.x && y == o.y && size == o.size && decorated == o.decorated && ItemStack.matches(stack, o.stack)
     }
 
+    /** what one of the game's HUD elements drew into a layer, which several of them can feed */
+    private class Part(val layer: Layer) {
+        var ran = false
+        var recording = ArrayList<Any>()
+        var shown = ArrayList<Any>()
+    }
+
     private class Layer {
         var contentX = 0f
         var contentY = 0f
@@ -128,16 +136,19 @@ object HudCapture {
         var shownY = 0f
         var shownScale = 1f
         var hud: VanillaHud? = null
-        var ran = false
+        // replayed in key order, so a background part comes before what's drawn over it
+        val parts = TreeMap<Int, Part>()
+        /** the open part's recording */
         var recording = ArrayList<Any>()
         var shown = ArrayList<Any>()
+        var spare = ArrayList<Any>()
         var items by mutableStateOf<List<Item>>(emptyList())
     }
 
     private val layers = HashMap<Class<out VanillaHud>, Layer>()
-    private val open = ArrayList<Layer>()
+    private val open = ArrayList<Part>()
 
-    private val active: Layer? get() = open.lastOrNull()
+    private val active: Layer? get() = open.lastOrNull()?.layer
 
     private fun layer(hud: Class<out VanillaHud>) = layers.getOrPut(hud) { Layer() }
 
@@ -145,16 +156,26 @@ object HudCapture {
     fun beginFrame() {
         open.clear()
         for (l in layers.values) {
-            val ran = l.ran
-            l.ran = false
             val hud = l.hud
-            if (hud != null && !ran && gnetum && wouldDraw(hud)) {
-                l.recording.clear()
-                continue
+            val held = hud != null && gnetum && wouldDraw(hud)
+            var ran = false
+            for (p in l.parts.values) {
+                if (p.ran) {
+                    ran = true
+                    val done = p.recording
+                    p.recording = p.shown.also { it.clear() }
+                    p.shown = done
+                } else {
+                    p.recording.clear()
+                    if (!held) p.shown.clear()
+                }
+                p.ran = false
             }
-            val done = l.recording
+            if (held && !ran) continue
+            val done = l.spare.also { it.clear() }
+            for (p in l.parts.values) done.addAll(p.shown)
             if (!sameOps(done, l.shown)) l.hud?.capturedDrawsChanged()
-            l.recording = l.shown.also { it.clear() }
+            l.spare = l.shown
             l.shown = done
             l.shownX = l.frameX
             l.shownY = l.frameY
@@ -176,20 +197,26 @@ object HudCapture {
     }
 
     // Gnetum runs each HUD element on only one of its passes, and on none while it holds the HUD's
-    // framerate down, so an element that skipped a frame keeps what it drew last time
+    // framerate down, so an element that skipped a frame keeps what it drew last time. That goes per
+    // part, since the elements feeding one layer, like the food bar and mount health, can land on
+    // different passes.
     private val gnetum = FabricLoader.getInstance().isModLoaded("gnetum")
 
     private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isEditing || hud.hasContent())
 
-    fun begin(hud: VanillaHud) {
-        open.add(layer(hud.javaClass).also {
-            it.hud = hud
-            it.ran = true
-        })
+    /** [part] tells apart the game's HUD elements that draw into the same [hud] */
+    fun begin(hud: VanillaHud, part: Int = 0) {
+        val l = layer(hud.javaClass)
+        l.hud = hud
+        val p = l.parts.getOrPut(part) { Part(l) }
+        p.ran = true
+        l.recording = p.recording
+        open.add(p)
     }
 
     fun end() {
-        open.removeLastOrNull()
+        val p = open.removeLastOrNull() ?: return
+        open.lastOrNull { it.layer === p.layer }?.let { p.layer.recording = it.recording }
     }
 
     /** where the open element landed on screen, which is what a stretched background has to line up with */
