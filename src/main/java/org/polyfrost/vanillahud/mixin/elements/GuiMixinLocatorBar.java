@@ -57,7 +57,9 @@ public class GuiMixinLocatorBar {
     private void vanillahud$locatorBar(ContextualBar bar, GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
         if (!Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
 
-        HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar());
+        // part 1 sits over the bar's background, which Fabric draws as a separate element that
+        // Gnetum can run on another pass
+        HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar(), 1);
         original.call(bar, graphics, delta);
         if (vanillahud$overlaysLocator()
                 && Minecraft.getInstance().player.connection.getWaypointManager().hasWaypoints()) {
