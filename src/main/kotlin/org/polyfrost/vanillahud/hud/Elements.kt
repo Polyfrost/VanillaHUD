@@ -45,9 +45,15 @@ class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Cate
     )
     var rainbowTimer = true
 
+    init {
+        padForShadow(1f)
+    }
+
+    override val hugsGlyphs get() = true
     override val naturalWidth get() = 60f
-    override val naturalHeight get() = 11f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
+    override val naturalHeight get() = GLYPH_HEIGHT.toFloat()
+    // vanilla centres the font width, which is a pixel wider than the letters
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = half(screenWidth) - half(width.toInt() + 1)
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 72f
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
@@ -70,7 +76,9 @@ class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Cate
 
     override fun hasContent() = previewing || hudAccessor == null || hasLiveData()
 
-    override fun measuredWidth(): Float {
+    override fun measuredWidth(): Float = fontWidth() - 1f
+
+    private fun fontWidth(): Float {
         if (previewing) return super.measuredWidth()
         //? if > 1.8.9 {
         return measureOnce({ mix(0L, hudAccessor?.overlay) }) { textWidth { hudAccessor?.overlay?.string } }
@@ -130,7 +138,7 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
 
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 30f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = half(screenWidth) - half(width.toInt())
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = if (renderText) 3f else 12f
 
     override fun Tree.addDependencies() {
@@ -253,7 +261,7 @@ abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, ti
     override fun defaultOriginY(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
         TOP -> fromBottom(screenWidth, screenHeight)
         BOTTOM -> vanillaOriginY(screenWidth, screenHeight)
-        else -> screenHeight / 2f + vanillaOriginX(screenWidth, screenHeight) - screenWidth / 2f
+        else -> half(screenHeight) + vanillaOriginX(screenWidth, screenHeight) - half(screenWidth)
     }
 
     private fun fromBottom(screenWidth: Int, screenHeight: Int) =
@@ -295,7 +303,7 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
 
     override val naturalHeight get() = 22f
 
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = half(screenWidth) - naturalWidth / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - naturalHeight
 
     override val homeAnchorX get() = 0.5f
@@ -343,7 +351,7 @@ abstract class StatBarHud(
     override val naturalHeight get() = 9f
 
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
-        screenWidth / 2f + if (rightSide) 10f else -91f
+        half(screenWidth) + if (rightSide) 10f else -91f
 
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
         screenHeight - if (aboveFirstRow) 49f else 39f
@@ -405,7 +413,7 @@ class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience 
     override val naturalWidth get() = 182f
     override val naturalHeight get() = 5f
 
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = half(screenWidth) - naturalWidth / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 29f
 
     //? if >=1.21.6 {
@@ -436,7 +444,7 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
     override val naturalWidth get() = 18f
     override val naturalHeight get() = 9f
 
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - naturalWidth / 2f
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = half(screenWidth) - naturalWidth / 2f
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 35f
 
     //? if > 1.8.9 {
@@ -459,9 +467,15 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
     @Switch(title = "Instant Fade")
     var instantFade: Boolean = false
 
+    init {
+        padForShadow(1f)
+    }
+
+    override val hugsGlyphs get() = true
     override val naturalWidth get() = 70f
-    override val naturalHeight get() = 11f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
+    override val naturalHeight get() = GLYPH_HEIGHT.toFloat()
+    // vanilla centres the font width, which is a pixel wider than the letters
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = ((screenWidth - width.toInt() - 1) / 2).toFloat()
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight - 59f + vanillaDrop
     override val anchorX get() = 0.5f
     override val anchorY get() = 1f
@@ -505,7 +519,9 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
 
     override fun hasContent() = previewing || hudAccessor == null || hasLiveData()
 
-    override fun measuredWidth(): Float {
+    override fun measuredWidth(): Float = fontWidth() - 1f
+
+    private fun fontWidth(): Float {
         if (previewing) return super.measuredWidth()
         //? if > 1.8.9 {
         return measureOnce({ mix(0L, hudAccessor?.lastToolHighlight) }) {
@@ -660,8 +676,8 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
             size()
         } catch (_: Throwable) {
             null
-        } ?: return screenHeight / 2f - naturalHeight / 2f
-        return screenHeight / 2f - s.scores * 6f - if (s.title) 10f else 1f
+        } ?: return half(screenHeight) - naturalHeight / 2f
+        return half(screenHeight) - s.scores * 6f - if (s.title) 10f else 1f
     }
     override val anchorX get() = 1f
     override val anchorY get() = 0.5f
@@ -901,8 +917,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     override val naturalWidth get() = 200f
     override val naturalHeight get() = 100f
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 10f
+    // the background is a pixel wider than the text on each side, which vanilla centres
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = half(screenWidth) - half(width.toInt() - 2) - 1f
+    // vanilla starts the text at 10 and its background a line above that
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = 9f
 
     override fun Tree.addDependencies() {
         hideUnless("animation", "animationDuration")
@@ -913,8 +931,6 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
     override val anchorX get() = 0.5f
     override val anchorY get() = 0f
-
-    val backgroundTop get() = 1f
 
     private var animOpen = false
     private var animStart = 0L
@@ -1141,7 +1157,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         width = maxOf(width, hfWidth)
         height += hfHeight
 
-        return (width + 2).toFloat() to (height + 2).toFloat()
+        // the background reaches a pixel past the text on each side but only one line above the rows
+        return (width + 2).toFloat() to (height + 1).toFloat()
     }
 
     override fun measuredWidth(): Float = try {
@@ -1195,10 +1212,13 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
     *///?}
     protected abstract val topOffset: Float
 
+    override val hugsGlyphs get() = true
     override val naturalWidth get() = 120f
-    override val naturalHeight get() = 9f * scale
-    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) = screenWidth / 2f - width / 2f
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = screenHeight / 2f + topOffset
+    override val naturalHeight get() = GLYPH_HEIGHT * scale
+    // vanilla halves the font width, a pixel wider than the letters, before scaling it
+    override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
+        half(screenWidth) - half((width / scale).roundToInt() + 1) * scale
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = half(screenHeight) + topOffset
     override val anchorX get() = 0.5f
     override val anchorY get() = 0.5f
     override val positionAnchorY get() = 0f
@@ -1220,7 +1240,7 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
     private fun width(): Float? = measureOnce({
         if (!shouldShow()) Long.MIN_VALUE
         else mix(mix(mix(0L, previewing), scale.toBits()), text()?.hashCode() ?: 0)
-    }) { mc.font.width(if (previewing) previewString() else text() ?: placeholder) * scale }
+    }) { (mc.font.width(if (previewing) previewString() else text() ?: placeholder) - 1) * scale }
 
     override fun measuredWidth(): Float = try {
         width() ?: naturalWidth
@@ -1228,12 +1248,14 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
         naturalWidth
     }
 
-    override fun measuredHeight(): Float = 9f * scale
+    override fun measuredHeight(): Float = GLYPH_HEIGHT * scale
 }
 
 class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
     init {
         textScale = 4f
+        // a shadow pixel at the title's size
+        padForShadow(4f)
     }
 
     val titleScale: Float get() = textScale
@@ -1260,6 +1282,8 @@ class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
 class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
     init {
         textScale = 2f
+        // a shadow pixel at the subtitle's size
+        padForShadow(2f)
     }
 
     val subtitleScale: Float get() = textScale

@@ -169,7 +169,7 @@ object HudTransform {
             if (frac < 1f) {
                 val foreign = if (frac > 0f) tab.foreignBounds() else null
                 val tabScale = s * src.elementScale
-                val top = if (foreign != null) gy + (foreign.top - oy) * tabScale else gy - tab.backgroundTop * tabScale
+                val top = if (foreign != null) gy + (foreign.top - oy) * tabScale else gy
                 val clipH = (foreign?.height ?: src.height) * tabScale
                 graphics.enableScissor(0, floor(top).toInt(), w, ceil(top + clipH * frac).toInt())
                 scissored = true

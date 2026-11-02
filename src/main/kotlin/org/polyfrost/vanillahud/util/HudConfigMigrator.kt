@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 12
+    private const val SCHEMA_VERSION = 13
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -132,6 +132,7 @@ object HudConfigMigrator {
             unlockAll(folder)
         }
         if (from < 12) resetLevelText(folder)
+        if (from < 13) padTextShadows(folder)
 
         writeStamp(stamp)
     }
@@ -353,6 +354,30 @@ object HudConfigMigrator {
                 writeObject(path, obj)
             } catch (_: Throwable) {
             }
+        }
+    }
+
+    /**
+     * Text boxes stopped covering the shadow, which the right and bottom padding holds instead.
+     * Stored padding gains it so a saved box still fits its shadow.
+     */
+    private fun padTextShadows(folder: Path) {
+        val reach = mapOf(
+            "vanillahud-actionbar.json" to null,
+            "vanillahud-itemtooltip.json" to null,
+            "vanillahud-title.json" to 4f,
+            "vanillahud-subtitle.json" to 2f,
+        )
+        for ((file, scale) in reach) try {
+            val path = folder.resolve("huds").resolve(file)
+            val obj = readObject(path) ?: continue
+            val shadow = if (scale == null) 1f else obj.get("textScale")?.takeIf { it.isJsonPrimitive }?.asFloat ?: scale
+            for (key in listOf("padRight", "padBottom")) {
+                val pad = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asFloat ?: continue
+                obj.addProperty(key, pad + shadow)
+            }
+            writeObject(path, obj)
+        } catch (_: Throwable) {
         }
     }
 
