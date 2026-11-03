@@ -19,6 +19,9 @@ import org.polyfrost.vanillahud.util.HudConfigMigrator
 
 object VanillaHUDClient : ClientModInitializer {
     override fun onInitializeClient() {
+        // before OneConfig loads the HUDs, or it saves what it read back over the migrated files
+        HudConfigMigrator.migrate()
+
         //? if = 1.8.9 {
         /*// 1.8.9 runs entrypoints before Minecraft.init, so the HUDs cannot be built yet: the font
         // and the language files they measure against do not exist. Defer to the end of init, at
@@ -38,8 +41,6 @@ object VanillaHUDClient : ClientModInitializer {
     }
 
     private fun setup() {
-        HudConfigMigrator.migrate()
-
         Huds.all.forEach {
             HudManager.register(it, "vanillahud", "/assets/vanillahud/vanillahud_dark.svg")
         }
