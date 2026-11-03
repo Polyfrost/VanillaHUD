@@ -119,7 +119,7 @@ object HudTransform {
         val natW = src.unrotatedWidth
         val natH = src.unrotatedHeight
         val p = placements.getOrPut(provider.javaClass) { Placement() }
-        if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns || p.boxW != src.boxWidth || p.boxH != src.boxHeight ||
+        if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns || p.boxW != src.boxWidth || p.boxH != src.boxHeight || p.oy != src.vanillaOriginY(w, h) ||
             p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
             p.huds != HudManager.activeInstances.size || p.hud !== resolvedHud || p.schema != (resolvedHud?.posSchema ?: 0) ||
             resolvedHud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }

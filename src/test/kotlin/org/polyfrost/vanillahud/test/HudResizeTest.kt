@@ -21,6 +21,7 @@ import org.polyfrost.vanillahud.hud.HealthHud
 import org.polyfrost.vanillahud.hud.HeldItemTooltipHud
 import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.HungerHud
+import org.polyfrost.vanillahud.hud.StatRows
 import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
@@ -49,6 +50,8 @@ class HudResizeTest {
     fun release() {
         HudManager.activeInstances.removeAll(made)
         made.clear()
+        StatRows.healthRowsOverride = null
+        StatRows.mountRowsOverride = null
         HudTransform.resetFrame()
         Files.deleteIfExists(ConfigManager.active().folder.resolve("vanillahud-customized"))
         ForceDefaultPosition.invalidate()
@@ -96,6 +99,12 @@ class HudResizeTest {
     private fun cluster(): List<VanillaHud> {
         val c = Cluster()
         return listOf(fresh(c.hotbar), fresh(c.health), fresh(c.armor), fresh(c.hunger), fresh(c.air), fresh(c.xp), fresh(c.level))
+    }
+
+    /** what drawing a frame does to a hud whose content changed size */
+    private fun measured(huds: List<VanillaHud>) {
+        screen(640, 360)
+        huds.forEach { it.reseedDefaultForScreen() }
     }
 
     private fun vanillaLayout(w: Int, h: Int): List<Pair<Float, Float>> {
@@ -151,6 +160,65 @@ class HudResizeTest {
             assertEquals(expected[i].first - expected[0].first + 20f, bar.x, 0.01f, "${bar.title} x")
             assertEquals(expected[i].second - expected[0].second + 50f, bar.y, 0.01f, "${bar.title} y")
         }
+    }
+
+    @Test
+    fun `extra heart rows grow the health box and leave the armor hanging off it`() {
+        screen(640, 360)
+        val huds = cluster()
+        huds.forEach(::settled)
+        val health = huds[1]
+        val armor = huds[2]
+        val gap = health.y - armor.y
+        val bottom = health.y + health.height
+
+        StatRows.healthRowsOverride = 3
+        measured(huds)
+        // three rows of 9 apart, so two more than the first
+        assertEquals(9f + 2 * 9f, health.height, 0.01f, "health height")
+        assertEquals(bottom, health.y + health.height, 0.01f, "health keeps its bottom")
+        assertEquals(gap, health.y - armor.y, 0.01f, "armor keeps hanging off the top of health")
+        assertSame(health, armor.anchorParent)
+
+        StatRows.healthRowsOverride = 1
+        measured(huds)
+        assertEquals(9f, health.height, 0.01f)
+        assertEquals(gap, health.y - armor.y, 0.01f)
+    }
+
+    @Test
+    fun `a mount's hearts grow the hunger box and leave the air hanging off it`() {
+        screen(640, 360)
+        val huds = cluster()
+        huds.forEach(::settled)
+        val hunger = huds[3]
+        val air = huds[4]
+        val gap = hunger.y - air.y
+        val bottom = hunger.y + hunger.height
+
+        StatRows.mountRowsOverride = 2
+        measured(huds)
+        assertEquals(19f, hunger.height, 0.01f, "hunger height")
+        assertEquals(bottom, hunger.y + hunger.height, 0.01f, "hunger keeps its bottom")
+        assertEquals(gap, hunger.y - air.y, 0.01f, "air keeps hanging off the top of hunger")
+        // the game draws the mount's top row 10 up and the bubbles above it, and the box starts where the content does
+        assertEquals(360f - 39f - 10f, hunger.vanillaOriginY(640, 360), 0.01f, "hunger content origin")
+        assertEquals(360f - 49f - 10f, air.vanillaOriginY(640, 360), 0.01f, "air content origin")
+        assertEquals(hunger.vanillaOriginY(640, 360), hunger.y, 0.01f, "hunger box starts at its content")
+    }
+
+    @Test
+    fun `vanilla's row counts`() {
+        assertEquals(1, StatRows.healthRows(20f, 20f, 0f))
+        assertEquals(2, StatRows.healthRows(20f, 20f, 1f))
+        assertEquals(2, StatRows.healthRows(20f, 20f, 20f))
+        assertEquals(3, StatRows.healthRows(40f, 40f, 1f))
+        assertEquals(10, StatRows.healthRowHeight(2))
+        assertEquals(9, StatRows.healthRowHeight(3))
+        assertEquals(3, StatRows.healthRowHeight(20))
+        assertEquals(1, StatRows.mountRows(10))
+        assertEquals(2, StatRows.mountRows(11))
+        assertEquals(3, StatRows.mountRows(99))
     }
 
     @Test
