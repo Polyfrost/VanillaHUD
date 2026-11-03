@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.compat.TabListCompat
@@ -326,6 +327,11 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
 
 private fun activeHotbar() = HudManager.activeInstances.firstOrNull { it is HotbarHud } as HotbarHud?
 
+/** the active [T] this bar hangs from, unless either of them is rotated since a rotated bar docks to its own screen edge */
+private inline fun <reified T : RotatableHud> RotatableHud.dockedTo(): T? =
+    (HudManager.activeInstances.firstOrNull { it is T } as T?)
+        ?.takeIf { quarterTurns == RotatableHud.BOTTOM && it.quarterTurns == RotatableHud.BOTTOM }
+
 //? if > 1.8.9 {
 private fun statusBarsShown() = mc.gameMode?.canHurtPlayer() == true
 private fun experienceShown() = mc.gameMode?.hasExperience() == true
@@ -359,9 +365,11 @@ abstract class StatBarHud(
     override val homeAnchorX get() = if (rightSide) 1f else 0f
     override val homeAnchorY get() = 1f
 
-    // a rotated bar docks to its own screen edge, so it has no hotbar anchor
-    override val defaultAnchorTarget: VanillaHud?
-        get() = activeHotbar()?.takeIf { quarterTurns == BOTTOM && it.quarterTurns == BOTTOM }
+    // the bottom corner on the side it sits hangs from the matching top corner of what is below it
+    abstract override val defaultAnchorTarget: VanillaHud?
+
+    override val defaultAnchorPoint get() = if (rightSide) HudAnchor.BottomRight else HudAnchor.BottomLeft
+    override val defaultAnchorTargetPoint get() = if (rightSide) HudAnchor.TopRight else HudAnchor.TopLeft
 
     companion object {
         const val ALIGN_LEFT = 0
@@ -377,6 +385,8 @@ class HealthHud : StatBarHud("vanillahud-health.json", "Health", StatBarHud.ALIG
     var hardcoreHearts = 0
 
     override fun hasLiveData() = statusBarsShown()
+
+    override val defaultAnchorTarget: VanillaHud? get() = dockedTo<ExperienceBarHud>()
 }
 
 class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_LEFT, rightSide = false, aboveFirstRow = true) {
@@ -384,6 +394,8 @@ class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_L
     override fun hasLiveData() = statusBarsShown() && (mc.player?.armorValue ?: 0) > 0
     //?} else
     //override fun hasLiveData() = statusBarsShown() && (mc.player?.armorProtection ?: 0) > 0
+
+    override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HealthHud>()
 }
 
 class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false) {
@@ -391,6 +403,8 @@ class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIG
     var animation = true
 
     override fun hasLiveData() = statusBarsShown() && mc.player?.let { it.vehicle !is LivingEntity } == true
+
+    override val defaultAnchorTarget: VanillaHud? get() = dockedTo<ExperienceBarHud>()
 }
 
 class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = true) {
@@ -399,6 +413,8 @@ class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, 
         mc.player?.let { it.isEyeInFluid(FluidTags.WATER) || it.airSupply < it.maxAirSupply } == true
     //?} else
     //override fun hasLiveData() = statusBarsShown() && mc.player?.isSubmergedIn(Material.WATER) == true
+
+    override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HungerHud>()
 }
 
 class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience Bar") {
@@ -428,9 +444,9 @@ class ExperienceBarHud : RotatableHud("vanillahud-experience.json", "Experience 
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
 
-    // a rotated bar docks to its own screen edge, so it has no hotbar anchor
-    override val defaultAnchorTarget: VanillaHud?
-        get() = activeHotbar()?.takeIf { quarterTurns == BOTTOM && it.quarterTurns == BOTTOM }
+    override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HotbarHud>()
+    override val defaultAnchorPoint get() = HudAnchor.Bottom
+    override val defaultAnchorTargetPoint get() = HudAnchor.Top
 }
 
 class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Experience Level") {
@@ -455,9 +471,9 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
     override val homeAnchorX get() = 0.5f
     override val homeAnchorY get() = 1f
 
-    // a rotated bar docks to its own screen edge, so it has no hotbar anchor
-    override val defaultAnchorTarget: VanillaHud?
-        get() = activeHotbar()?.takeIf { quarterTurns == BOTTOM && it.quarterTurns == BOTTOM }
+    override val defaultAnchorTarget: VanillaHud? get() = dockedTo<ExperienceBarHud>()
+    override val defaultAnchorPoint get() = HudAnchor.Bottom
+    override val defaultAnchorTargetPoint get() = HudAnchor.Top
 }
 
 class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
@@ -482,6 +498,8 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
 
     override val defaultAnchorTarget: VanillaHud?
         get() = activeHotbar()?.takeIf { it.quarterTurns == RotatableHud.BOTTOM }
+    override val defaultAnchorPoint get() = HudAnchor.Bottom
+    override val defaultAnchorTargetPoint get() = HudAnchor.Top
 
     private val vanillaDrop get() = if (Huds.heldItemTooltip.previewing || statusBarsShown()) 0f else 14f
 
