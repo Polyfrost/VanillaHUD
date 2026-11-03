@@ -114,14 +114,6 @@ public abstract class GuiEditorMixin {
         return !vanillahud$editing(Huds.INSTANCE.getHealth()) && original;
     }
 
-    //~ if >=26 'renderPlayerHealth' -> 'extractPlayerHealth'
-    @ModifyExpressionValue(method = "extractPlayerHealth", at = @At(value = "INVOKE",
-            //~ if >=26.2 'gui/Gui;' -> 'gui/Hud;'
-            target = "Lnet/minecraft/client/gui/Hud;getVehicleMaxHearts(Lnet/minecraft/world/entity/LivingEntity;)I"))
-    private int vanillahud$forceFoodRow(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? 0 : original;
-    }
-
     //~ if >=26 'renderFood' -> 'extractFood'
     @ModifyExpressionValue(method = "extractFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;getFoodLevel()I"))
     private int vanillahud$forceFood(int original) {
@@ -374,7 +366,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.gui.BossBar;
 import net.minecraft.client.gui.GameGui;
 import net.minecraft.client.render.Window;
-import net.minecraft.entity.Entity;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
@@ -551,13 +542,6 @@ public abstract class GuiEditorMixin {
             target = "Lnet/minecraft/entity/living/player/HungerManager;getSaturationLevel()F"))
     private float vanillahud$forceSaturation(float original) {
         return vanillahud$editing(Huds.INSTANCE.getHunger()) ? vanillahud$held("saturation", original, true, 5F) : original;
-    }
-
-    // 1.8.9 reads the vehicle once to choose between food and mount, so the preview shows food
-    @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "FIELD",
-            target = "Lnet/minecraft/world/entity/player/Player;vehicle:Lnet/minecraft/entity/Entity;", opcode = Opcodes.GETFIELD))
-    private Entity vanillahud$forceNoMount(Entity original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? null : original;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",

@@ -255,7 +255,7 @@ abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, ti
     // from the screen centre carries over to the free axis so a rotated cluster keeps its layout
     override fun defaultOriginX(screenWidth: Int, screenHeight: Int) = when (quarterTurns) {
         LEFT -> fromBottom(screenWidth, screenHeight)
-        RIGHT -> screenWidth - naturalHeight - fromBottom(screenWidth, screenHeight)
+        RIGHT -> screenWidth - unrotatedHeight - fromBottom(screenWidth, screenHeight)
         else -> vanillaOriginX(screenWidth, screenHeight)
     }
 
@@ -266,7 +266,7 @@ abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, ti
     }
 
     private fun fromBottom(screenWidth: Int, screenHeight: Int) =
-        screenHeight - vanillaOriginY(screenWidth, screenHeight) - naturalHeight
+        screenHeight - vanillaOriginY(screenWidth, screenHeight) - unrotatedHeight
 
     // pinned against the docked edge and centred along the free axis
     override val anchorX get() = when (quarterTurns) {
@@ -356,11 +356,20 @@ abstract class StatBarHud(
     override val naturalWidth get() = 81f
     override val naturalHeight get() = 9f
 
+    /** how far the game lifts this bar's content above its first row, as it stacks another row below it */
+    protected abstract fun rise(): Float
+
+    /** how much taller than a single row the bar's own content gets */
+    protected abstract fun stack(): Float
+
+    override fun measuredHeight() = naturalHeight + stack()
+
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
         half(screenWidth) + if (rightSide) 10f else -91f
 
+    // the origin follows the content the game lifts, so a bar that is not itself taller keeps its place
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
-        screenHeight - if (aboveFirstRow) 49f else 39f
+        screenHeight - (if (aboveFirstRow) 49f else 39f) - rise()
 
     override val homeAnchorX get() = if (rightSide) 1f else 0f
     override val homeAnchorY get() = 1f
@@ -386,6 +395,10 @@ class HealthHud : StatBarHud("vanillahud-health.json", "Health", StatBarHud.ALIG
 
     override fun hasLiveData() = statusBarsShown()
 
+    // every extra row of hearts stacks above the first, so the box has to hold them
+    override fun rise() = StatRows.healthRise(previewing)
+    override fun stack() = StatRows.healthRise(previewing)
+
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<ExperienceBarHud>()
 }
 
@@ -394,6 +407,10 @@ class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_L
     override fun hasLiveData() = statusBarsShown() && (mc.player?.armorValue ?: 0) > 0
     //?} else
     //override fun hasLiveData() = statusBarsShown() && (mc.player?.armorProtection ?: 0) > 0
+
+    // the game draws the armor above the topmost row of hearts, which Health's box already holds
+    override fun rise() = StatRows.healthRise(previewing)
+    override fun stack() = 0f
 
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HealthHud>()
 }
@@ -404,6 +421,10 @@ class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIG
 
     override fun hasLiveData() = statusBarsShown() && mc.player?.let { it.vehicle !is LivingEntity } == true
 
+    // a mount's hearts take this bar's place and stack above it, so the topmost row is where the content starts
+    override fun rise() = StatRows.mountRise()
+    override fun stack() = StatRows.mountRise()
+
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<ExperienceBarHud>()
 }
 
@@ -413,6 +434,10 @@ class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, 
         mc.player?.let { it.isEyeInFluid(FluidTags.WATER) || it.airSupply < it.maxAirSupply } == true
     //?} else
     //override fun hasLiveData() = statusBarsShown() && mc.player?.isSubmergedIn(Material.WATER) == true
+
+    // the bubbles sit above the mount's hearts, which Hunger's box already holds
+    override fun rise() = StatRows.mountRise()
+    override fun stack() = 0f
 
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HungerHud>()
 }
