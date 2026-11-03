@@ -17,22 +17,30 @@ object TextBackdrop {
     fun draw(graphics: GuiGraphicsExtractor, hud: BackdropHud, x: Int, y: Int, width: Int, height: Int, textColor: Int) {
         if (!hud.background || width <= 0) return
         val textAlpha = if (textColor ushr 24 == 0) 255 else textColor ushr 24
-        val innerScale = hud.innerScale
-        val box = hud.elementScale.coerceAtLeast(0.001f) * innerScale
-        val x0 = if (hud.staticWidth) x - (hud.contentOffsetX / box).roundToInt() else x - (hud.padLeft / innerScale).roundToInt()
-        val y0 = if (hud.staticWidth) y - (hud.contentOffsetY / box).roundToInt() else y - (hud.padTop / innerScale).roundToInt()
-        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / box).roundToInt() else x + width + (hud.padRight / innerScale).roundToInt()
-        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / box).roundToInt() else y + height + (hud.padBottom / innerScale).roundToInt()
+        // drawn in the element's units rather than the text's, or a title's padding could only
+        // grow a whole scaled pixel at a time while its box grows by one
+        val k = hud.innerScale
+        val unit = hud.elementScale.coerceAtLeast(0.001f)
+        val tx = (x * k).roundToInt()
+        val ty = (y * k).roundToInt()
+        val tw = ((if (hud.hugsGlyphs) width - 1 else width) * k).roundToInt()
+        val th = ((if (hud.hugsGlyphs) BackdropHud.GLYPH_HEIGHT else height) * k).roundToInt()
+        val x0 = if (hud.staticWidth) tx - (hud.contentOffsetX / unit).roundToInt() else tx - hud.padLeft.roundToInt()
+        val y0 = if (hud.staticWidth) ty - (hud.contentOffsetY / unit).roundToInt() else ty - hud.padTop.roundToInt()
+        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + hud.padRight.roundToInt()
+        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + hud.padBottom.roundToInt()
         val radius = min(hud.radius, min(x1 - x0, y1 - y0) / 2)
         val border = if (hud.border) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
         val fill = withAlpha(hud.textBgColor.argb, textAlpha)
-        if (border <= 0) {
-            rounded(graphics, x0, y0, x1, y1, radius, fill)
-            return
+        scaled(graphics, 1f / k) {
+            if (border <= 0) {
+                rounded(graphics, x0, y0, x1, y1, radius, fill)
+            } else {
+                val inner = max(radius - border, 0)
+                rounded(graphics, x0 + border, y0 + border, x1 - border, y1 - border, inner, fill)
+                ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(hud.borderColor.argb, textAlpha))
+            }
         }
-        val inner = max(radius - border, 0)
-        rounded(graphics, x0 + border, y0 + border, x1 - border, y1 - border, inner, fill)
-        ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(hud.borderColor.argb, textAlpha))
     }
 
     fun interface RectFill {
@@ -115,14 +123,18 @@ object TextBackdrop {
         return (alpha shl 24) or (argb and 0xFFFFFF)
     }
 
-    private inline fun scaled(graphics: GuiGraphicsExtractor, body: () -> Unit) {
+    private inline fun scaled(graphics: GuiGraphicsExtractor, factor: Float = 1f / SUBPIXELS, body: () -> Unit) {
+        if (factor == 1f) {
+            body()
+            return
+        }
         val pose = graphics.pose()
         //? if <=1.21.5 && >1.8.9 {
         /*pose.pushPose()
-        pose.scale(1f / SUBPIXELS, 1f / SUBPIXELS, 1f)
+        pose.scale(factor, factor, 1f)
         *///?} else {
         pose.pushMatrix()
-        pose.scale(1f / SUBPIXELS, 1f / SUBPIXELS)
+        pose.scale(factor, factor)
         //?}
         try {
             body()

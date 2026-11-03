@@ -49,9 +49,21 @@ class HudStyleDefaultsTest {
 
     @Test
     fun `elements vanilla draws bare have no background and keep their box`() {
-        for (hud in listOf(HotbarHud(), HealthHud(), ActionBarHud(), HeldItemTooltipHud(), BossBarHud(), TitleHud(), SubtitleHud())) {
+        for (hud in listOf(HotbarHud(), HealthHud(), BossBarHud())) {
             assertFalse(hud.showBackground, "${hud.title} background")
             assertVanillaBox(hud)
+        }
+    }
+
+    @Test
+    fun `text boxes hug the letters and leave the shadow to the right and bottom padding`() {
+        for ((hud, shadow) in listOf(ActionBarHud() to 1f, HeldItemTooltipHud() to 1f, TitleHud() to 4f, SubtitleHud() to 2f)) {
+            assertFalse(hud.showBackground, "${hud.title} background")
+            assertEquals(7f * hud.innerScale, hud.height, "${hud.title} height stops at the baseline")
+            assertEquals(hud.width + shadow, hud.boxWidth, "${hud.title} box width")
+            assertEquals(hud.height + shadow, hud.boxHeight, "${hud.title} box height")
+            assertEquals(0f, hud.contentOffsetX, "${hud.title} content x")
+            assertEquals(0f, hud.contentOffsetY, "${hud.title} content y")
         }
     }
 
@@ -70,7 +82,7 @@ class HudStyleDefaultsTest {
     @Test
     fun `the designer's size scales the whole box, except a title which already sizes itself`() {
         val hud = ActionBarHud()
-        val natural = hud.boxHeight
+        val natural = hud.height
         hud.padTop = 2f
         hud.padBottom = 3f
         assertEquals(natural + 5f, hud.boxHeight, "padding counts without a background too")

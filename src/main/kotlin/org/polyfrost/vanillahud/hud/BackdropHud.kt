@@ -35,6 +35,23 @@ abstract class BackdropHud(
 
     val textShadow: Boolean get() = showShadow
 
+    /**
+     * The box holds the letters alone, without the font's trailing advance or descender row, and
+     * the shadow sits in the default padding. More padding then centres the text, not text and shadow.
+     */
+    open val hugsGlyphs: Boolean get() = false
+
+    /** pads the right and bottom by [reach], how far the shadow falls past the letters in the element's own units */
+    protected fun padForShadow(reach: Float) {
+        padRight = reach
+        padBottom = reach
+    }
+
+    companion object {
+        /** rows from the top of a capital to its baseline, below which only descenders and the shadow go */
+        const val GLYPH_HEIGHT = 7
+    }
+
     override fun Tree.addDependencies() = backdropDependencies()
 
     protected fun Tree.backdropDependencies() {

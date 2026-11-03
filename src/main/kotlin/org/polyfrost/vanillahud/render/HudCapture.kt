@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.network.chat.FormattedText
 import net.minecraft.network.chat.Style
 import net.minecraft.util.FormattedCharSequence
+import java.util.Optional
 //?} else {
 /*import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
@@ -546,9 +547,23 @@ object HudCapture {
 
     private fun poppins(hud: VanillaHud) = PolyFont(hud.getPoppinsFontName(), 8f)
 
-    private fun widthOf(hud: VanillaHud, text: String) =
-        if (hud.font == Font.Poppins) poppins(hud).measureTextWidth(text.replace(FORMAT_CODE, ""))
-        else Minecraft.getInstance().font.width(text).toFloat()
+    /** set while [widthOf] asks the game's font, whose width hook would otherwise style the text twice */
+    private var rawWidth = false
+
+    private fun widthOf(hud: VanillaHud, text: String): Float {
+        if (hud.font == Font.Poppins) return poppins(hud).measureTextWidth(text.replace(FORMAT_CODE, ""))
+        val outer = rawWidth
+        rawWidth = true
+        try {
+            return Minecraft.getInstance().font.width(text).toFloat()
+        } finally {
+            rawWidth = outer
+        }
+    }
+
+    /** the width [addRuns] lays [runs] out at, with the hud's case and bold applied to each */
+    private fun widthOf(hud: VanillaHud, runs: List<Run0>): Int =
+        ceil(runs.sumOf { widthOf(hud, styled(hud, it)).toDouble() }).toInt()
 
     private var measuringHud: VanillaHud? = null
 
@@ -562,25 +577,51 @@ object HudCapture {
         }
     }
 
-    private fun poppinsHud(): VanillaHud? = (measuringHud ?: active?.hud)?.takeIf { it.font == Font.Poppins }
+    /**
+     * The hud whose text the game is measuring, when [Replay] draws that text at another width than
+     * the game's font would. Vanilla centres with the measured width and the box is sized from it.
+     */
+    private fun restyledHud(): VanillaHud? {
+        if (rawWidth) return null
+        return (measuringHud ?: active?.hud)?.takeIf { it.font == Font.Poppins || it.textBold || it.caseType != 0 }
+    }
 
     @JvmStatic
     fun fontWidth(width: Int, text: String): Int {
-        val hud = poppinsHud() ?: return width
-        return ceil(widthOf(hud, styled(hud, Run0("", null, text)))).toInt()
+        val hud = restyledHud() ?: return width
+        //? if = 1.8.9 {
+        /*return widthOf(hud, legacyRuns(drawableText(text)))
+        *///?} else
+        return widthOf(hud, legacyRuns(text))
     }
 
     //? if > 1.8.9 {
     @JvmStatic
-    fun fontWidth(width: Int, text: FormattedText): Int =
-        if (poppinsHud() == null) width else fontWidth(width, text.string)
+    fun fontWidth(width: Int, text: FormattedText): Int {
+        val hud = restyledHud() ?: return width
+        val runs = ArrayList<Run0>()
+        text.visit({ style, part ->
+            runs += Run0(codes(style), null, part)
+            Optional.empty<Unit>()
+        }, Style.EMPTY)
+        return widthOf(hud, runs)
+    }
 
     @JvmStatic
     fun fontWidth(width: Int, text: FormattedCharSequence): Int {
-        if (poppinsHud() == null) return width
-        val plain = StringBuilder()
-        text.accept { _, _, codepoint -> plain.appendCodePoint(codepoint); true }
-        return fontWidth(width, plain.toString())
+        val hud = restyledHud() ?: return width
+        return widthOf(hud, styleRuns(text))
+    }
+
+    /** the text split wherever its style changes, as [text] captures it */
+    private fun styleRuns(text: FormattedCharSequence): List<Run0> {
+        val runs = ArrayList<Pair<Style, StringBuilder>>()
+        text.accept { _, style, codepoint ->
+            if (runs.lastOrNull()?.first != style) runs += style to StringBuilder()
+            runs.last().second.appendCodePoint(codepoint)
+            true
+        }
+        return runs.map { (style, sb) -> Run0(codes(style), style.color?.value, sb.toString()) }
     }
     //?}
 

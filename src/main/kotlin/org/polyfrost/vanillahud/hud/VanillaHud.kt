@@ -67,6 +67,12 @@ abstract class VanillaHud(
     abstract val naturalWidth: Float
     abstract val naturalHeight: Float
 
+    /**
+     * Half of [size] rounded down, the way vanilla centres with integer division. On an odd GUI
+     * size halving as a float puts the box half a pixel off what the game draws.
+     */
+    protected fun half(size: Int): Float = (size / 2).toFloat()
+
     /** top left of the unrotated content in the coordinates vanilla actually draws it at */
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
