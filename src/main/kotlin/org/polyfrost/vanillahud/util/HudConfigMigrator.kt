@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 13
+    private const val SCHEMA_VERSION = 14
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -55,6 +55,16 @@ object HudConfigMigrator {
     )
 
     private val DROPPED_HOTBAR_KEYS = listOf("experienceBar", "experienceLevel", "levelTextHeight")
+
+    private const val LEVEL_FILE = "vanillahud-experience-level.json"
+
+    /** how far each text hud's shadow falls past its letters, null for those at the game's own size */
+    private val SHADOW_REACH = mapOf(
+        "vanillahud-actionbar.json" to null,
+        "vanillahud-itemtooltip.json" to null,
+        "vanillahud-title.json" to 4f,
+        "vanillahud-subtitle.json" to 2f,
+    )
 
     private const val LEGACY_UNLOCKED_FILE = "vanillahud-unlocked"
     private const val CUSTOMIZED_FILE = "vanillahud-customized"
@@ -133,6 +143,8 @@ object HudConfigMigrator {
         }
         if (from < 12) resetLevelText(folder)
         if (from < 13) padTextShadows(folder)
+        // a folder below 9 has only just been given the designer migration above
+        if (from in 9..13) redoLostDesignerMigration(folder)
 
         writeStamp(stamp)
     }
@@ -349,12 +361,17 @@ object HudConfigMigrator {
         Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { files ->
             for (path in files) try {
                 val obj = readObject(path) ?: continue
-                if (obj.get("showBackground")?.takeIf { it.isJsonPrimitive }?.asBoolean == true) continue
-                for (key in listOf("padLeft", "padRight", "padTop", "padBottom")) obj.addProperty(key, 0f)
+                if (!dropUnusedPadding(obj)) continue
                 writeObject(path, obj)
             } catch (_: Throwable) {
             }
         }
+    }
+
+    private fun dropUnusedPadding(obj: JsonObject): Boolean {
+        if (obj.get("showBackground")?.takeIf { it.isJsonPrimitive }?.asBoolean == true) return false
+        for (key in listOf("padLeft", "padRight", "padTop", "padBottom")) obj.addProperty(key, 0f)
+        return true
     }
 
     /**
@@ -362,34 +379,74 @@ object HudConfigMigrator {
      * Stored padding gains it so a saved box still fits its shadow.
      */
     private fun padTextShadows(folder: Path) {
-        val reach = mapOf(
-            "vanillahud-actionbar.json" to null,
-            "vanillahud-itemtooltip.json" to null,
-            "vanillahud-title.json" to 4f,
-            "vanillahud-subtitle.json" to 2f,
-        )
-        for ((file, scale) in reach) try {
+        for (file in SHADOW_REACH.keys) try {
             val path = folder.resolve("huds").resolve(file)
             val obj = readObject(path) ?: continue
-            val shadow = if (scale == null) 1f else obj.get("textScale")?.takeIf { it.isJsonPrimitive }?.asFloat ?: scale
-            for (key in listOf("padRight", "padBottom")) {
-                val pad = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asFloat ?: continue
-                obj.addProperty(key, pad + shadow)
-            }
+            padTextShadow(file, obj)
             writeObject(path, obj)
         } catch (_: Throwable) {
         }
     }
 
+    private fun padTextShadow(file: String, obj: JsonObject) {
+        if (file !in SHADOW_REACH) return
+        val scale = SHADOW_REACH[file]
+        val shadow = if (scale == null) 1f else obj.get("textScale")?.takeIf { it.isJsonPrimitive }?.asFloat ?: scale
+        for (key in listOf("padRight", "padBottom")) {
+            val pad = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asFloat ?: continue
+            obj.addProperty(key, pad + shadow)
+        }
+    }
+
     /** the experience level's outline moved from vanilla's draws to the hud's own shadow and colour options */
     private fun resetLevelText(folder: Path) {
-        val path = folder.resolve("huds").resolve("vanillahud-experience-level.json")
+        val path = folder.resolve("huds").resolve(LEVEL_FILE)
         try {
             val obj = readObject(path) ?: return
-            for (key in listOf("showShadow", "fullShadow", "textColor", "shadowColor")) obj.remove(key)
+            resetLevelText(obj)
             writeObject(path, obj)
         } catch (_: Throwable) {
         }
+    }
+
+    private fun resetLevelText(obj: JsonObject) {
+        for (key in listOf("showShadow", "fullShadow", "textColor", "shadowColor")) obj.remove(key)
+    }
+
+    /**
+     * 1.8.9 ran the migrator after OneConfig had already loaded the HUDs, and OneConfig then saved what it
+     * had read back over the migrated files while the stamp moved on. A hud still holding OneConfig's own
+     * designer defaults, which no vanillahud element ships, never kept the designer migration, so it is
+     * given it again along with the later steps built on it.
+     */
+    internal fun redoLostDesignerMigration(folder: Path) {
+        val hudsDir = folder.resolve("huds")
+        if (!Files.isDirectory(hudsDir)) return
+        Files.newDirectoryStream(hudsDir, "vanillahud-*.json").use { files ->
+            for (path in files) try {
+                val obj = readObject(path) ?: continue
+                if (!hasOneConfigDesignerDefaults(obj)) continue
+                val file = path.fileName.toString()
+                adoptDesignerOptions(file, obj)
+                dropUnusedPadding(obj)
+                // left over from when a locked hud meant one still at its vanilla origin
+                obj.addProperty("locked", false)
+                if (file == LEVEL_FILE) resetLevelText(obj)
+                padTextShadow(file, obj)
+                writeObject(path, obj)
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    private fun hasOneConfigDesignerDefaults(obj: JsonObject): Boolean = try {
+        fun prim(key: String) = obj.get(key)?.takeIf { it.isJsonPrimitive }
+        prim("showBackground")?.asBoolean == true &&
+            prim("bgColor")?.asInt == 0x80000000.toInt() &&
+            prim("bgRadius")?.asFloat == 4f &&
+            prim("showShadow")?.asBoolean == false
+    } catch (_: Throwable) {
+        false
     }
 
     private fun enumValue(obj: JsonObject, key: String): String? {

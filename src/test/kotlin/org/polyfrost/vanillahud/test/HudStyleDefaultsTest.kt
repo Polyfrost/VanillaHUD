@@ -143,4 +143,41 @@ class HudStyleDefaultsTest {
             if (stampWas != null) Files.writeString(stamp, stampWas) else Files.deleteIfExists(stamp)
         }
     }
+
+    @Test
+    fun `a hud OneConfig saved back over its migration is given the designer migration again`() {
+        val folder = ConfigManager.active().folder
+        val huds = folder.resolve("huds")
+        Files.createDirectories(huds)
+        val stamp = folder.resolve("vanillahud-migration")
+        val stampWas = if (Files.exists(stamp)) Files.readString(stamp) else null
+        val title = huds.resolve("vanillahud-title.json")
+        val board = huds.resolve("vanillahud-scoreboard.json")
+        try {
+            Files.writeString(stamp, "13")
+            // what 1.8.9 left behind: the old title's OneConfig defaults, still locked to its vanilla origin
+            Files.writeString(title, """{"showBackground":true,"bgColor":-2147483648,"bgRadius":4.0,"showShadow":false,"textScale":1.0,"padRight":0.0,"padBottom":0.0,"locked":true,"relativeX":-0.5,"relativeY":-40.0,"hudClass":"org.polyfrost.vanillahud.hud.TitleHud"}""")
+            // a background the user picked themselves
+            Files.writeString(board, """{"showBackground":true,"bgColor":-2147483648,"bgRadius":4.0,"showShadow":true,"locked":true}""")
+
+            HudConfigMigrator.migrate()
+
+            val t = JsonParser.parseString(Files.readString(title)).asJsonObject
+            assertEquals(4f, t.get("textScale").asFloat)
+            assertEquals(false, t.get("showBackground").asBoolean)
+            assertEquals(0f, t.get("bgRadius").asFloat)
+            assertEquals(true, t.get("showShadow").asBoolean)
+            assertEquals(4f, t.get("padRight").asFloat, "the title's shadow sits in its padding")
+            assertEquals(4f, t.get("padBottom").asFloat)
+            assertEquals(false, t.get("locked").asBoolean, "a locked title cannot be dragged")
+            assertEquals(-40f, t.get("relativeY").asFloat, "its position stays")
+
+            val b = JsonParser.parseString(Files.readString(board)).asJsonObject
+            assertEquals(4f, b.get("bgRadius").asFloat)
+            assertEquals(true, b.get("locked").asBoolean)
+        } finally {
+            for (p in listOf(title, board)) Files.deleteIfExists(p)
+            if (stampWas != null) Files.writeString(stamp, stampWas) else Files.deleteIfExists(stamp)
+        }
+    }
 }
