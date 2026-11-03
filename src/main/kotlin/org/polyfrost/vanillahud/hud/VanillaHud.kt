@@ -243,12 +243,30 @@ abstract class VanillaHud(
     val backAtDefault: Boolean
         get() = !anchoredByHand && matchesDefaultPosition(fallback = false)
 
+    /** the point of this HUD that sits on [defaultAnchorTargetPoint] of [defaultAnchorTarget] */
+    protected open val defaultAnchorPoint: HudAnchor get() = HudAnchor.TopLeft
+
+    /** the point of [defaultAnchorTarget] this HUD hangs from */
+    protected open val defaultAnchorTargetPoint: HudAnchor get() = HudAnchor.TopLeft
+
+    private fun HudAnchor.fractionX() = if (name.endsWith("Left")) 0f else if (name.endsWith("Right")) 1f else 0.5f
+
+    private fun HudAnchor.fractionY() = if (name.startsWith("Top")) 0f else if (name.startsWith("Bottom")) 1f else 0.5f
+
+    private fun defaultAnchorOffsetX(target: VanillaHud, screenWidth: Int, screenHeight: Int) =
+        defaultOriginX(screenWidth, screenHeight) + width * defaultAnchorPoint.fractionX() -
+            (target.defaultOriginX(screenWidth, screenHeight) + target.width * defaultAnchorTargetPoint.fractionX())
+
+    private fun defaultAnchorOffsetY(target: VanillaHud, screenWidth: Int, screenHeight: Int) =
+        defaultOriginY(screenWidth, screenHeight) + height * defaultAnchorPoint.fractionY() -
+            (target.defaultOriginY(screenWidth, screenHeight) + target.height * defaultAnchorTargetPoint.fractionY())
+
     private fun holdDefaultAnchor(target: VanillaHud, screenWidth: Int, screenHeight: Int) {
         asSystemWrite {
             positionRevision++
-            anchorTo(target, HudAnchor.TopLeft, HudAnchor.TopLeft)
-            anchorOffsetX = defaultOriginX(screenWidth, screenHeight) - target.defaultOriginX(screenWidth, screenHeight)
-            anchorOffsetY = defaultOriginY(screenWidth, screenHeight) - target.defaultOriginY(screenWidth, screenHeight)
+            anchorTo(target, defaultAnchorTargetPoint, defaultAnchorPoint)
+            anchorOffsetX = defaultAnchorOffsetX(target, screenWidth, screenHeight)
+            anchorOffsetY = defaultAnchorOffsetY(target, screenWidth, screenHeight)
         }
     }
 
@@ -263,8 +281,8 @@ abstract class VanillaHud(
         val w = HudManager.guiScreenWidth.toInt()
         val h = HudManager.guiScreenHeight.toInt()
         if (w <= 0 || h <= 0) return
-        val offsetX = defaultOriginX(w, h) - target.defaultOriginX(w, h)
-        val offsetY = defaultOriginY(w, h) - target.defaultOriginY(w, h)
+        val offsetX = defaultAnchorOffsetX(target, w, h)
+        val offsetY = defaultAnchorOffsetY(target, w, h)
         if (isAnchored && abs(anchorOffsetX - offsetX) < 1e-3f && abs(anchorOffsetY - offsetY) < 1e-3f) return
         holdDefaultAnchor(target, w, h)
     }

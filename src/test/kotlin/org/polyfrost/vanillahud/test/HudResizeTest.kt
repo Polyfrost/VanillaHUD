@@ -125,13 +125,20 @@ class HudResizeTest {
     }
 
     @Test
-    fun `the status bars hang off the hotbar by default and follow it when it moves`() {
+    fun `the status bars hang off the bar below them by default and follow the hotbar when it moves`() {
         screen(640, 360)
         val huds = cluster()
         huds.forEach(::settled)
         val hotbar = huds[0]
-        for (bar in huds.drop(1)) {
-            assertSame(hotbar, bar.anchorParent, "${bar.title} should be anchored to the hotbar")
+        val health = huds[1]
+        val armor = huds[2]
+        val hunger = huds[3]
+        val air = huds[4]
+        val xp = huds[5]
+        val level = huds[6]
+        val parents = listOf(health to xp, armor to health, hunger to xp, air to hunger, xp to hotbar, level to xp)
+        for ((bar, parent) in parents) {
+            assertSame(parent, bar.anchorParent, "${bar.title} should be anchored to ${parent.title}")
             assertTrue(bar.onDefaultAnchor, "${bar.title} should still count as unmoved")
         }
 
@@ -157,9 +164,9 @@ class HudResizeTest {
         assertTrue(huds.indexOf(level) > huds.indexOf(bar))
     }
 
-    private fun assertBackOnHotbar(hotbar: VanillaHud, bar: VanillaHud) {
+    private fun assertBackOnHotbar(hotbar: VanillaHud, bar: VanillaHud, parent: VanillaHud) {
         ForceDefaultPosition.tick()
-        assertSame(hotbar, bar.anchorParent, "${bar.title} should be anchored to the hotbar again")
+        assertSame(parent, bar.anchorParent, "${bar.title} should be anchored to ${parent.title} again")
         assertEquals(hotbar.x, bar.x, 0.01f, "${bar.title} x")
         assertEquals(hotbar.y - 17f, bar.y, 0.01f, "${bar.title} y")
     }
@@ -171,28 +178,29 @@ class HudResizeTest {
         huds.forEach(::settled)
         val hotbar = huds[0]
         val health = huds[1]
+        val xp = huds[5]
 
         health.movedByUser = true
         health.x = 12f
         health.y = 34f
         resetHudPosition(health)
-        assertBackOnHotbar(hotbar, health)
+        assertBackOnHotbar(hotbar, health, xp)
 
         health.clearAnchor()
         health.x = 12f
         health.y = 34f
         resetHudPosition(health)
-        assertBackOnHotbar(hotbar, health)
+        assertBackOnHotbar(hotbar, health, xp)
 
         resetAllHudProperties(health)
-        assertBackOnHotbar(hotbar, health)
+        assertBackOnHotbar(hotbar, health, xp)
 
         hotbar.movedByUser = true
         hotbar.x = 20f
         hotbar.y = 50f
         health.x = 12f
         resetHudPosition(health)
-        assertBackOnHotbar(hotbar, health)
+        assertBackOnHotbar(hotbar, health, xp)
     }
 
     @Test
