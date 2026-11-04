@@ -419,6 +419,9 @@ abstract class VanillaHud(
     /** the Designer's size and resize handles change [textScale], and here that sizes the whole element with its background */
     open val elementScale: Float get() = textScale
 
+    /** the size padding is drawn at, which grows with the element */
+    open val padScale: Float get() = elementScale
+
     /** text whose colour the game's pass already resolved from [textColor] */
     open val managesTextColor: Boolean get() = false
 
@@ -441,22 +444,22 @@ abstract class VanillaHud(
     private val drawnHeight: Float get() = height * elementScale
 
     val boxWidth: Float
-        get() = if (staticWidth) maxOf(staticW, drawnWidth) else drawnWidth + (padLeft + padRight) * elementScale
+        get() = if (staticWidth) maxOf(staticW, drawnWidth) else drawnWidth + (padLeft + padRight) * padScale
 
     val boxHeight: Float
-        get() = if (staticWidth) maxOf(staticH, drawnHeight) else drawnHeight + (padTop + padBottom) * elementScale
+        get() = if (staticWidth) maxOf(staticH, drawnHeight) else drawnHeight + (padTop + padBottom) * padScale
 
     /** where the content sits inside the box, zero unless the Designer's padding or static size is in use */
     val contentOffsetX: Float
         get() = when {
             staticWidth -> (boxWidth - drawnWidth) * alignment.name.let { if ("Left" in it) 0f else if ("Right" in it) 1f else 0.5f }
-            else -> padLeft * elementScale
+            else -> padLeft * padScale
         }
 
     val contentOffsetY: Float
         get() = when {
             staticWidth -> (boxHeight - drawnHeight) * alignment.name.let { if ("Top" in it) 0f else if ("Bottom" in it) 1f else 0.5f }
-            else -> padTop * elementScale
+            else -> padTop * padScale
         }
 
     private fun syncRenderedSize() {
