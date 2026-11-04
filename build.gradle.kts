@@ -119,6 +119,7 @@ dependencies {
     }
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${sc.properties.get<String>("deps.devauth")}")
+    if (isOrnithe) findProperty("vanillahud.soundfix")?.let { modRuntimeOnly(files(it)) }
 
     testImplementation("org.junit.jupiter:junit-jupiter:${sc.properties.get<String>("deps.junit")}")
     testImplementation("net.fabricmc:fabric-loader-junit:$loaderversion")
@@ -209,10 +210,17 @@ tasks {
 
         filesMatching("fabric.mod.json") {
             expand(props)
-            // there is no Fabric API on 1.8.9
-            if (isOrnithe) filter { line -> if ("\"fabric-api\"" in line) "" else line }
+            filter { line ->
+                when {
+                    // there is no Fabric API on 1.8.9
+                    isOrnithe && "\"fabric-api\"" in line -> ""
+                    !isOrnithe && "\"mixins.$modid.soundfix.json\"" in line -> ""
+                    else -> line
+                }
+            }
         }
-        filesMatching("mixins.$modid.json") { expand("java" to "JAVA_${requiredJava.majorVersion}") }
+        if (!isOrnithe) exclude("mixins.$modid.soundfix.json")
+        filesMatching("mixins.$modid*.json") { expand("java" to "JAVA_${requiredJava.majorVersion}") }
     }
 
     jar {

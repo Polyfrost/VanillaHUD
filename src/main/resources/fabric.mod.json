@@ -23,6 +23,7 @@
         ]
     },
     "mixins": [
+        "mixins.vanillahud.soundfix.json",
         "mixins.vanillahud.json"
     ],
     "depends": {
@@ -30,5 +31,8 @@
         "fabricloader": ">=${loader_version}",
         "fabric-api": "*",
         "oneconfigv1": ">=${oneconfig_version}"
+    },
+    "suggests": {
+        "soundfix": ">=1.2.0"
     }
 }

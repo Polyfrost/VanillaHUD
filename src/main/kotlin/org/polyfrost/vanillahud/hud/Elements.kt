@@ -20,6 +20,7 @@ import net.minecraft.scoreboard.ScoreboardObjective
 import net.minecraft.scoreboard.ScoreboardScore
 import net.minecraft.scoreboard.team.Team
 import net.minecraft.text.Text
+import org.polyfrost.vanillahud.compat.SoundFixCaptions
 *///?}
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.render.PolyColor
@@ -1426,6 +1427,7 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
         const val HARMFUL_ROW_Y = 27
     }
 }
+//?}
 
 class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed Captioning", Category.INFO) {
     init {
@@ -1462,6 +1464,7 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
     override val anchorX get() = 1f
     override val anchorY get() = 1f
 
+    //? if > 1.8.9 {
     private fun texts(): List<Component> {
         val overlay = hudAccessor?.subtitleOverlay as? ISubtitleOverlay ?: return emptyList()
         return overlay.audibleSubtitles.mapNotNull { (it as? ISubtitle)?.subtitleText }
@@ -1469,14 +1472,24 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
     override fun hasLiveData() = mc.options.showSubtitles().get() &&
         (hudAccessor?.subtitleOverlay as? ISubtitleOverlay)?.subtitles?.isNotEmpty() == true
+    //?} else {
+    /*private fun texts(): List<String> = SoundFixCaptions.texts()
+
+    override fun hasLiveData() = SoundFixCaptions.hasLiveData()
+
+    // OneConfig recreates a HUD from its saved config even when it was never registered
+    override fun setup() {
+        if (!SoundFixCaptions.loaded) HudManager.removeHud(this)
+    }
+    *///?}
 
     private class Size(val width: Float, val height: Float)
 
     private fun size(): Size? = measureOnce({
+        val shown = texts()
         var h = 0L
-        val overlay = hudAccessor?.subtitleOverlay as? ISubtitleOverlay
-        for (s in overlay?.audibleSubtitles ?: emptyList()) h = mix(h, (s as? ISubtitle)?.subtitleText)
-        mix(h, overlay?.audibleSubtitles?.size ?: 0)
+        for (text in shown) h = mix(h, text)
+        mix(h, shown.size)
     }) { measureSize() }
 
     private fun measureSize(): Size {
@@ -1504,7 +1517,6 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
         const val CAPTION_ROW = 10
     }
 }
-//?}
 
 object Huds {
     private val hotbarProvider = HotbarHud()
@@ -1521,10 +1533,9 @@ object Huds {
     private val scoreboardProvider = ScoreboardHud()
     private val tabListProvider = TabListHud()
     private val bossBarProvider = BossBarHud()
-    //? if > 1.8.9 {
+    //? if > 1.8.9
     private val statusEffectsProvider = StatusEffectsHud()
     private val closedCaptionsProvider = ClosedCaptionsHud()
-    //?}
 
     val hotbar: HotbarHud get() = HudTransform.live(hotbarProvider)
     val health: HealthHud get() = HudTransform.live(healthProvider)
@@ -1540,10 +1551,9 @@ object Huds {
     val scoreboard: ScoreboardHud get() = HudTransform.live(scoreboardProvider)
     val tabList: TabListHud get() = HudTransform.live(tabListProvider)
     val bossBar: BossBarHud get() = HudTransform.live(bossBarProvider)
-    //? if > 1.8.9 {
+    //? if > 1.8.9
     val statusEffects: StatusEffectsHud get() = HudTransform.live(statusEffectsProvider)
     val closedCaptions: ClosedCaptionsHud get() = HudTransform.live(closedCaptionsProvider)
-    //?}
 
     val all: Array<VanillaHud>
         //? if > 1.8.9 {
@@ -1555,10 +1565,11 @@ object Huds {
             closedCaptionsProvider,
         )
         //?} else {
-        /*get() = arrayOf(
+        /*get() = listOfNotNull(
             hotbarProvider, healthProvider, armorProvider, hungerProvider, airProvider,
             experienceBarProvider, experienceLevelProvider, actionBarProvider, heldItemTooltipProvider,
             titleProvider, subtitleProvider, scoreboardProvider, tabListProvider, bossBarProvider,
-        )
+            closedCaptionsProvider.takeIf { SoundFixCaptions.loaded },
+        ).toTypedArray()
         *///?}
 }
