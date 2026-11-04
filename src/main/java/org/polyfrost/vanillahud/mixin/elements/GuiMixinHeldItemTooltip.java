@@ -24,6 +24,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.hud.HeldItemTooltipHud;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.render.ForeignTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -111,6 +112,8 @@ public class GuiMixinHeldItemTooltip {
     //?} else
     //private int vanillahud$itemNameText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, Operation<Integer> original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
+        //? if >=1.21.8
+        ForeignTransform.observeY(graphics, hud, y, hud.vanillaOriginY(ForeignTransform.realGuiWidth(graphics), ForeignTransform.realGuiHeight(graphics)));
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
         try {

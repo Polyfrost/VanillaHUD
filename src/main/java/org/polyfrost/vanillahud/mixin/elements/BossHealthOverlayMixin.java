@@ -27,6 +27,12 @@ import org.polyfrost.vanillahud.hook.TextShadowHook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+//? if >=1.21.8 {
+import org.polyfrost.vanillahud.render.ForeignTransform;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//?}
+
 //? if > 1.8.9
 import java.util.Collection;
 
@@ -41,6 +47,20 @@ import org.polyfrost.vanillahud.render.HudTransform;
 /*@Mixin(GameGui.class)
 *///?}
 public class BossHealthOverlayMixin {
+    //? if >=1.21.8 {
+    @Inject(
+            //? if >=26 {
+            method = "extractRenderState",
+            //?} else {
+            /*method = "render",
+            *///?}
+            at = @At("HEAD")
+    )
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
+
     //? if > 1.8.9 {
     //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "render")

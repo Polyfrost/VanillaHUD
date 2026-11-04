@@ -35,6 +35,7 @@ import org.polyfrost.vanillahud.render.ScoreboardBackground;
 import org.polyfrost.vanillahud.render.TextBackdrop;
 *///?}
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.render.ForeignTransform;
 //? if > 1.8.9 {
 import org.polyfrost.vanillahud.hud.ScoreboardHud;
 import org.polyfrost.vanillahud.render.ScoreboardBackground;
@@ -92,6 +93,13 @@ public class GuiMixinScoreboard {
     }
     *///?}
 
+    //? if >=1.21.8 {
+    @Inject(method = "displayScoreboardSidebar", at = @At("HEAD"))
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, Objective objective, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
+
     @Inject(method = "displayScoreboardSidebar", at = @At("HEAD"), cancellable = true)
     private void vanillahud$scoreboard$persistent(GuiGraphicsExtractor graphics, Objective objective, CallbackInfo ci) {
         this.vanillahud$scoreboardTop = Integer.MIN_VALUE;
@@ -131,6 +139,8 @@ public class GuiMixinScoreboard {
     )
     private void vanillahud$scoreboard$titleBackground(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         ScoreboardHud hud = Huds.INSTANCE.getScoreboard();
+        //? if >=1.21.8
+        ForeignTransform.observeY(graphics, hud, y0, hud.expectedTitleTop(ForeignTransform.realGuiHeight(graphics)));
         if (!hud.getScoreboardTitle()) return;
         this.vanillahud$scoreboardTop = y0;
         if (hud.getHasCustomBackground()) {

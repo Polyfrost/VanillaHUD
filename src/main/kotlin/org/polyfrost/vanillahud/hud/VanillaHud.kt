@@ -9,16 +9,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.ExternalPlacement
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.compat.ForeignAttribution
 import org.polyfrost.vanillahud.mixin.access.IGui
+import org.polyfrost.vanillahud.render.ForeignPlacement
+import org.polyfrost.vanillahud.render.ForeignTransform
 import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.EditorSnapshot
@@ -41,9 +47,109 @@ abstract class VanillaHud(
         bgRadius = 0f
     }
 
+    @Switch(
+        title = "Ignore Position From Other Mods",
+        subcategory = "Other Mods",
+        description = "Keep this HUD where the game puts it when another mod moves it."
+    )
+    var ignoreModPosition = false
+
+    @Switch(
+        title = "Ignore Scale From Other Mods",
+        subcategory = "Other Mods",
+        description = "Draw this HUD at its own size when another mod scales it."
+    )
+    var ignoreModScale = false
+
+    private var detectedPlacement by mutableStateOf<ExternalPlacement?>(null)
+
+    override val externalPlacement: ExternalPlacement? get() = detectedPlacement
+
+    internal var foreignOuter: ForeignPlacement? = null
+    internal var foreignInner: ForeignPlacement? = null
+    internal var foreignLogicalX = 0f
+    internal var foreignLogicalY = 0f
+
+    /** what other mods do to this HUD, null while nothing does */
+    var foreign: ForeignPlacement? = null
+        private set
+
+    private var foreignMod: String? = null
+    private var foreignAttributedAt = Long.MIN_VALUE
+    private var seenForeignRevision = ForeignTransform.revision
+    private var ignorePositionProp: Property<*>? = null
+    private var ignoreScaleProp: Property<*>? = null
+
+    private val activeForeign: ForeignPlacement? get() = foreign?.takeIf { it.applied }
+
+    private val appliedForeignScale: Float get() = if (ignoreModScale) 1f else activeForeign?.scale ?: 1f
+
+    private fun wrappedForeign(): ForeignPlacement? {
+        val outer = foreignOuter
+        val inner = foreignInner
+        return if (outer != null && inner != null) outer.then(inner) else outer ?: inner
+    }
+
+    internal fun foreignUpdated() {
+        val wrapped = wrappedForeign()
+        val hasLogicalShift = foreignLogicalX != 0f || foreignLogicalY != 0f
+        val next = when {
+            wrapped != null -> wrapped.withLogical(foreignLogicalX, foreignLogicalY)
+            hasLogicalShift -> ForeignPlacement(1f, 0f, 0f, 0, 0, foreignLogicalX, foreignLogicalY)
+            else -> null
+        }
+        val before = foreign
+        if (next == null && before == null) return
+        if (next != null && !next.differs(before)) return
+        foreign = next
+        ForeignTransform.bump()
+        if (before == null) attributeForeign()
+        refreshDetection()
+    }
+
+    private fun attributeForeign() {
+        val now = clock()
+        if (foreignMod != null && now - foreignAttributedAt < ATTRIBUTION_REUSE_MILLIS) return
+        foreignAttributedAt = now
+        foreignMod = ForeignAttribution.attribute()
+    }
+
+    internal fun refreshDetection() {
+        val f = foreign
+        val moved = f != null && f.moved && !ignoreModPosition && try { pinned } catch (_: Throwable) { false }
+        val scaled = f != null && f.scaled && !ignoreModScale
+        val next = if (moved || scaled) ExternalPlacement(foreignMod, moved, scaled) else null
+        if (next != detectedPlacement) detectedPlacement = next
+        ignorePositionProp?.revaluateDisplay()
+        ignoreScaleProp?.revaluateDisplay()
+    }
+
+    private fun foreignOptionChanged() {
+        ForeignTransform.bump()
+        queueForceDefault()
+        refreshDetection()
+    }
+
     override fun addCallbacks(tree: Tree) {
         super.addCallbacks(tree)
         tree.addDependencies()
+        tree.addForeignControls()
+    }
+
+    // here and not in addDependencies, which some HUDs override without calling up
+    private fun Tree.addForeignControls() {
+        val position = getProp("ignoreModPosition")
+        val scale = getProp("ignoreModScale")
+        position.addDisplayCondition {
+            if (ignoreModPosition || foreign?.moved == true) Property.Display.SHOWN else Property.Display.HIDDEN
+        }
+        scale.addDisplayCondition {
+            if (ignoreModScale || foreign?.scaled == true) Property.Display.SHOWN else Property.Display.HIDDEN
+        }
+        position.addCallback { foreignOptionChanged(); false }
+        scale.addCallback { foreignOptionChanged(); false }
+        ignorePositionProp = position
+        ignoreScaleProp = scale
     }
 
     protected open fun Tree.addDependencies() {}
@@ -143,7 +249,10 @@ abstract class VanillaHud(
     }
 
     private fun noteUserMove() {
-        if (tree != null && !HudInternals.systemReposition() && previewing()) movedByUser = true
+        if (tree != null && !HudInternals.systemReposition() && previewing()) {
+            movedByUser = true
+            refreshDetection()
+        }
     }
 
     private fun ensureSection() {
@@ -203,17 +312,47 @@ abstract class VanillaHud(
         }
     }
 
-    fun scaledOriginX(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
-        defaultOriginX(screenWidth, screenHeight) + (1f - scale * elementScale) * width * anchorX - contentOffsetX * scale
+    private val followsForeignLayout: Boolean get() = !ignoreModScale && !ignoreModPosition
 
-    fun scaledOriginY(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float =
-        defaultOriginY(screenWidth, screenHeight) + (1f - scale * elementScale) * height * anchorY - contentOffsetY * scale
+    private fun laidOutWidth(f: ForeignPlacement, screenWidth: Int) =
+        if (followsForeignLayout && f.screenW > 0) f.screenW else screenWidth
+
+    private fun laidOutHeight(f: ForeignPlacement, screenHeight: Int) =
+        if (followsForeignLayout && f.screenH > 0) f.screenH else screenHeight
+
+    private fun foreignOriginX(f: ForeignPlacement, w: Int, h: Int, scale: Float, own: Float, offset: Float) = ForeignTransform.origin(
+        defaultOriginX(w, h), defaultOriginX(laidOutWidth(f, w), laidOutHeight(f, h)), f.tx, f.logicalX,
+        width, anchorX, offset, scale, own, f.scale, ignoreModPosition, ignoreModScale,
+    )
+
+    private fun foreignOriginY(f: ForeignPlacement, w: Int, h: Int, scale: Float, own: Float, offset: Float) = ForeignTransform.origin(
+        defaultOriginY(w, h), defaultOriginY(laidOutWidth(f, w), laidOutHeight(f, h)), f.ty, f.logicalY,
+        height, anchorY, offset, scale, own, f.scale, ignoreModPosition, ignoreModScale,
+    )
+
+    fun scaledOriginX(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float {
+        val f = activeForeign
+            ?: return defaultOriginX(screenWidth, screenHeight) + (1f - scale * elementScale) * width * anchorX - contentOffsetX * scale
+        return foreignOriginX(f, screenWidth, screenHeight, scale, ownScale, contentOffsetX)
+    }
+
+    fun scaledOriginY(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale): Float {
+        val f = activeForeign
+            ?: return defaultOriginY(screenWidth, screenHeight) + (1f - scale * elementScale) * height * anchorY - contentOffsetY * scale
+        return foreignOriginY(f, screenWidth, screenHeight, scale, ownScale, contentOffsetY)
+    }
+
+    private fun placedOriginX(screenWidth: Int, screenHeight: Int): Float =
+        activeForeign?.let { foreignOriginX(it, screenWidth, screenHeight, 1f, 1f, 0f) } ?: defaultOriginX(screenWidth, screenHeight)
+
+    private fun placedOriginY(screenWidth: Int, screenHeight: Int): Float =
+        activeForeign?.let { foreignOriginY(it, screenWidth, screenHeight, 1f, 1f, 0f) } ?: defaultOriginY(screenWidth, screenHeight)
 
     override fun multipleInstancesAllowed() = false
     override fun deletable() = false
     override fun showByDefault() = true
 
-    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?)
+    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?, val foreignRevision: Int)
 
     private var seed: Seed? = null
     private var forcePending = false
@@ -259,13 +398,15 @@ abstract class VanillaHud(
 
     private fun HudAnchor.fractionY() = if (name.startsWith("Top")) 0f else if (name.startsWith("Bottom")) 1f else 0.5f
 
-    private fun defaultAnchorOffsetX(target: VanillaHud, screenWidth: Int, screenHeight: Int) =
-        defaultOriginX(screenWidth, screenHeight) + width * defaultAnchorPoint.fractionX() -
-            (target.defaultOriginX(screenWidth, screenHeight) + target.width * defaultAnchorTargetPoint.fractionX())
+    private fun defaultAnchorOffsetX(target: VanillaHud, screenWidth: Int, screenHeight: Int) = ForeignTransform.anchorOffset(
+        placedOriginX(screenWidth, screenHeight), width * appliedForeignScale, defaultAnchorPoint.fractionX(),
+        target.placedOriginX(screenWidth, screenHeight), target.width * target.appliedForeignScale, defaultAnchorTargetPoint.fractionX(),
+    )
 
-    private fun defaultAnchorOffsetY(target: VanillaHud, screenWidth: Int, screenHeight: Int) =
-        defaultOriginY(screenWidth, screenHeight) + height * defaultAnchorPoint.fractionY() -
-            (target.defaultOriginY(screenWidth, screenHeight) + target.height * defaultAnchorTargetPoint.fractionY())
+    private fun defaultAnchorOffsetY(target: VanillaHud, screenWidth: Int, screenHeight: Int) = ForeignTransform.anchorOffset(
+        placedOriginY(screenWidth, screenHeight), height * appliedForeignScale, defaultAnchorPoint.fractionY(),
+        target.placedOriginY(screenWidth, screenHeight), target.height * target.appliedForeignScale, defaultAnchorTargetPoint.fractionY(),
+    )
 
     private fun holdDefaultAnchor(target: VanillaHud, screenWidth: Int, screenHeight: Int) {
         asSystemWrite {
@@ -357,7 +498,7 @@ abstract class VanillaHud(
         if (w <= 0 || h <= 0) return
         val seed = seed
         val screenSame = seed != null && w == seed.w && h == seed.h && quarterTurns == seed.turns &&
-            growthAnchor == seed.anchor
+            growthAnchor == seed.anchor && seed.foreignRevision == ForeignTransform.revision
         if (screenSame && !measure) return
         try {
             val scale = effectiveScale
@@ -383,7 +524,7 @@ abstract class VanillaHud(
     }
 
     private fun commitSeed(w: Int, h: Int, hudW: Float, hudH: Float) {
-        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor)
+        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor, ForeignTransform.revision)
     }
 
     val previewing: Boolean get() = previewing()
@@ -417,7 +558,9 @@ abstract class VanillaHud(
     protected open val composeBackground: Boolean get() = false
 
     /** the Designer's size and resize handles change [textScale], and here that sizes the whole element with its background */
-    open val elementScale: Float get() = textScale
+    open val ownScale: Float get() = textScale
+
+    val elementScale: Float get() = ownScale * appliedForeignScale
 
     /** text whose colour the game's pass already resolved from [textColor] */
     open val managesTextColor: Boolean get() = false
@@ -559,6 +702,8 @@ abstract class VanillaHud(
     override fun shouldShow() = hasContent()
 
     companion object {
+        private const val ATTRIBUTION_REUSE_MILLIS = 5000L
+
         private var currentSchema: Int? = null
 
         internal var frame = 0L
@@ -583,6 +728,7 @@ abstract class VanillaHud(
         @JvmStatic
         fun beginFrame(graphics: GuiGraphicsExtractor) {
             HudTransform.resetFrame()
+            ForeignTransform.beginFrame(graphics)
             HudCapture.beginFrame()
             if (!previewing()) EditorSnapshot.clear()
             if (!HudManager.isEditing) {
@@ -612,6 +758,11 @@ abstract class VanillaHud(
             for (hud in HudManager.activeInstances) {
                 if (hud !is VanillaHud || !hud.shouldDraw()) continue
                 try {
+                    if (hud.seenForeignRevision != ForeignTransform.revision) {
+                        hud.seenForeignRevision = ForeignTransform.revision
+                        hud.queueForceDefault()
+                    }
+                    hud.refreshDetection()
                     if (!hud.measureOwed) {
                         hud.ensureSection()
                         hud.applyForceDefault()
