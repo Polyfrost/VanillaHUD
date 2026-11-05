@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 14
+    private const val SCHEMA_VERSION = 15
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -145,6 +145,7 @@ object HudConfigMigrator {
         if (from < 13) padTextShadows(folder)
         // a folder below 9 has only just been given the designer migration above
         if (from in 9..13) redoLostDesignerMigration(folder)
+        if (from < 15) rescaleTitlePadding(folder)
 
         writeStamp(stamp)
     }
@@ -395,6 +396,28 @@ object HudConfigMigrator {
         for (key in listOf("padRight", "padBottom")) {
             val pad = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asFloat ?: continue
             obj.addProperty(key, pad + shadow)
+        }
+    }
+
+    /**
+     * Title padding now grows with the text from its default size, so what was saved at another size
+     * is restated to keep its box. The shadow's own default is left to follow the text, that being
+     * what was wrong with it.
+     */
+    private fun rescaleTitlePadding(folder: Path) {
+        for ((file, default) in SHADOW_REACH) try {
+            if (default == null) continue
+            val path = folder.resolve("huds").resolve(file)
+            val obj = readObject(path) ?: continue
+            val scale = obj.get("textScale")?.takeIf { it.isJsonPrimitive }?.asFloat ?: continue
+            if (scale <= 0f || scale == default) continue
+            for (key in listOf("padLeft", "padRight", "padTop", "padBottom")) {
+                val pad = obj.get(key)?.takeIf { it.isJsonPrimitive }?.asFloat ?: continue
+                if (pad == default && (key == "padRight" || key == "padBottom")) continue
+                obj.addProperty(key, pad * default / scale)
+            }
+            writeObject(path, obj)
+        } catch (_: Throwable) {
         }
     }
 

@@ -1233,6 +1233,12 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
 
     override val innerScale get() = scale.coerceAtLeast(0.001f)
 
+    /** the size vanilla draws this line at, which stored padding is measured against */
+    protected abstract val defaultScale: Float
+
+    // the box is otherwise only ever grown by the text, leaving the shadow's padding at its default size
+    override val padScale get() = innerScale / defaultScale
+
     abstract val instantFade: Boolean
     abstract val autoTitleScale: Boolean
     abstract val scale: Float
@@ -1253,7 +1259,8 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
 
     private fun previewString(): String = previewText()
     *///?}
-    protected abstract val topOffset: Float
+    /** where vanilla draws the line from the screen centre, before [scale] applies to it as it does to the text */
+    protected abstract val fontY: Float
 
     override val hugsGlyphs get() = true
     override val naturalWidth get() = 120f
@@ -1261,7 +1268,7 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
     // vanilla halves the font width, a pixel wider than the letters, before scaling it
     override fun vanillaOriginX(screenWidth: Int, screenHeight: Int) =
         half(screenWidth) - half((width / scale).roundToInt() + 1) * scale
-    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = half(screenHeight) + topOffset
+    override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) = half(screenHeight) + fontY * scale
     override val anchorX get() = 0.5f
     override val anchorY get() = 0.5f
     override val positionAnchorY get() = 0f
@@ -1296,10 +1303,12 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
 
 class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
     init {
-        textScale = 4f
+        textScale = defaultScale
         // a shadow pixel at the title's size
-        padForShadow(4f)
+        padForShadow(defaultScale)
     }
+
+    override val defaultScale get() = 4f
 
     val titleScale: Float get() = textScale
 
@@ -1314,7 +1323,7 @@ class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
 
     override val scale get() = textScale
     override val placeholder get() = "Title"
-    override val topOffset get() = -40f
+    override val fontY get() = -10f
 
     //? if > 1.8.9 {
     override fun live(): Component? = hudAccessor?.title
@@ -1324,10 +1333,12 @@ class TitleHud : TitleLineHud("vanillahud-title.json", "Title") {
 
 class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
     init {
-        textScale = 2f
+        textScale = defaultScale
         // a shadow pixel at the subtitle's size
-        padForShadow(2f)
+        padForShadow(defaultScale)
     }
+
+    override val defaultScale get() = 2f
 
     val subtitleScale: Float get() = textScale
 
@@ -1342,7 +1353,7 @@ class SubtitleHud : TitleLineHud("vanillahud-subtitle.json", "Subtitle") {
 
     override val scale get() = textScale
     override val placeholder get() = "Subtitle"
-    override val topOffset get() = 10f
+    override val fontY get() = 5f
 
     //? if > 1.8.9 {
     override fun live(): Component? = hudAccessor?.subtitle

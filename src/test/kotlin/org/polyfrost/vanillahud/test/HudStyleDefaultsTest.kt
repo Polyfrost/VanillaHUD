@@ -98,6 +98,64 @@ class HudStyleDefaultsTest {
     }
 
     @Test
+    fun `a title's box stays on its text at any size`() {
+        val w = 640
+        val h = 360
+        // the game draws these lines at -10 and 5 under the scale, so the size moves them too
+        for ((hud, fontY) in listOf(TitleHud() to -10f, SubtitleHud() to 5f)) {
+            val defaultY = hud.vanillaOriginY(w, h)
+            for (scale in listOf(1f, 2.65f, 4f, 7.5f)) {
+                hud.textScale = scale
+                assertEquals(h / 2 + fontY * scale, hud.vanillaOriginY(w, h), 1e-3f, "${hud.title} y at size $scale")
+            }
+            hud.textScale = if (hud is TitleHud) 4f else 2f
+            assertEquals(defaultY, hud.vanillaOriginY(w, h), "${hud.title} default y")
+        }
+        assertEquals(140f, TitleHud().vanillaOriginY(w, h), "the title's default is vanilla's")
+        assertEquals(190f, SubtitleHud().vanillaOriginY(w, h), "the subtitle's default is vanilla's")
+    }
+
+    @Test
+    fun `a title's padding grows with its text so the box stays a pixel past the letters`() {
+        for (hud in listOf(TitleHud(), SubtitleHud())) {
+            for (scale in listOf(1f, 2.65f, 8f)) {
+                hud.textScale = scale
+                assertEquals(hud.width + scale, hud.boxWidth, 1e-3f, "${hud.title} box width at size $scale")
+                assertEquals(hud.height + scale, hud.boxHeight, 1e-3f, "${hud.title} box height at size $scale")
+            }
+        }
+    }
+
+    @Test
+    fun `stored title padding keeps its box but untouched padding follows the text`() {
+        val folder = ConfigManager.active().folder
+        val huds = folder.resolve("huds")
+        Files.createDirectories(huds)
+        val stamp = folder.resolve("vanillahud-migration")
+        val stampWas = if (Files.exists(stamp)) Files.readString(stamp) else null
+        val title = huds.resolve("vanillahud-title.json")
+        val subtitle = huds.resolve("vanillahud-subtitle.json")
+        try {
+            Files.writeString(stamp, "14")
+            Files.writeString(title, """{"textScale":1.0,"padLeft":3.0,"padRight":4.0,"padBottom":6.0}""")
+            Files.writeString(subtitle, """{"textScale":2.0,"padLeft":3.0,"padRight":5.0}""")
+
+            HudConfigMigrator.migrate()
+
+            val t = JsonParser.parseString(Files.readString(title)).asJsonObject
+            assertEquals(12f, t.get("padLeft").asFloat, "still 3 once it's drawn at a quarter of the default size")
+            assertEquals(24f, t.get("padBottom").asFloat)
+            assertEquals(4f, t.get("padRight").asFloat, "the shadow's default was never chosen for this size")
+            val s = JsonParser.parseString(Files.readString(subtitle)).asJsonObject
+            assertEquals(3f, s.get("padLeft").asFloat, "the default size already measures the same")
+            assertEquals(5f, s.get("padRight").asFloat)
+        } finally {
+            for (p in listOf(title, subtitle)) Files.deleteIfExists(p)
+            if (stampWas != null) Files.writeString(stamp, stampWas) else Files.deleteIfExists(stamp)
+        }
+    }
+
+    @Test
     fun `text keeps the opacity the game's font would give it`() {
         assertEquals(0xFFFFFFFF.toInt(), fontColor(0x00FFFFFF, blending = true), "the 1.8.9 boss bar passes no alpha")
         assertEquals(0xFFFFFFFF.toInt(), fontColor(0x20FFFFFF, blending = false), "the 1.8.9 scoreboard draws with blending off")

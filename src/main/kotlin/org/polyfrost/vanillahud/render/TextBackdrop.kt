@@ -25,10 +25,11 @@ object TextBackdrop {
         val ty = (y * k).roundToInt()
         val tw = ((if (hud.hugsGlyphs) width - 1 else width) * k).roundToInt()
         val th = ((if (hud.hugsGlyphs) BackdropHud.GLYPH_HEIGHT else height) * k).roundToInt()
-        val x0 = if (hud.staticWidth) tx - (hud.contentOffsetX / unit).roundToInt() else tx - hud.padLeft.roundToInt()
-        val y0 = if (hud.staticWidth) ty - (hud.contentOffsetY / unit).roundToInt() else ty - hud.padTop.roundToInt()
-        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + hud.padRight.roundToInt()
-        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + hud.padBottom.roundToInt()
+        val pad = hud.padScale / unit
+        val x0 = if (hud.staticWidth) tx - (hud.contentOffsetX / unit).roundToInt() else tx - (hud.padLeft * pad).roundToInt()
+        val y0 = if (hud.staticWidth) ty - (hud.contentOffsetY / unit).roundToInt() else ty - (hud.padTop * pad).roundToInt()
+        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + (hud.padRight * pad).roundToInt()
+        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + (hud.padBottom * pad).roundToInt()
         val radius = min(hud.radius, min(x1 - x0, y1 - y0) / 2)
         val border = if (hud.border) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
         val fill = withAlpha(hud.textBgColor.argb, textAlpha)
