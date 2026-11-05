@@ -10,16 +10,23 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
+import org.spongepowered.asm.mixin.injection.At;
 *///?}
 //? if >=26 {
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.StatusEffectsHud;
 import org.spongepowered.asm.mixin.injection.At;
+//?}
+//? if >=1.21.8 {
+import org.polyfrost.vanillahud.render.ForeignTransform;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //?}
 
 //? if >=26.2 {
@@ -38,6 +45,20 @@ import net.minecraft.client.gui.Hud;
 /*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinStatusEffects {
+    //? if >=1.21.8 {
+    @Inject(
+            //? if <26 {
+            /*method = "renderEffects",
+            *///?} else {
+            method = "extractEffects",
+            //?}
+            at = @At("HEAD")
+    )
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
+
     //? if <26 {
     /*@WrapMethod(method = "renderEffects")
     private void vanillahud$statusEffects(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {

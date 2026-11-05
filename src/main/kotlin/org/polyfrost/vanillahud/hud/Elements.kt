@@ -723,6 +723,16 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         } ?: return half(screenHeight) - naturalHeight / 2f
         return half(screenHeight) - s.scores * 6f - if (s.title) 10f else 1f
     }
+
+    /** NaN while the size can't be measured */
+    fun expectedTitleTop(screenHeight: Int): Float {
+        val s = try {
+            size()
+        } catch (_: Throwable) {
+            null
+        } ?: return Float.NaN
+        return half(screenHeight) - s.scores * 6f - 10f
+    }
     override val anchorX get() = 1f
     override val anchorY get() = 0.5f
 
@@ -1230,7 +1240,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 }
 
 abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, title, Category.INFO) {
-    override val elementScale get() = 1f
+    override val ownScale get() = 1f
 
     override val innerScale get() = scale.coerceAtLeast(0.001f)
 

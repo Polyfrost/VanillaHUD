@@ -28,6 +28,13 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+//? if >=1.21.8 {
+import net.minecraft.client.DeltaTracker;
+import org.polyfrost.vanillahud.render.ForeignTransform;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//?}
+
 //? if <1.21.4 && >1.8.9 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -52,6 +59,20 @@ import net.minecraft.client.gui.Hud;
 /*@Mixin(GameGui.class)
 *///?}
 public class GuiMixinActionBar {
+    //? if >=1.21.8 {
+    @Inject(
+            //? if <26 {
+            /*method = "renderOverlayMessage",
+            *///?} else {
+            method = "extractOverlayMessage",
+            //?}
+            at = @At("HEAD")
+    )
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
+
     //? if > 1.8.9 {
     //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "renderOverlayMessage")
