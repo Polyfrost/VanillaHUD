@@ -20,6 +20,11 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay;
 import org.polyfrost.vanillahud.render.TextBackdrop;
+//? if >=1.21.8 {
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
+import org.polyfrost.vanillahud.render.ForeignTransform;
+//?}
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -163,6 +168,20 @@ public abstract class PlayerTabOverlayMixin {
     private void vanillahud$footerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         vanillahud$fill(original, graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
     }
+
+    //? if >=1.21.8 {
+    @Inject(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At("HEAD")
+    )
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, int width, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
 
     @Inject(
             //? if <26 {

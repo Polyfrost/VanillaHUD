@@ -87,6 +87,7 @@ object HudTransform {
         var boxH = 0f
         var turns = 0
         var rev = 0
+        var foreignRev = 0
         var scoreboardRev = 0
         var huds = 0
         var schema = 0
@@ -111,16 +112,18 @@ object HudTransform {
         val src = resolvedHud ?: provider
         if (!editing && !src.hasContent()) {
             scissors.addLast(SKIPPED)
+            ForeignTransform.enterSkipped()
             return
         }
-        val w = graphics.guiWidth()
-        val h = graphics.guiHeight()
+        ForeignTransform.enter(graphics, src)
+        val w = ForeignTransform.realGuiWidth(graphics)
+        val h = ForeignTransform.realGuiHeight(graphics)
         val turns = src.quarterTurns
         val natW = src.unrotatedWidth
         val natH = src.unrotatedHeight
         val p = placements.getOrPut(provider.javaClass) { Placement() }
         if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns || p.boxW != src.boxWidth || p.boxH != src.boxHeight || p.oy != src.vanillaOriginY(w, h) ||
-            p.rev != VanillaHud.positionRevision || p.scoreboardRev != HudInternals.scoreboardRevision ||
+            p.rev != VanillaHud.positionRevision || p.foreignRev != ForeignTransform.revision || p.scoreboardRev != HudInternals.scoreboardRevision ||
             p.huds != HudManager.activeInstances.size || p.hud !== resolvedHud || p.schema != (resolvedHud?.posSchema ?: 0) ||
             resolvedHud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }
         ) {
@@ -150,6 +153,7 @@ object HudTransform {
             p.boxH = src.boxHeight
             p.turns = turns
             p.rev = VanillaHud.positionRevision
+            p.foreignRev = ForeignTransform.revision
             p.scoreboardRev = HudInternals.scoreboardRevision
             p.huds = HudManager.activeInstances.size
             p.schema = hud?.posSchema ?: 0
@@ -189,6 +193,7 @@ object HudTransform {
         mirrors[mirrorDepth++] = mirror2Y
 
         push(graphics)
+        ForeignTransform.rebase(graphics)
         val pose = graphics.pose()
         val drawn = s * src.elementScale
         HudCapture.place(p.hx, p.hy, gx, gy, s, gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
@@ -213,6 +218,7 @@ object HudTransform {
             pose.translate(-ox, -oy)
         }
         //?}
+        ForeignTransform.recordPlacedPose(graphics)
     }
 
     /** marks a layer whose sprites are standalone icons so each one can be kept upright */
@@ -226,6 +232,7 @@ object HudTransform {
     @JvmStatic
     fun resetFrame() {
         resolved.clear()
+        ForeignTransform.reset()
         iconDepth = 0
         iconTurns = 0
         depth = 0
@@ -318,8 +325,8 @@ object HudTransform {
     @JvmStatic
     fun beginText(graphics: GuiGraphicsExtractor, hud: VanillaHud) {
         begin(graphics, hud)
-        val w = graphics.guiWidth()
-        val h = graphics.guiHeight()
+        val w = ForeignTransform.realGuiWidth(graphics)
+        val h = ForeignTransform.realGuiHeight(graphics)
         beginUpright(
             graphics, hud,
             hud.vanillaOriginX(w, h) + hud.naturalWidth / 2f,
@@ -336,6 +343,7 @@ object HudTransform {
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {
         val state = scissors.removeLastOrNull()
+        ForeignTransform.leave()
         if (state == SKIPPED) return
         if (mirrorDepth > 0) mirrorDepth--
         mirror2Y = if (mirrorDepth > 0) mirrors[mirrorDepth - 1] else Float.NaN

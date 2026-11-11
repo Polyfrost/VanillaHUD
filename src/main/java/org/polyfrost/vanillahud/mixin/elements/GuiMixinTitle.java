@@ -15,6 +15,7 @@ import org.polyfrost.vanillahud.hud.BackdropHud;
 import org.polyfrost.vanillahud.hud.TitleHud;
 import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.render.ForeignTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -55,6 +56,20 @@ public class GuiMixinTitle {
     //? if > 1.8.9 {
     @Shadow private Component title;
     @Shadow private Component subtitle;
+
+    //? if >=1.21.8 {
+    @Inject(
+            //? if >=26 {
+            method = "extractTitle",
+            //?} else {
+            /*method = "renderTitle",
+            *///?}
+            at = @At("HEAD")
+    )
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
 
     //? if <1.21.4 && >1.8.9 {
     /*@WrapMethod(method = "renderTitle")

@@ -14,6 +14,12 @@ import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+//? if >=1.21.8 {
+import org.polyfrost.vanillahud.render.ForeignTransform;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+//?}
+
 //? if <1.21.4 && >1.8.9 {
 /*import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import org.polyfrost.vanillahud.render.HudTransform;
@@ -32,6 +38,20 @@ public class GuiMixinClosedCaptions {
         HudTransform.end(graphics);
     }
     *///?}
+
+    //? if >=1.21.8 {
+    @Inject(
+            //? if <26 {
+            /*method = "render",
+            *///?} else {
+            method = "extractRenderState",
+            //?}
+            at = @At("HEAD")
+    )
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, CallbackInfo ci) {
+        ForeignTransform.probe(graphics);
+    }
+    //?}
 
     @ModifyExpressionValue(
             //? if <26 {
