@@ -57,6 +57,7 @@ public abstract class PlayerTabOverlayMixin {
     private Stream<PlayerInfo> vanillahud$selfAtTopAndLimit(Stream<PlayerInfo> stream, long original,
                                                            Operation<Stream<PlayerInfo>> op) {
         TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getServerRestricted()) return op.call(stream, original);
         long limit = hud.getPlayerLimit();
         if (hud.getSelfAtTop() && this.minecraft.player != null) {
             UUID self = this.minecraft.player.getUUID();
@@ -86,7 +87,8 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getBackgroundColor(I)I")
     )
     private int vanillahud$widgetColor(int original) {
-        return Huds.INSTANCE.getTabList().getTabWidgetArgb();
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return hud.getServerRestricted() ? original : hud.getTabWidgetArgb();
     }
 
     @Unique
@@ -133,6 +135,10 @@ public abstract class PlayerTabOverlayMixin {
                     ordinal = 0)
     )
     private void vanillahud$headerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(graphics, x0, y0, x1, y1, color);
+            return;
+        }
         int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
         this.vanillahud$headerDrawn = (argb >>> 24) != 0;
         vanillahud$fill(original, graphics, x0, y0, x1, y1, argb, true, false);
@@ -149,6 +155,10 @@ public abstract class PlayerTabOverlayMixin {
                     ordinal = 1)
     )
     private void vanillahud$bodyBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(graphics, x0, y0, x1, y1, color);
+            return;
+        }
         boolean header = this.vanillahud$headerDrawn;
         this.vanillahud$headerDrawn = false;
         vanillahud$markShape(x0, y0, x1, y1, header, vanillahud$footerPending());
@@ -166,6 +176,10 @@ public abstract class PlayerTabOverlayMixin {
                     ordinal = 3)
     )
     private void vanillahud$footerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(graphics, x0, y0, x1, y1, color);
+            return;
+        }
         vanillahud$fill(original, graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
     }
 
@@ -192,7 +206,8 @@ public abstract class PlayerTabOverlayMixin {
             at = @At("HEAD")
     )
     private void vanillahud$pushTextShadow(CallbackInfo ci) {
-        TextShadowHook.push(Huds.INSTANCE.getTabList().getShowShadow());
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (!hud.getServerRestricted()) TextShadowHook.push(hud.getShowShadow());
     }
 
     @Inject(
@@ -204,7 +219,7 @@ public abstract class PlayerTabOverlayMixin {
             at = @At("RETURN")
     )
     private void vanillahud$popTextShadow(CallbackInfo ci) {
-        TextShadowHook.pop();
+        if (!Huds.INSTANCE.getTabList().getServerRestricted()) TextShadowHook.pop();
     }
 
     @ModifyVariable(
@@ -216,13 +231,14 @@ public abstract class PlayerTabOverlayMixin {
             at = @At("STORE"), ordinal = 0
     )
     private boolean vanillahud$showHead(boolean original) {
-        return original && Huds.INSTANCE.getTabList().getShowHead();
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return original && (hud.getServerRestricted() || hud.getShowHead());
     }
 
     @Unique
     private int vanillahud$pingReserve() {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (hud.getShowPing() && hud.getNumberPing() && hud.getPingType() == 1) {
+        if (!hud.getServerRestricted() && hud.getShowPing() && hud.getNumberPing() && hud.getPingType() == 1) {
             return this.minecraft.font.width("999") + 3;
         }
         return 0;
@@ -248,7 +264,8 @@ public abstract class PlayerTabOverlayMixin {
             //?}
             at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 0))
     private int vanillahud$fixWidth(int a, int b, Operation<Integer> original) {
-        return Huds.INSTANCE.getTabList().getFixWidth() ? a : original.call(a, b);
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return !hud.getServerRestricted() && hud.getFixWidth() ? a : original.call(a, b);
     }
 
     // captures each slot right edge so the name clip below knows where the ping sits
@@ -265,6 +282,10 @@ public abstract class PlayerTabOverlayMixin {
                                              Operation<Void> original,
                                              @Share("vhTabSlotRight") LocalIntRef slotRight) {
         slotRight.set(x2);
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(graphics, x1, y1, x2, y2, color);
+            return;
+        }
         if ((color >>> 24) == 0) return;
         TextBackdrop.roundedClip(graphics, x1, y1, x2, y2, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
                 Huds.INSTANCE.getTabList().getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
@@ -316,6 +337,7 @@ public abstract class PlayerTabOverlayMixin {
     private void vanillahud$ping(GuiGraphicsExtractor graphics, int slotWidth, int xo, int yo, PlayerInfo info,
                                  CallbackInfo ci) {
         TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getServerRestricted()) return;
         if (!hud.getShowPing()) {
             ci.cancel();
             return;
@@ -389,7 +411,8 @@ public abstract class PlayerTabOverlayMixin {
             )
     )
     private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().getBetterHatLayer()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (!hud.getServerRestricted() && hud.getBetterHatLayer()) {
             HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
         } else {
             original.call(graphics, texture, x, y, size, hat, flip /*? if >= 1.21.4 {*/, color /*?}*/);
@@ -464,7 +487,8 @@ public abstract class PlayerTabOverlayMixin {
 
     @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "intValue=80"))
     private int vanillahud$playerLimit(int original) {
-        return Huds.INSTANCE.getTabList().getPlayerLimit();
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return hud.getServerRestricted() ? original : hud.getPlayerLimit();
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
@@ -472,6 +496,7 @@ public abstract class PlayerTabOverlayMixin {
             opcode = Opcodes.GETFIELD))
     private Text vanillahud$header(Text original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getServerRestricted()) return original;
         if (!hud.getShowHeader()) return null;
         return hud.getPreviewing() ? hud.previewHeader(original) : original;
     }
@@ -481,7 +506,7 @@ public abstract class PlayerTabOverlayMixin {
             opcode = Opcodes.GETFIELD))
     private Text vanillahud$footer(Text original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        Text footer = !hud.getShowFooter() ? null : hud.getPreviewing() ? hud.previewFooter(original) : original;
+        Text footer = hud.getServerRestricted() ? original : !hud.getShowFooter() ? null : hud.getPreviewing() ? hud.previewFooter(original) : original;
         this.vanillahud$hasFooter = footer != null;
         return footer;
     }
@@ -489,6 +514,10 @@ public abstract class PlayerTabOverlayMixin {
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 0))
     private void vanillahud$headerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(x0, y0, x1, y1, color);
+            return;
+        }
         int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
         this.vanillahud$headerDrawn = (argb >>> 24) != 0;
         vanillahud$fill(original, x0, y0, x1, y1, argb, true, false);
@@ -497,6 +526,10 @@ public abstract class PlayerTabOverlayMixin {
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 1))
     private void vanillahud$bodyBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(x0, y0, x1, y1, color);
+            return;
+        }
         boolean header = this.vanillahud$headerDrawn;
         this.vanillahud$headerDrawn = false;
         vanillahud$markShape(x0, y0, x1, y1, header, this.vanillahud$hasFooter);
@@ -506,6 +539,10 @@ public abstract class PlayerTabOverlayMixin {
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 2))
     private void vanillahud$widget(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(x0, y0, x1, y1, color);
+            return;
+        }
         int argb = Huds.INSTANCE.getTabList().getTabWidgetArgb();
         if ((argb >>> 24) == 0) return;
         TextBackdrop.roundedClip(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
@@ -516,6 +553,10 @@ public abstract class PlayerTabOverlayMixin {
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 3))
     private void vanillahud$footerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (Huds.INSTANCE.getTabList().getServerRestricted()) {
+            original.call(x0, y0, x1, y1, color);
+            return;
+        }
         vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
     }
 
@@ -524,13 +565,14 @@ public abstract class PlayerTabOverlayMixin {
             @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;isEncrypted()Z")
     })
     private boolean vanillahud$showHead(boolean original) {
-        return original && Huds.INSTANCE.getTabList().getShowHead();
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return original && (hud.getServerRestricted() || hud.getShowHead());
     }
 
     @Unique
     private int vanillahud$pingReserve() {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (hud.getShowPing() && hud.getNumberPing() && hud.getPingType() == 1) {
+        if (!hud.getServerRestricted() && hud.getShowPing() && hud.getNumberPing() && hud.getPingType() == 1) {
             return Minecraft.getInstance().font.width("999") + 3;
         }
         return 0;
@@ -544,12 +586,14 @@ public abstract class PlayerTabOverlayMixin {
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", ordinal = 1))
     private int vanillahud$fixWidth(int a, int b, Operation<Integer> original) {
-        return Huds.INSTANCE.getTabList().getFixWidth() ? a : original.call(a, b);
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        return !hud.getServerRestricted() && hud.getFixWidth() ? a : original.call(a, b);
     }
 
     @Inject(method = "renderPing", at = @At("HEAD"), cancellable = true)
     private void vanillahud$ping(int slotWidth, int xo, int yo, PlayerInfo info, CallbackInfo ci) {
         TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getServerRestricted()) return;
         if (!hud.getShowPing()) {
             ci.cancel();
             return;
@@ -584,7 +628,8 @@ public abstract class PlayerTabOverlayMixin {
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
     private void vanillahud$hatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight, int width, int height, float texWidth, float texHeight, Operation<Void> original, @Local PlayerInfo info) {
-        if (!Huds.INSTANCE.getTabList().getBetterHatLayer()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.getServerRestricted() || !hud.getBetterHatLayer()) {
             original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
             return;
         }

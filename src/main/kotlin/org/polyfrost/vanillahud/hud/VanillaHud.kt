@@ -20,6 +20,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.Section
+import org.polyfrost.oneconfig.api.ui.v1.ServerRestrictions
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.compat.ForeignAttribution
 import org.polyfrost.vanillahud.mixin.access.IGui
@@ -529,7 +530,12 @@ abstract class VanillaHud(
 
     val previewing: Boolean get() = previewing()
 
+    /** the server wants this element drawn exactly as vanilla draws it, while the editor keeps previewing it as usual */
+    val serverRestricted: Boolean get() = !HudManager.isEditing && ServerRestrictions.isHudDisabled(hudId)
+
     fun shouldDraw(): Boolean {
+        // the player's own visibility settings never hide the vanilla element the server asked for
+        if (serverRestricted) return true
         if (!HudManager.isEditing && hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false

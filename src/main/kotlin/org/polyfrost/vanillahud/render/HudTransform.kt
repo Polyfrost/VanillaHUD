@@ -110,7 +110,8 @@ object HudTransform {
         val editing = HudManager.isEditing
         val resolvedHud = resolveCached(provider)
         val src = resolvedHud ?: provider
-        if (!editing && !src.hasContent()) {
+        // a restricted element is neither moved nor captured, so the game draws it where it always does
+        if (src.serverRestricted || !editing && !src.hasContent()) {
             scissors.addLast(SKIPPED)
             ForeignTransform.enterSkipped()
             return
@@ -271,7 +272,11 @@ object HudTransform {
         return true
     }
 
-    private fun drawTurns(hud: VanillaHud): Int = if (hud.mirrored) (hud.quarterTurns + 2) % 4 else hud.quarterTurns
+    private fun drawTurns(hud: VanillaHud): Int = when {
+        hud.serverRestricted -> 0
+        hud.mirrored -> (hud.quarterTurns + 2) % 4
+        else -> hud.quarterTurns
+    }
 
     /** how far to move a piece from [y0] to [y1] to reach its flipped height */
     @JvmStatic

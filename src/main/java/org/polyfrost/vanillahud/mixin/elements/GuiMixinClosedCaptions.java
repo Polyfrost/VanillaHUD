@@ -62,7 +62,8 @@ public class GuiMixinClosedCaptions {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getBackgroundColor(F)I")
     )
     private int vanillahud$closedCaptions$background(int original) {
-        return Huds.INSTANCE.getClosedCaptions().getCaptionBgArgb();
+        ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        return hud.getServerRestricted() ? original : hud.getCaptionBgArgb();
     }
 
     @WrapOperation(
@@ -89,16 +90,25 @@ public class GuiMixinClosedCaptions {
     //? if <1.21.6 && >1.8.9 {
     /*private int vanillahud$closedCaptions$text(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, Operation<Integer> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.getServerRestricted()) return original.call(graphics, font, text, x, y, color);
         return graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
     }
     *///?} elif <26 {
     /*private void vanillahud$closedCaptions$text(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, text, x, y, color);
+            return;
+        }
         graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
     }
     *///?} else {
     private void vanillahud$closedCaptions$text(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int color, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, text, x, y, color);
+            return;
+        }
         graphics.text(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
     }
     //?}
@@ -127,16 +137,25 @@ public class GuiMixinClosedCaptions {
     //? if <1.21.6 && >1.8.9 {
     /*private int vanillahud$closedCaptions$arrow(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color, Operation<Integer> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.getServerRestricted()) return original.call(graphics, font, text, x, y, color);
         return graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
     }
     *///?} elif <26 {
     /*private void vanillahud$closedCaptions$arrow(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, text, x, y, color);
+            return;
+        }
         graphics.drawString(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
     }
     *///?} else {
     private void vanillahud$closedCaptions$arrow(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color, Operation<Void> original) {
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, text, x, y, color);
+            return;
+        }
         graphics.text(font, text, x, y, hud.captionTextArgb(color), hud.getTextShadow());
     }
     //?}

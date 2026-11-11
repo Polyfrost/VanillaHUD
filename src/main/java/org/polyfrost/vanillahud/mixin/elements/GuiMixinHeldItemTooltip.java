@@ -74,7 +74,7 @@ public class GuiMixinHeldItemTooltip {
                     opcode = Opcodes.GETFIELD))
     private int vanillahud$gateTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
-        return !hud.getFadeOut() ? Integer.MAX_VALUE : original;
+        return !hud.getServerRestricted() && !hud.getFadeOut() ? Integer.MAX_VALUE : original;
     }
 
     @ModifyExpressionValue(
@@ -88,7 +88,7 @@ public class GuiMixinHeldItemTooltip {
                     opcode = Opcodes.GETFIELD))
     private int vanillahud$alphaTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
-        return (!hud.getFadeOut() || hud.getInstantFade()) ? Integer.MAX_VALUE : original;
+        return !hud.getServerRestricted() && (!hud.getFadeOut() || hud.getInstantFade()) ? Integer.MAX_VALUE : original;
     }
 
     @WrapOperation(
@@ -112,6 +112,13 @@ public class GuiMixinHeldItemTooltip {
     //?} else
     //private int vanillahud$itemNameText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, Operation<Integer> original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
+        //? if >=1.21.8 {
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, text, x, y, width, color);
+            return;
+        }
+        //?} else
+        //if (hud.getServerRestricted()) return original.call(graphics, font, text, x, y, width, color);
         //? if >=1.21.8
         ForeignTransform.observeY(graphics, hud, y, hud.vanillaOriginY(ForeignTransform.realGuiWidth(graphics), ForeignTransform.realGuiHeight(graphics)));
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
@@ -141,6 +148,7 @@ public class GuiMixinHeldItemTooltip {
     private int vanillahud$itemNameDraw(Font font, String text, float x, float y, int color,
                                         Operation<Integer> original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
+        if (hud.getServerRestricted()) return original.call(font, text, x, y, color);
         TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, (int) x, (int) y, font.width(text), 9, color);
         return font.draw(text, x, y, color, hud.getTextShadow());
     }
@@ -151,7 +159,7 @@ public class GuiMixinHeldItemTooltip {
             opcode = Opcodes.GETFIELD))
     private int vanillahud$gateTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
-        return !hud.getFadeOut() ? Integer.MAX_VALUE : original;
+        return !hud.getServerRestricted() && !hud.getFadeOut() ? Integer.MAX_VALUE : original;
     }
 
     @ModifyExpressionValue(method = "renderSelectedItemName", at = @At(value = "FIELD",
@@ -159,7 +167,7 @@ public class GuiMixinHeldItemTooltip {
             opcode = Opcodes.GETFIELD))
     private int vanillahud$alphaTimer(int original) {
         HeldItemTooltipHud hud = Huds.INSTANCE.getHeldItemTooltip();
-        return (!hud.getFadeOut() || hud.getInstantFade()) ? Integer.MAX_VALUE : original;
+        return !hud.getServerRestricted() && (!hud.getFadeOut() || hud.getInstantFade()) ? Integer.MAX_VALUE : original;
     }
     *///?}
 }

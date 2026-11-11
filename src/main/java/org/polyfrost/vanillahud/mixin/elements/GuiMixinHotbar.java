@@ -62,6 +62,10 @@ public abstract class GuiMixinHotbar {
     )
     private void vanillahud$hotbar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, Operation<Void> original) {
         HotbarHud hud = Huds.INSTANCE.getHotbar();
+        if (hud.getServerRestricted()) {
+            original.call(graphics, deltaTracker);
+            return;
+        }
         if (!hud.shouldDraw()) return;
 
         HudTransform.begin(graphics, hud);
@@ -165,6 +169,10 @@ public abstract class GuiMixinHotbar {
             *///?}
             GuiGraphicsExtractor graphics, int x, int y, DeltaTracker deltaTracker,
             Player player, ItemStack stack, int seed, Operation<Void> original) {
+        if (Huds.INSTANCE.getHotbar().getServerRestricted()) {
+            original.call(self, graphics, x, y, deltaTracker, player, stack, seed);
+            return;
+        }
         HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
         TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());
@@ -187,6 +195,10 @@ public abstract class GuiMixinHotbar {
     @WrapMethod(method = "renderHotbar")
     private void vanillahud$hotbar(Window window, float tickDelta, Operation<Void> original) {
         HotbarHud hud = Huds.INSTANCE.getHotbar();
+        if (hud.getServerRestricted()) {
+            original.call(window, tickDelta);
+            return;
+        }
         if (!hud.shouldDraw()) return;
 
         HudTransform.begin(LegacyDrawContext.INSTANCE, hud);
@@ -241,6 +253,10 @@ public abstract class GuiMixinHotbar {
     )
     private void vanillahud$slot(GameGui self, int slot, int x, int y, float tickDelta, Player player,
                                  Operation<Void> original) {
+        if (Huds.INSTANCE.getHotbar().getServerRestricted()) {
+            original.call(self, slot, x, y, tickDelta, player);
+            return;
+        }
         HudTransform.beginUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar(),
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
         TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());

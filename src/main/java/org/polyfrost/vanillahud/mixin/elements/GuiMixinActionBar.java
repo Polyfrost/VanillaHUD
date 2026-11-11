@@ -102,7 +102,8 @@ public class GuiMixinActionBar {
             )
     )
     private boolean vanillahud$actionBar$rainbowTimer(boolean original) {
-        return original && Huds.INSTANCE.getActionBar().getRainbowTimer();
+        ActionBarHud hud = Huds.INSTANCE.getActionBar();
+        return original && (hud.getServerRestricted() || hud.getRainbowTimer());
     }
 
     @WrapOperation(
@@ -126,6 +127,13 @@ public class GuiMixinActionBar {
     //?} else
     //private int vanillahud$actionBarText(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, int color, Operation<Integer> original) {
         ActionBarHud hud = Huds.INSTANCE.getActionBar();
+        //? if >=1.21.8 {
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, text, x, y, width, color);
+            return;
+        }
+        //?} else
+        //if (hud.getServerRestricted()) return original.call(graphics, font, text, x, y, width, color);
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
         try {
@@ -159,6 +167,7 @@ public class GuiMixinActionBar {
     private int vanillahud$actionBarDraw(Font font, String text, int x, int y, int color,
                                          Operation<Integer> original) {
         ActionBarHud hud = Huds.INSTANCE.getActionBar();
+        if (hud.getServerRestricted()) return original.call(font, text, x, y, color);
         if (!hud.shouldDraw()) return 0;
         TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, x, y, font.width(text), 9, color);
         return font.draw(text, (float) x, (float) y, color, hud.getTextShadow());
@@ -167,7 +176,8 @@ public class GuiMixinActionBar {
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/gui/GameGui;overlayMessageTinted:Z", opcode = Opcodes.GETFIELD))
     private boolean vanillahud$actionBar$rainbowTimer(boolean original) {
-        return original && Huds.INSTANCE.getActionBar().getRainbowTimer();
+        ActionBarHud hud = Huds.INSTANCE.getActionBar();
+        return original && (hud.getServerRestricted() || hud.getRainbowTimer());
     }
     *///?}
 }

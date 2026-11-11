@@ -82,7 +82,7 @@ public class GuiMixinLocatorBar {
     @Unique
     private static boolean vanillahud$overlaysLocator() {
         ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
-        if (!hud.getOverlayLocatorBar() || hud.getPreviewing()) return false;
+        if (!hud.getOverlayLocatorBar() || hud.getPreviewing() || hud.getServerRestricted()) return false;
         Minecraft minecraft = Minecraft.getInstance();
         return minecraft.player.jumpableVehicle() != null || minecraft.gameMode.hasExperience();
     }

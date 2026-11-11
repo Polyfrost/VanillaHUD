@@ -90,7 +90,9 @@ public class BossHealthOverlayMixin {
     )
     private void vanillahud$bossHealth(BossHealthOverlay self, GuiGraphicsExtractor graphics, int x, int y, BossEvent event, Operation<Void> original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
-        if (hud.getRenderHealth()) {
+        if (hud.getServerRestricted()) {
+            original.call(self, graphics, x, y, event);
+        } else if (hud.getRenderHealth()) {
             int offset = hud.barOffset(Minecraft.getInstance().font.width(event.getName()));
             original.call(self, graphics, x + offset, y, event);
         }
@@ -120,6 +122,7 @@ public class BossHealthOverlayMixin {
             //? if <1.21.6 && >1.8.9 {
     /*private int vanillahud$bossText(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color, Operation<Integer> original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (hud.getServerRestricted()) return original.call(graphics, font, name, x, y, color);
         if (!hud.getRenderText()) return 0;
         TextBackdrop.draw(graphics, hud, x, y, font.width(name), 9, color);
         TextShadowHook.push(hud.getTextShadow());
@@ -132,6 +135,10 @@ public class BossHealthOverlayMixin {
     *///?} else {
     private void vanillahud$bossText(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color, Operation<Void> original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (hud.getServerRestricted()) {
+            original.call(graphics, font, name, x, y, color);
+            return;
+        }
         if (!hud.getRenderText()) return;
         TextBackdrop.draw(graphics, hud, x, y, font.width(name), 9, color);
         TextShadowHook.push(hud.getTextShadow());
@@ -203,6 +210,10 @@ public class BossHealthOverlayMixin {
     private void vanillahud$bossHealth(GameGui self, int x, int y, int u, int v, int width, int height,
                                        Operation<Void> original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (hud.getServerRestricted()) {
+            original.call(self, x, y, u, v, width, height);
+            return;
+        }
         if (!hud.getRenderHealth()) return;
         if (v == 79 && hud.getSmoothHealth()) {
             width = (int) (hud.smoothedHealth(BossBar.health) * 183);
@@ -217,6 +228,7 @@ public class BossHealthOverlayMixin {
     private int vanillahud$bossText(Font font, String text, float x, float y, int color,
                                     Operation<Integer> original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (hud.getServerRestricted()) return original.call(font, text, x, y, color);
         if (!hud.getRenderText()) return 0;
         TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, (int) x, (int) y, font.width(text), 9, color);
         return font.draw(text, x, y, color, hud.getTextShadow());
