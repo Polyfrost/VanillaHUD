@@ -21,6 +21,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.api.VanillaHudApi
 import org.polyfrost.vanillahud.compat.ForeignAttribution
 import org.polyfrost.vanillahud.mixin.access.IGui
 import org.polyfrost.vanillahud.render.ForeignPlacement
@@ -529,7 +530,10 @@ abstract class VanillaHud(
 
     val previewing: Boolean get() = previewing()
 
+    val isDrawnAsVanilla: Boolean get() = !HudManager.isEditing && VanillaHudApi.isDrawnAsVanilla(hudId)
+
     fun shouldDraw(): Boolean {
+        if (isDrawnAsVanilla) return true
         if (!HudManager.isEditing && hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false

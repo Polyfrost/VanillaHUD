@@ -71,6 +71,7 @@ public class GuiMixinTabList {
     )
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) return down;
         if (VanillaHud.previewing()) {
             hud.resetOpen();
             return true;
@@ -98,6 +99,7 @@ public class GuiMixinTabList {
             target = "Lnet/minecraft/client/options/KeyBinding;isPressed()Z"))
     private boolean vanillahud$displayMode(boolean down) {
         TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) return down;
         if (VanillaHud.previewing()) {
             hud.resetOpen();
             return true;

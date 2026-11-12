@@ -30,6 +30,7 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;header:Lnet/minecraft/network/chat/Component;", opcode = Opcodes.GETFIELD)
     )
     private Component vanillahud$header(Component header) {
+        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) return header;
         if (!Huds.INSTANCE.getTabList().getShowHeader()) return null;
         if (Huds.INSTANCE.getTabList().getPreviewing()) return Huds.INSTANCE.getTabList().previewHeader(header);
         return header;
@@ -44,6 +45,7 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;footer:Lnet/minecraft/network/chat/Component;", opcode = Opcodes.GETFIELD)
     )
     private Component vanillahud$footer(Component footer) {
+        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) return footer;
         if (!Huds.INSTANCE.getTabList().getShowFooter()) return null;
         if (Huds.INSTANCE.getTabList().getPreviewing()) return Huds.INSTANCE.getTabList().previewFooter(footer);
         return footer;

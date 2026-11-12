@@ -43,13 +43,13 @@ public class GuiMixinStatBars {
         return Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2;
     }
 
-    private static int vanillahud$left(int x, int alignment) {
-        if (alignment == StatBarHud.ALIGN_LEFT) return x;
+    private static int vanillahud$left(int x, StatBarHud hud) {
+        if (hud.isDrawnAsVanilla() || hud.getFillSide() == StatBarHud.ALIGN_LEFT) return x;
         return 2 * (vanillahud$centre() - 91) + 72 - x;
     }
 
-    private static int vanillahud$right(int x, int alignment) {
-        if (alignment == StatBarHud.ALIGN_RIGHT) return x;
+    private static int vanillahud$right(int x, StatBarHud hud) {
+        if (hud.isDrawnAsVanilla() || hud.getFillSide() == StatBarHud.ALIGN_RIGHT) return x;
         return 2 * (vanillahud$centre() + 91) - 90 - x;
     }
 
@@ -61,7 +61,7 @@ public class GuiMixinStatBars {
             at = @At("HEAD"), argsOnly = true, ordinal = 0
     )
     private int vanillahud$heartX(int x) {
-        return vanillahud$left(x, Huds.INSTANCE.getHealth().getFillSide());
+        return vanillahud$left(x, Huds.INSTANCE.getHealth());
     }
 
     @ModifyArg(
@@ -72,7 +72,7 @@ public class GuiMixinStatBars {
             at = @At(value = "INVOKE", target = BLIT), index = X
     )
     private static int vanillahud$armorX(int x) {
-        return vanillahud$left(x, Huds.INSTANCE.getArmor().getFillSide());
+        return vanillahud$left(x, Huds.INSTANCE.getArmor());
     }
 
     @ModifyArg(
@@ -83,7 +83,7 @@ public class GuiMixinStatBars {
             at = @At(value = "INVOKE", target = BLIT), index = X
     )
     private int vanillahud$foodX(int x) {
-        return vanillahud$right(x, Huds.INSTANCE.getHunger().getFillSide());
+        return vanillahud$right(x, Huds.INSTANCE.getHunger());
     }
 
     @ModifyArg(
@@ -96,7 +96,7 @@ public class GuiMixinStatBars {
             at = @At(value = "INVOKE", target = BLIT), index = X
     )
     private int vanillahud$airX(int x) {
-        return vanillahud$right(x, Huds.INSTANCE.getAir().getFillSide());
+        return vanillahud$right(x, Huds.INSTANCE.getAir());
     }
 
     @ModifyArg(
@@ -107,7 +107,7 @@ public class GuiMixinStatBars {
             at = @At(value = "INVOKE", target = BLIT), index = X
     )
     private int vanillahud$mountX(int x) {
-        return vanillahud$right(x, Huds.INSTANCE.getHunger().getFillSide());
+        return vanillahud$right(x, Huds.INSTANCE.getHunger());
     }
     //?}
 }

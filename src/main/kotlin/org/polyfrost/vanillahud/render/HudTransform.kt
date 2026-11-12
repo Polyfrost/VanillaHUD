@@ -110,7 +110,7 @@ object HudTransform {
         val editing = HudManager.isEditing
         val resolvedHud = resolveCached(provider)
         val src = resolvedHud ?: provider
-        if (!editing && !src.hasContent()) {
+        if (src.isDrawnAsVanilla || !editing && !src.hasContent()) {
             scissors.addLast(SKIPPED)
             ForeignTransform.enterSkipped()
             return
@@ -271,7 +271,11 @@ object HudTransform {
         return true
     }
 
-    private fun drawTurns(hud: VanillaHud): Int = if (hud.mirrored) (hud.quarterTurns + 2) % 4 else hud.quarterTurns
+    private fun drawTurns(hud: VanillaHud): Int = when {
+        hud.isDrawnAsVanilla -> 0
+        hud.mirrored -> (hud.quarterTurns + 2) % 4
+        else -> hud.quarterTurns
+    }
 
     /** how far to move a piece from [y0] to [y1] to reach its flipped height */
     @JvmStatic

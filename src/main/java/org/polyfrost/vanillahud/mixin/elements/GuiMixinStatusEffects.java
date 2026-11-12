@@ -75,7 +75,7 @@ public class GuiMixinStatusEffects {
     )
     private void vanillahud$shiftEffectBackground(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height, Operation<Void> original) {
         StatusEffectsHud hud = Huds.INSTANCE.getStatusEffects();
-        if (!hud.shouldDraw()) {
+        if (hud.isDrawnAsVanilla() || !hud.shouldDraw()) {
             original.call(graphics, pipeline, sprite, x, y, width, height);
             return;
         }
@@ -89,7 +89,7 @@ public class GuiMixinStatusEffects {
     )
     private void vanillahud$shiftEffectIcon(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height, int color, Operation<Void> original) {
         StatusEffectsHud hud = Huds.INSTANCE.getStatusEffects();
-        if (!hud.shouldDraw()) {
+        if (hud.isDrawnAsVanilla() || !hud.shouldDraw()) {
             original.call(graphics, pipeline, sprite, x, y, width, height, color);
             return;
         }

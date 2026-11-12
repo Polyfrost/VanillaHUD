@@ -2,6 +2,7 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.HungerHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -53,7 +54,8 @@ public class GuiMixinHunger {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextInt(I)I")
     )
     private int vanillahud$hungerShake(int original) {
-        return Huds.INSTANCE.getHunger().getAnimation() ? original : 1;
+        HungerHud hud = Huds.INSTANCE.getHunger();
+        return hud.isDrawnAsVanilla() || hud.getAnimation() ? original : 1;
     }
     //?}
 }

@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 //?} else {
 /*import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 *///?}
+import org.polyfrost.vanillahud.hud.HealthHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,8 +50,9 @@ public class GuiMixinHealth {
         HudTransform.beginIcons(graphics, Huds.INSTANCE.getHealth());
         *///?}
 
+        HealthHud hud = Huds.INSTANCE.getHealth();
         original.call(graphics, player, xLeft, yLineBase, healthRowHeight, heartOffsetIndex, maxHealth,
-                currentHealth, oldHealth, absorption, blink && !Huds.INSTANCE.getHealth().getPreviewing() && Huds.INSTANCE.getHealth().getAnimation());
+                currentHealth, oldHealth, absorption, blink && (hud.isDrawnAsVanilla() || !hud.getPreviewing() && hud.getAnimation()));
 
         //? if <=1.21.6 && >1.8.9 {
         /*HudTransform.endIcons(graphics);
@@ -65,6 +67,7 @@ public class GuiMixinHealth {
             *///?}
     )
     private boolean setAlwaysHardcoreHearts(boolean isHardcore) {
+        if (Huds.INSTANCE.getHealth().isDrawnAsVanilla()) return isHardcore;
         if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 1) return true;
         if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 2) return false;
         return isHardcore;
@@ -75,6 +78,7 @@ public class GuiMixinHealth {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldData;isHardcore()Z")
     )
     private boolean vanillahud$hardcoreHearts(boolean isHardcore) {
+        if (Huds.INSTANCE.getHealth().isDrawnAsVanilla()) return isHardcore;
         if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 1) return true;
         if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 2) return false;
         return isHardcore;

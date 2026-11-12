@@ -2,6 +2,7 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 //? if > 1.8.9 {
 import net.minecraft.client.gui.components.LerpingBossEvent;
+import org.polyfrost.vanillahud.hud.BossBarHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,12 +19,14 @@ public class LerpingBossEventMixin {
 
     @Inject(method = "getProgress", at = @At("HEAD"), cancellable = true)
     private void vanillahud$instant(CallbackInfoReturnable<Float> cir) {
-        if (!Huds.INSTANCE.getBossBar().getSmoothHealth()) cir.setReturnValue(targetPercent);
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if (!hud.isDrawnAsVanilla() && !hud.getSmoothHealth()) cir.setReturnValue(targetPercent);
     }
 
     @ModifyConstant(method = "getProgress", constant = @Constant(floatValue = 100.0f))
     private float vanillahud$lerpSpeed(float original) {
-        return Huds.INSTANCE.getBossBar().getLerpSpeed();
+        BossBarHud hud = Huds.INSTANCE.getBossBar();
+        return hud.isDrawnAsVanilla() ? original : hud.getLerpSpeed();
     }
 }
 //?} else {

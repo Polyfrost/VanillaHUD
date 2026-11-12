@@ -93,6 +93,7 @@ public class GuiMixinTitle {
                     ordinal = 0, shift = At.Shift.AFTER))
     private void vanillahud$titleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         TitleHud hud = Huds.INSTANCE.getTitle();
+        if (hud.isDrawnAsVanilla()) return;
         vanillahud$customScale(graphics, hud.getTitleScale() / 4.0F);
         vanillahud$autoScale(graphics, title, hud.getTitleScale(), hud.getAutoTitleScale());
     }
@@ -111,6 +112,7 @@ public class GuiMixinTitle {
                     *///?}
                     ordinal = 1, shift = At.Shift.AFTER))
     private void vanillahud$subtitleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (Huds.INSTANCE.getSubtitle().isDrawnAsVanilla()) return;
         float scale = Huds.INSTANCE.getSubtitle().getSubtitleScale();
         vanillahud$customScale(graphics, scale / 2.0F);
         vanillahud$autoScale(graphics, subtitle, scale, Huds.INSTANCE.getSubtitle().getAutoTitleScale());
@@ -143,6 +145,13 @@ public class GuiMixinTitle {
             //return 0;
         }
         BackdropHud hud = Huds.INSTANCE.getTitle();
+        //? if >=1.21.8 {
+        if (hud.isDrawnAsVanilla()) {
+            original.call(graphics, font, text, x, y, width, color);
+            return;
+        }
+        //?} else
+        //if (hud.isDrawnAsVanilla()) return original.call(graphics, font, text, x, y, width, color);
         if (Huds.INSTANCE.getTitle().getInstantFade()) color |= 0xFF000000;
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
@@ -183,6 +192,13 @@ public class GuiMixinTitle {
             //return 0;
         }
         BackdropHud hud = Huds.INSTANCE.getSubtitle();
+        //? if >=1.21.8 {
+        if (hud.isDrawnAsVanilla()) {
+            original.call(graphics, font, text, x, y, width, color);
+            return;
+        }
+        //?} else
+        //if (hud.isDrawnAsVanilla()) return original.call(graphics, font, text, x, y, width, color);
         if (Huds.INSTANCE.getSubtitle().getInstantFade()) color |= 0xFF000000;
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
@@ -261,18 +277,24 @@ public class GuiMixinTitle {
         ctx.pose().pushMatrix();
         ctx.pose().translate(ctx.guiWidth() / 2.0F, ctx.guiHeight() / 2.0F);
         ctx.pose().scale(2.0F, 2.0F);
-        vanillahud$customScale(hud.getSubtitleScale() / 2.0F);
-        vanillahud$autoScale(subtitle, hud.getSubtitleScale(), hud.getAutoTitleScale());
+        boolean vanilla = hud.isDrawnAsVanilla();
+        if (!vanilla) {
+            vanillahud$customScale(hud.getSubtitleScale() / 2.0F);
+            vanillahud$autoScale(subtitle, hud.getSubtitleScale(), hud.getAutoTitleScale());
+        }
         GlStateManager.enableBlend();
         int width = font.width(subtitle);
-        if (hud.getInstantFade()) color |= 0xFF000000;
-        TextBackdrop.draw(ctx, hud, -width / 2, 5, width, 9, color);
-        font.draw(subtitle, (float) (-width / 2), 5.0F, color, hud.getTextShadow());
+        if (!vanilla) {
+            if (hud.getInstantFade()) color |= 0xFF000000;
+            TextBackdrop.draw(ctx, hud, -width / 2, 5, width, 9, color);
+        }
+        font.draw(subtitle, (float) (-width / 2), 5.0F, color, vanilla ? vanillahud$subtitleShadow : hud.getTextShadow());
         ctx.pose().popMatrix();
         HudTransform.end(ctx);
     }
 
     @Unique private Integer vanillahud$subtitleColor;
+    @Unique private boolean vanillahud$subtitleShadow;
 
     // the subtitle has its own element transform, so it is drawn after the title region closes
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
@@ -281,9 +303,11 @@ public class GuiMixinTitle {
                                      Operation<Integer> original) {
         if (text == this.subtitle) {
             vanillahud$subtitleColor = color;
+            vanillahud$subtitleShadow = shadow;
             return 0;
         }
         TitleHud hud = Huds.INSTANCE.getTitle();
+        if (hud.isDrawnAsVanilla()) return original.call(font, text, x, y, color, shadow);
         if (!hud.shouldDraw()) return 0;
         if (hud.getInstantFade()) color |= 0xFF000000;
         TextBackdrop.draw(LegacyDrawContext.INSTANCE, hud, (int) x, (int) y, font.width(text), 9, color);
@@ -295,6 +319,7 @@ public class GuiMixinTitle {
             shift = At.Shift.AFTER))
     private void vanillahud$titleScale(float tickDelta, CallbackInfo ci) {
         TitleHud hud = Huds.INSTANCE.getTitle();
+        if (hud.isDrawnAsVanilla()) return;
         vanillahud$customScale(hud.getTitleScale() / 4.0F);
         vanillahud$autoScale(title, hud.getTitleScale(), hud.getAutoTitleScale());
     }

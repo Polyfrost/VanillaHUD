@@ -22,6 +22,10 @@ public abstract class SubtitlesHudMixin {
         ISubtitlesHud self = (ISubtitlesHud) this;
         SoundFixCaptions.attach(self);
         ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        if (hud.isDrawnAsVanilla()) {
+            SoundFixCaptions.render(self, false, original::call);
+            return;
+        }
         if (!hud.shouldDraw()) return;
 
         HudTransform.begin(LegacyDrawContext.INSTANCE, hud);
@@ -39,7 +43,8 @@ public abstract class SubtitlesHudMixin {
             at = @At(value = "INVOKE", target = "Lio/github/moehreag/soundfix/util/ARGB;colorFromFloat(FFFF)I")
     )
     private int vanillahud$background(int original) {
-        return Huds.INSTANCE.getClosedCaptions().getCaptionBgArgb();
+        ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        return hud.isDrawnAsVanilla() ? original : hud.getCaptionBgArgb();
     }
 
     @ModifyExpressionValue(
@@ -47,7 +52,8 @@ public abstract class SubtitlesHudMixin {
             at = @At(value = "INVOKE", target = "Lio/github/moehreag/soundfix/util/ARGB;color(IIII)I")
     )
     private int vanillahud$text(int original) {
-        return Huds.INSTANCE.getClosedCaptions().captionTextArgb(original);
+        ClosedCaptionsHud hud = Huds.INSTANCE.getClosedCaptions();
+        return hud.isDrawnAsVanilla() ? original : hud.captionTextArgb(original);
     }
 }
 *///?}
