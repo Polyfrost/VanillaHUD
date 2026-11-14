@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.polyfrost.oneconfig.api.config.v1.Config
@@ -24,6 +25,7 @@ import org.polyfrost.vanillahud.hud.TitleHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import org.polyfrost.vanillahud.util.HudConfigMigrator
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
@@ -90,6 +92,8 @@ class TitlePositionTest {
         }
 
         private fun requirePermissionEnforcement() {
+            // Windows has no POSIX permissions to take away, so these only run where it does
+            assumeTrue("posix" in FileSystems.getDefault().supportedFileAttributeViews(), "this file system has no POSIX permissions")
             val reason = permissionsNotEnforced
             assertNull(reason, "this scenario cannot drive an unreadable file: $reason")
         }

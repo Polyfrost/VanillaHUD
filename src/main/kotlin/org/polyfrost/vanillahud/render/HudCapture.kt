@@ -15,6 +15,7 @@ import org.lwjgl.opengl.GL11
 import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ComposeNode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -28,11 +29,13 @@ import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.absoluteAt
 import org.polyfrost.compose.composables.size
+import org.polyfrost.compose.node.PolyNode
 import org.polyfrost.compose.render.FilterQuality
 import org.polyfrost.compose.render.PolyBitmap
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
+import org.polyfrost.compose.runtime.PolyApplier
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.item.PolyItemIcon
 import net.fabricmc.loader.api.FabricLoader
@@ -112,10 +115,11 @@ object HudCapture {
 
     private data class Rounded(val m: Pose, val c: Corners, val x0: Float, val y0: Float, val x1: Float, val y1: Float, val color: Int)
 
-    class Item(val stack: ItemStack, val x: Float, val y: Float, val size: Float) {
+    /** [width] and [height] differ while the game stretches an item that was just picked up */
+    class Item(val stack: ItemStack, val x: Float, val y: Float, val width: Float, val height: Float) {
         var decorated = false
 
-        fun same(o: Item) = x == o.x && y == o.y && size == o.size && decorated == o.decorated && ItemStack.matches(stack, o.stack)
+        fun same(o: Item) = x == o.x && y == o.y && width == o.width && height == o.height && decorated == o.decorated && ItemStack.matches(stack, o.stack)
     }
 
     /** what one of the game's HUD elements drew into a layer, which several of them can feed */
@@ -182,11 +186,11 @@ object HudCapture {
             l.shownY = l.frameY
             l.shownScale = l.scale
             val items = done.filterIsInstance<Item>().map { i ->
-                Item(i.stack, (i.x - l.frameX) / l.scale, (i.y - l.frameY) / l.scale, i.size / l.scale).also { it.decorated = i.decorated }
+                Item(i.stack, (i.x - l.frameX) / l.scale, (i.y - l.frameY) / l.scale, i.width / l.scale, i.height / l.scale).also { it.decorated = i.decorated }
             }
             val old = l.items
             if (items.size != old.size || items.indices.any { !items[it].same(old[it]) }) {
-                l.items = items.map { i -> Item(i.stack.copy(), i.x, i.y, i.size).also { it.decorated = i.decorated } }
+                l.items = items.map { i -> Item(i.stack.copy(), i.x, i.y, i.width, i.height).also { it.decorated = i.decorated } }
             }
         }
     }
@@ -408,8 +412,9 @@ object HudCapture {
         //? if > 1.8.9
         if (stack.isEmpty) return true
         val m = pose(g)
-        val scale = hypot(m.m00, m.m01)
-        l.recording += Item(stack, m.x(x + 8f, y + 8f) - 8f * scale, m.y(x + 8f, y + 8f) - 8f * scale, 16f * scale)
+        val sx = hypot(m.m00, m.m01)
+        val sy = hypot(m.m10, m.m11)
+        l.recording += Item(stack, m.x(x + 8f, y + 8f) - 8f * sx, m.y(x + 8f, y + 8f) - 8f * sy, 16f * sx, 16f * sy)
         return true
     }
 
@@ -637,7 +642,13 @@ object HudCapture {
             if (op.shadow) text(plain, op.x + hud.shadowOffsetX / 2f, op.y + hud.shadowOffsetY / 2f, PolyColor(shadow), font)
             text(plain, op.x, op.y, PolyColor(op.color), font)
         } else if (op.shadow && hud.fullShadow) {
-            mcTextOutline(op.text, op.x, op.y, op.color, shadow, 1f)
+            // vanilla's four draws a pixel off each side, which leave the corners open where mcTextOutline fills them
+            val outline = op.text.replace(COLOR_CODE, "")
+            mcText(outline, op.x - 1f, op.y, shadow, false, 1f)
+            mcText(outline, op.x + 1f, op.y, shadow, false, 1f)
+            mcText(outline, op.x, op.y - 1f, shadow, false, 1f)
+            mcText(outline, op.x, op.y + 1f, shadow, false, 1f)
+            mcText(op.text, op.x, op.y, op.color, false, 1f)
         } else if (op.shadow && (hud.shadowColor != DEFAULT_SHADOW || hud.shadowChroma)) {
             mcText(op.text.replace(COLOR_CODE, ""), op.x + 1f, op.y + 1f, shadow, false, 1f)
             mcText(op.text, op.x, op.y, op.color, false, 1f)
@@ -731,17 +742,53 @@ object HudCapture {
                 painting(x, y) { replay(ops, 0, split) }
             }
             for ((i, item) in layer.items.withIndex()) key(i) {
-                PolyItemIcon(
-                    item.stack, item.size,
-                    PolyModifier.absoluteAt(item.x, item.y),
-                    decorations = item.decorated,
-                )
+                // a stretched icon keeps its resting size and is scaled, so OneConfig doesn't re-render it every frame
+                val size = if (item.width == item.height) item.width else 16f * hud.elementScale
+                // the game stretches about the point 3/4 down the icon, so the resting square is found from there
+                val restX = item.x + (item.width - size) / 2f
+                val restY = item.y + (item.height - size) * 0.75f
+                ComposeNode<StretchNode, PolyApplier>(
+                    factory = ::StretchNode,
+                    update = {
+                        set(item.width / size) { sx = it }
+                        set(item.height / size) { sy = it }
+                        set(PolyModifier.absoluteAt(restX, restY).size(size, size)) { it.applyTo(style) }
+                    },
+                ) {
+                    PolyItemIcon(item.stack, size, decorations = item.decorated)
+                }
             }
             PolyCanvas(PolyModifier.size(width, height), live = true) { x, y, _, _ ->
                 val ops = layer.shown
                 val split = ops.indexOfFirst { it is Item }
                 if (split >= 0) painting(x, y) { replay(ops, split + 1, ops.size) }
             }
+        }
+    }
+}
+
+/**
+ * Stretches the icon of the [PolyItemIcon] it holds the way the game does for an item that was just picked up,
+ * about the point 3/4 down it. The icon is the item box's first child and the count and durability bar after it
+ * stay unstretched, as the game draws them once it has popped the stretch.
+ */
+private class StretchNode : PolyNode() {
+    var sx = 1f
+    var sy = 1f
+
+    override fun render(ctx: RenderContext) {
+        val box = children.singleOrNull()
+        if (sx == 1f && sy == 1f || box == null) return super.render(ctx)
+        val px = x + width / 2f
+        val py = y + height * 0.75f
+        box.children.forEachIndexed { i, child ->
+            if (i != 0) return@forEachIndexed child.render(ctx)
+            ctx.save()
+            ctx.translate(px, py)
+            ctx.scale(sx, sy)
+            ctx.translate(-px, -py)
+            child.render(ctx)
+            ctx.restore()
         }
     }
 }
