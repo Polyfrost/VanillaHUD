@@ -80,11 +80,6 @@ repositories {
     strictMaven("https://maven.fabricmc.net/", "FabricMC", "net.fabricmc")
     strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
     strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
-    strictMaven(
-        "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1",
-        "DevAuth",
-        "me.djtheredstoner"
-    )
 }
 
 dependencies {
@@ -118,7 +113,6 @@ dependencies {
         implementation("org.polyfrost.oneconfig:$module:$oneconfigversion")
     }
 
-    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${sc.properties.get<String>("deps.devauth")}")
     if (isOrnithe) findProperty("vanillahud.soundfix")?.let { modRuntimeOnly(files(it)) }
 
     testImplementation("org.junit.jupiter:junit-jupiter:${sc.properties.get<String>("deps.junit")}")
