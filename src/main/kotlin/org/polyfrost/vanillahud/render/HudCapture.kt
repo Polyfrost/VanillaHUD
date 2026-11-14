@@ -642,13 +642,7 @@ object HudCapture {
             if (op.shadow) text(plain, op.x + hud.shadowOffsetX / 2f, op.y + hud.shadowOffsetY / 2f, PolyColor(shadow), font)
             text(plain, op.x, op.y, PolyColor(op.color), font)
         } else if (op.shadow && hud.fullShadow) {
-            // vanilla's four draws a pixel off each side, which leave the corners open where mcTextOutline fills them
-            val outline = op.text.replace(COLOR_CODE, "")
-            mcText(outline, op.x - 1f, op.y, shadow, false, 1f)
-            mcText(outline, op.x + 1f, op.y, shadow, false, 1f)
-            mcText(outline, op.x, op.y - 1f, shadow, false, 1f)
-            mcText(outline, op.x, op.y + 1f, shadow, false, 1f)
-            mcText(op.text, op.x, op.y, op.color, false, 1f)
+            mcTextOutline(op.text, op.x, op.y, op.color, shadow, 1f)
         } else if (op.shadow && (hud.shadowColor != DEFAULT_SHADOW || hud.shadowChroma)) {
             mcText(op.text.replace(COLOR_CODE, ""), op.x + 1f, op.y + 1f, shadow, false, 1f)
             mcText(op.text, op.x, op.y, op.color, false, 1f)
