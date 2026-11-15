@@ -21,9 +21,9 @@ import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.scores.Objective;
 import org.objectweb.asm.Opcodes;
+import org.polyfrost.oneconfig.api.hud.v1.HudPreview;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.VanillaHud;
-import org.polyfrost.vanillahud.util.EditorSnapshot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -70,7 +70,8 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static <T> T vanillahud$held(String key, T live, boolean valid, T demo) {
-        return EditorSnapshot.hold(key, live, valid, demo);
+        T value = HudPreview.previewValue(Huds.INSTANCE.getHealth(), key, () -> valid ? live : null, demo);
+        return value != null ? value : live;
     }
 
     @Unique
@@ -369,11 +370,11 @@ import net.minecraft.client.render.Window;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
+import org.polyfrost.oneconfig.api.hud.v1.HudPreview;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.VanillaHud;
 import org.polyfrost.vanillahud.util.DemoData;
-import org.polyfrost.vanillahud.util.EditorSnapshot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -401,7 +402,8 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static <T> T vanillahud$held(String key, T live, boolean valid, T demo) {
-        return EditorSnapshot.hold(key, live, valid, demo);
+        T value = HudPreview.previewValue(Huds.INSTANCE.getHealth(), key, () -> valid ? live : null, demo);
+        return value != null ? value : live;
     }
 
     @Unique

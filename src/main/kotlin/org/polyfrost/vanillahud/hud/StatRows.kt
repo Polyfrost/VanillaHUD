@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalOneConfigUiApi::class)
+
 package org.polyfrost.vanillahud.hud
 
 //? if > 1.8.9 {
@@ -5,8 +7,9 @@ import net.minecraft.world.entity.LivingEntity
 //?} else {
 /*import net.minecraft.entity.living.LivingEntity
 *///?}
+import org.polyfrost.oneconfig.api.hud.v1.previewValue
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.vanillahud.util.EditorSnapshot
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -37,9 +40,10 @@ object StatRows {
         if (!editing) {
             return healthRows(player.maxHealth, player.health, absorptionOf(player))
         }
-        val maxHealth = EditorSnapshot.hold("maxHealth", player.maxHealth.toDouble(), player.maxHealth > 0, 20.0)
-        val health = EditorSnapshot.hold("health", player.health, player.health > 0, 20f)
-        val absorption = EditorSnapshot.hold("absorption", absorptionOf(player), true, 0f)
+        val held = Huds.health
+        val maxHealth = held.previewValue("maxHealth", { player.maxHealth.toDouble().takeIf { player.maxHealth > 0 } }, 20.0) ?: 20.0
+        val health = held.previewValue("health", { player.health.takeIf { player.health > 0 } }, 20f) ?: 20f
+        val absorption = held.previewValue("absorption", { absorptionOf(player) }, 0f) ?: 0f
         return healthRows(maxHealth.toFloat(), health, absorption)
     }
 

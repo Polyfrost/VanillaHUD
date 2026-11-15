@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 /*import net.minecraft.client.gui.GuiElement
 import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.vanillahud.hud.BackdropHud
 import kotlin.math.max
 import kotlin.math.min
@@ -14,6 +15,7 @@ import kotlin.math.sqrt
 
 object TextBackdrop {
     @JvmStatic
+    @OptIn(ExperimentalOneConfigUiApi::class)
     fun draw(graphics: GuiGraphicsExtractor, hud: BackdropHud, x: Int, y: Int, width: Int, height: Int, textColor: Int) {
         if (!hud.background || width <= 0) return
         val textAlpha = if (textColor ushr 24 == 0) 255 else textColor ushr 24
@@ -31,7 +33,7 @@ object TextBackdrop {
         val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + (hud.padRight * pad).roundToInt()
         val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + (hud.padBottom * pad).roundToInt()
         val radius = min(hud.radius, min(x1 - x0, y1 - y0) / 2)
-        val border = if (hud.border) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
+        val border = if (hud.borderEnabled) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
         val fill = withAlpha(hud.textBgColor.argb, textAlpha)
         scaled(graphics, 1f / k) {
             if (border <= 0) {
@@ -39,7 +41,7 @@ object TextBackdrop {
             } else {
                 val inner = max(radius - border, 0)
                 rounded(graphics, x0 + border, y0 + border, x1 - border, y1 - border, inner, fill)
-                ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(hud.borderColor.argb, textAlpha))
+                ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(hud.borderPolyColor.argb, textAlpha))
             }
         }
     }

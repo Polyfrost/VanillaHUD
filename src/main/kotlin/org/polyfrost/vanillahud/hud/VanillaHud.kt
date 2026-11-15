@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalOneConfigUiApi::class)
+
 package org.polyfrost.vanillahud.hud
 
 //? if > 1.8.9 {
@@ -11,7 +13,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -20,6 +21,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.Section
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.vanillahud.api.VanillaHudApi
 import org.polyfrost.vanillahud.compat.ForeignAttribution
@@ -28,7 +30,6 @@ import org.polyfrost.vanillahud.render.ForeignPlacement
 import org.polyfrost.vanillahud.render.ForeignTransform
 import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.render.HudTransform
-import org.polyfrost.vanillahud.util.EditorSnapshot
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import kotlin.math.abs
 
@@ -155,22 +156,6 @@ abstract class VanillaHud(
 
     protected open fun Tree.addDependencies() {}
 
-    @Suppress("UNCHECKED_CAST")
-    protected fun Tree.hideUnless(parent: String, vararg children: String) {
-        val p = getProp(parent) as Property<Boolean>
-        for (child in children) getProp(child).addDisplayCondition(p, true)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    protected fun <T> Tree.hideUnless(parent: String, vararg children: String, test: (T?) -> Boolean) {
-        val p = getProp(parent) as Property<T>
-        for (child in children) {
-            val c = getProp(child)
-            c.addDisplayCondition { if (test(p.get())) Property.Display.SHOWN else Property.Display.HIDDEN }
-            p.addCallback { c.revaluateDisplay(); false }
-        }
-    }
-
     abstract val naturalWidth: Float
     abstract val naturalHeight: Float
 
@@ -210,17 +195,7 @@ abstract class VanillaHud(
         get() = if (sectionFor(positionAnchorX, positionAnchorY) == preferredSection) HudAnchor.Auto
         else growthAnchorFor(positionAnchorX, positionAnchorY)
 
-    private inline fun <T> asSystemWrite(block: () -> T): T {
-        val wasSystem = HudInternals.systemReposition()
-        HudInternals.systemReposition(true)
-        try {
-            return block()
-        } finally {
-            HudInternals.systemReposition(wasSystem)
-        }
-    }
-
-    private fun placeAt(absX: Float, absY: Float) = asSystemWrite {
+    private fun placeAt(absX: Float, absY: Float) = withSystemPosition {
         restoringPosition(keepOnSuccess = true) {
             section = preferredSection
             x = absX
@@ -250,7 +225,7 @@ abstract class VanillaHud(
     }
 
     private fun noteUserMove() {
-        if (tree != null && !HudInternals.systemReposition() && previewing()) {
+        if (tree != null && !HudManager.isSystemPosition && previewing()) {
             movedByUser = true
             refreshDetection()
         }
@@ -267,7 +242,7 @@ abstract class VanillaHud(
         }
         try {
             syncRenderedSize()
-            if (wantedAnchor != null) asSystemWrite {
+            if (wantedAnchor != null) withSystemPosition {
                 restoringPosition(keepOnSuccess = true) { setGrowthAnchorKeepingPosition(wantedAnchor) }
             }
             if (section != preferredSection) placeAt(x, y)
@@ -410,7 +385,7 @@ abstract class VanillaHud(
     )
 
     private fun holdDefaultAnchor(target: VanillaHud, screenWidth: Int, screenHeight: Int) {
-        asSystemWrite {
+        withSystemPosition {
             positionRevision++
             anchorTo(target, defaultAnchorTargetPoint, defaultAnchorPoint)
             anchorOffsetX = defaultAnchorOffsetX(target, screenWidth, screenHeight)
@@ -451,7 +426,7 @@ abstract class VanillaHud(
             if (target != null) {
                 holdDefaultAnchor(target, w, h)
             } else {
-                if (isAnchored) asSystemWrite { clearAnchor() }
+                if (isAnchored) withSystemPosition { clearAnchor() }
                 val (dx, dy) = defaultPosition()
                 placeAt(dx, dy)
             }
@@ -582,7 +557,7 @@ abstract class VanillaHud(
     /** the scale the game applies itself inside this element's pose, as a title does */
     open val innerScale: Float get() = 1f
 
-    val bgArgb: Int get() = PolyColor(bgColor, bgChroma, bgChromaSpeed).argb
+    val bgArgb: Int get() = bgPolyColor.argb
 
     private val pads: Boolean get() = padLeft != 0f || padRight != 0f || padTop != 0f || padBottom != 0f
 
@@ -737,7 +712,6 @@ abstract class VanillaHud(
             HudTransform.resetFrame()
             ForeignTransform.beginFrame(graphics)
             HudCapture.beginFrame()
-            if (!previewing()) EditorSnapshot.clear()
             if (!HudManager.isEditing) {
                 HudManager.guiScreenWidth = graphics.guiWidth().toFloat()
                 HudManager.guiScreenHeight = graphics.guiHeight().toFloat()

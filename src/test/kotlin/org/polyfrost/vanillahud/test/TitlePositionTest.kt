@@ -18,8 +18,8 @@ import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Section
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.vanillahud.hud.ActionBarHud
-import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.ScoreboardHud
 import org.polyfrost.vanillahud.hud.TitleHud
 import org.polyfrost.vanillahud.hud.VanillaHud
@@ -2330,25 +2330,23 @@ class TitlePositionTest {
     }
 
     @Test
+    @OptIn(ExperimentalOneConfigUiApi::class)
     fun `a position write inside a system reposition oneconfig opened hands it back`() {
         screen(LAPTOP_W, LAPTOP_H)
         val hud = fresh(SystemWriteHud())
         hud.cancelForceDefault()
 
-        HudInternals.systemReposition(true)
-        try {
+        hud.withSystemPosition {
             hud.pinToVanillaOrigin(LAPTOP_W, LAPTOP_H)
             assertTrue(
-                HudInternals.systemReposition(),
+                HudManager.isSystemPosition,
                 "a position write must not close a system reposition it did not open",
             )
-        } finally {
-            HudInternals.systemReposition(false)
         }
 
         hud.pinToVanillaOrigin(LAPTOP_W, LAPTOP_H)
         assertFalse(
-            HudInternals.systemReposition(),
+            HudManager.isSystemPosition,
             "a position write that opened a system reposition has to close it",
         )
 

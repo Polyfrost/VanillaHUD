@@ -1,10 +1,10 @@
 package org.polyfrost.vanillahud.hud
 
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
-import org.polyfrost.oneconfig.api.config.v1.annotations.Color
-import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
-import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.config.v1.showWhen
+import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import kotlin.math.roundToInt
 
 abstract class BackdropHud(
@@ -20,18 +20,10 @@ abstract class BackdropHud(
 
     val background: Boolean get() = showBackground
 
-    val textBgColor: PolyColor get() = PolyColor(bgColor, bgChroma, bgChromaSpeed)
+    @OptIn(ExperimentalOneConfigUiApi::class)
+    val textBgColor: PolyColor get() = bgPolyColor
 
     val radius: Int get() = bgRadius.roundToInt()
-
-    @Switch(title = "Border", subcategory = "Background")
-    var border = false
-
-    @Slider(title = "Border Size", subcategory = "Background", min = 0f, max = 10f)
-    var borderSize = 1f
-
-    @Color(title = "Border Color", subcategory = "Background")
-    var borderColor = PolyColor(0xFF000000.toInt())
 
     val textShadow: Boolean get() = showShadow
 
@@ -52,10 +44,39 @@ abstract class BackdropHud(
         const val GLYPH_HEIGHT = 7
     }
 
+    @OptIn(ExperimentalOneConfigUiApi::class)
+    override fun migrateLoaded(saved: Tree): Boolean {
+        var changed = false
+        val enabled = saved.getProp("border")?.get() as? Boolean
+        if (enabled != null && saved.get("borderEnabled") == null) {
+            borderEnabled = enabled
+            changed = true
+        }
+        val color = legacyBorderColor(saved.get("borderColor")) ?: return changed
+        borderColor = color.rawArgb
+        if (color.chroma && saved.get("borderChroma") == null && saved.get("borderChromaSpeed") == null) {
+            borderChroma = true
+            borderChromaSpeed = color.chromaSpeed
+        }
+        return true
+    }
+
+    private fun legacyBorderColor(node: Any?): PolyColor? {
+        if (node is Property<*>) return node.get() as? PolyColor
+        if (node !is Tree) return null
+        val rgba = (node.getProp("value") ?: node.getProp("rgba"))?.get() as? List<*> ?: return null
+        val parts = rgba.map { it as? Number ?: return null }
+        if (parts.size != 4) return null
+        val color = PolyColor.rgba(parts[0].toInt(), parts[1].toInt(), parts[2].toInt(), parts[3].toInt())
+        val chroma = node.getProp("chroma")?.get() as? Boolean ?: return color
+        val speed = (node.getProp("chromaSpeed")?.get() as? Number)?.toFloat() ?: color.chromaSpeed
+        return color.withChroma(chroma, speed)
+    }
+
     override fun Tree.addDependencies() = backdropDependencies()
 
     protected fun Tree.backdropDependencies() {
-        hideUnless("showBackground", "border", "borderSize", "borderColor")
-        hideUnless("border", "borderSize", "borderColor")
+        showWhen("showBackground", "borderEnabled", "borderSize", "borderColor", "borderChroma", "borderChromaSpeed")
+        showWhen("borderEnabled", "borderSize", "borderColor", "borderChroma", "borderChromaSpeed")
     }
 }
