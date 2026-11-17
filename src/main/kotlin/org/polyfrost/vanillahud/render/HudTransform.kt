@@ -110,7 +110,7 @@ object HudTransform {
         val editing = HudManager.isEditing
         val resolvedHud = resolveCached(provider)
         val src = resolvedHud ?: provider
-        if (src.isDrawnAsVanilla || !editing && !src.hasContent()) {
+        if (HudManager.isSamplingVanilla || src.isDrawnAsVanilla || !editing && !src.hasContent()) {
             scissors.addLast(SKIPPED)
             ForeignTransform.enterSkipped()
             return
