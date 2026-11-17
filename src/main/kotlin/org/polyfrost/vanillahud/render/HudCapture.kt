@@ -203,11 +203,6 @@ object HudCapture {
     // different passes.
     private val gnetum = FabricLoader.getInstance().isModLoaded("gnetum")
 
-    //? if = 1.21.1 {
-    /*private val flatLayers = FabricLoader.getInstance().isModLoaded("vulkanmod")
-    *///?} else
-    private val flatLayers = false
-
     private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isEditing || hud.hasContent())
 
     /** [part] tells apart the game's HUD elements that draw into the same [hud] */
@@ -641,16 +636,13 @@ object HudCapture {
             translate(0f, (Minecraft.getInstance().font.lineHeight - metrics.descent - metrics.ascent) / 2f)
             if (op.shadow) text(plain, op.x + hud.shadowOffsetX / 2f, op.y + hud.shadowOffsetY / 2f, PolyColor(shadow), font)
             text(plain, op.x, op.y, PolyColor(op.color), font)
-        } else if (op.shadow && hud.fullShadow && hud is ExperienceLevelHud && (shadow ushr 24 == 0xFF || !flatLayers)) {
+        } else if (op.shadow && hud.fullShadow && hud is ExperienceLevelHud && shadow ushr 24 == 0xFF) {
             // vanilla's four draws a pixel off each side, which leave the corners open where mcTextOutline fills them
             val outline = if ('§' in op.text) op.text.replace(COLOR_CODE, "") else op.text
-            val opaque = shadow or (0xFF shl 24)
-            saveLayerAlpha((shadow ushr 24) / 255f)
-            mcText(outline, op.x - 1f, op.y, opaque, false, 1f)
-            mcText(outline, op.x + 1f, op.y, opaque, false, 1f)
-            mcText(outline, op.x, op.y - 1f, opaque, false, 1f)
-            mcText(outline, op.x, op.y + 1f, opaque, false, 1f)
-            restore()
+            mcText(outline, op.x - 1f, op.y, shadow, false, 1f)
+            mcText(outline, op.x + 1f, op.y, shadow, false, 1f)
+            mcText(outline, op.x, op.y - 1f, shadow, false, 1f)
+            mcText(outline, op.x, op.y + 1f, shadow, false, 1f)
             mcText(op.text, op.x, op.y, op.color, false, 1f)
         } else if (op.shadow && hud.fullShadow) {
             mcTextOutline(op.text, op.x, op.y, op.color, shadow, 1f)
