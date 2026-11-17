@@ -1,6 +1,7 @@
 package org.polyfrost.vanillahud.render
 
 //? if > 1.8.9 {
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import net.minecraft.client.gui.GuiGraphicsExtractor
 //?} else {
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
@@ -269,6 +270,7 @@ object ForeignTransform {
     @JvmStatic
     fun probe(graphics: GuiGraphicsExtractor) {
         //? if >=1.21.8 {
+        if (HudManager.isSamplingVanilla) return
         if (depth == 0) return
         val frame = frames[depth - 1]
         val hud = frame.hud
@@ -299,7 +301,7 @@ object ForeignTransform {
     @JvmStatic
     fun observeY(graphics: GuiGraphicsExtractor, hud: VanillaHud, actualY: Int, expectedY: Float) {
         //? if >=1.21.8 {
-        if (expectedY.isNaN()) return
+        if (HudManager.isSamplingVanilla || expectedY.isNaN()) return
         val live = HudTransform.live(hud)
         val shift = actualY - expectedY
         val shifted = exceedsTolerance(shift)
