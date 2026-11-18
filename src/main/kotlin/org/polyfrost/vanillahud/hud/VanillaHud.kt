@@ -776,7 +776,7 @@ abstract class VanillaHud(
          * The editor and the settings page both want it.
          */
         @JvmStatic
-        fun previewing(): Boolean = HudManager.isEditorOpen || HudManager.isConfigUiOpen
+        fun previewing(): Boolean = (HudManager.isEditorOpen || HudManager.isConfigUiOpen) && !HudManager.isSamplingVanilla
     }
 }
 
