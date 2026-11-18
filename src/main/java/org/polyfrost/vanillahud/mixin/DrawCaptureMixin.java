@@ -17,6 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.polyfrost.vanillahud.hook.TextShadowHook;
+import org.polyfrost.vanillahud.render.HeldTooltipBounds;
 import org.polyfrost.vanillahud.render.HudCapture;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -62,6 +63,7 @@ public abstract class DrawCaptureMixin {
 
     @WrapMethod(method = "fill(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;IIIII)V")
     private void vanillahud$fill(RenderPipeline pipeline, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
+        if (HeldTooltipBounds.recording) HeldTooltipBounds.fill(vanillahud$self(), x0, y0, x1, y1, color);
         if (pipeline == RenderPipelines.GUI && HudCapture.fill(vanillahud$self(), x0, y0, x1, y1, color)) return;
         original.call(pipeline, x0, y0, x1, y1, color);
     }
@@ -92,6 +94,7 @@ public abstract class DrawCaptureMixin {
     //?} else
     /*@WrapMethod(method = "drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)V")*/
     private void vanillahud$string(Font font, String text, int x, int y, int color, boolean shadow, Operation<Void> original) {
+        if (text != null && HeldTooltipBounds.recording) HeldTooltipBounds.text(vanillahud$self(), x, y, font.width(text), color);
         if (text != null && HudCapture.text(vanillahud$self(), text, x, y, color, TextShadowHook.apply(shadow))) return;
         original.call(font, text, x, y, color, shadow);
     }
@@ -101,6 +104,7 @@ public abstract class DrawCaptureMixin {
     //?} else
     /*@WrapMethod(method = "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)V")*/
     private void vanillahud$sequence(Font font, FormattedCharSequence text, int x, int y, int color, boolean shadow, Operation<Void> original) {
+        if (HeldTooltipBounds.recording) HeldTooltipBounds.text(vanillahud$self(), x, y, font.width(text), color);
         if (HudCapture.text(vanillahud$self(), text, x, y, color, TextShadowHook.apply(shadow))) return;
         original.call(font, text, x, y, color, shadow);
     }

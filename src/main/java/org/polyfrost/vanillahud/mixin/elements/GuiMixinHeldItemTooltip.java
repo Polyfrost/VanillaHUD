@@ -25,6 +25,8 @@ import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.hud.HeldItemTooltipHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.ForeignTransform;
+//? if >=1.21.8
+import org.polyfrost.vanillahud.render.HeldTooltipBounds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -121,14 +123,18 @@ public class GuiMixinHeldItemTooltip {
         //if (hud.isDrawnAsVanilla()) return original.call(graphics, font, text, x, y, width, color);
         //? if >=1.21.8
         ForeignTransform.observeY(graphics, hud, y, hud.vanillaOriginY(ForeignTransform.realGuiWidth(graphics), ForeignTransform.realGuiHeight(graphics)));
-        TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
+        //? if >=1.21.8
+        HeldTooltipBounds.begin();
         TextShadowHook.push(hud.getTextShadow());
         try {
+            TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
             //? if >=1.21.8 {
             original.call(graphics, font, text, x, y, width, color);
             //?} else
             //return original.call(graphics, font, text, x, y, width, color);
         } finally {
+            //? if >=1.21.8
+            HeldTooltipBounds.end();
             TextShadowHook.pop();
         }
     }

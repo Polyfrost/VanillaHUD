@@ -30,7 +30,10 @@ import org.spongepowered.asm.mixin.injection.At;
 
 //? if >=1.21.8 {
 import net.minecraft.client.DeltaTracker;
+import org.joml.Matrix3x2f;
 import org.polyfrost.vanillahud.render.ForeignTransform;
+import org.polyfrost.vanillahud.render.HeldTooltipBounds;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //?}
@@ -70,6 +73,21 @@ public class GuiMixinActionBar {
     )
     private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         ForeignTransform.probe(graphics);
+    }
+
+    @Unique
+    private final Matrix3x2f vanillahud$laidOutPose = new Matrix3x2f();
+
+    @Inject(
+            //? if <26 {
+            /*method = "renderOverlayMessage",
+            *///?} else {
+            method = "extractOverlayMessage",
+            //?}
+            at = @At(value = "INVOKE", target = "Lorg/joml/Matrix3x2fStack;translate(FF)Lorg/joml/Matrix3x2f;", shift = At.Shift.AFTER)
+    )
+    private void vanillahud$saveLaidOutPose(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        vanillahud$laidOutPose.set(graphics.pose());
     }
     //?}
 
@@ -134,6 +152,9 @@ public class GuiMixinActionBar {
         }
         //?} else
         //if (hud.isDrawnAsVanilla()) return original.call(graphics, font, text, x, y, width, color);
+        //? if >=1.21.8 {
+        HeldTooltipBounds.liftClear(graphics, vanillahud$laidOutPose, hud, x, y, width);
+        //?}
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
         try {

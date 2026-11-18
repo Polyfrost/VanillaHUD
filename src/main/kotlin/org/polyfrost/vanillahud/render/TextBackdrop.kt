@@ -17,21 +17,9 @@ object TextBackdrop {
     @JvmStatic
     @OptIn(ExperimentalOneConfigUiApi::class)
     fun draw(graphics: GuiGraphicsExtractor, hud: BackdropHud, x: Int, y: Int, width: Int, height: Int, textColor: Int) {
-        if (!hud.background || width <= 0) return
+        val (x0, y0, x1, y1) = box(hud, x, y, width, height) ?: return
         val textAlpha = if (textColor ushr 24 == 0) 255 else textColor ushr 24
-        // drawn in the element's units rather than the text's, or a title's padding could only
-        // grow a whole scaled pixel at a time while its box grows by one
         val k = hud.innerScale
-        val unit = hud.elementScale.coerceAtLeast(0.001f)
-        val tx = (x * k).roundToInt()
-        val ty = (y * k).roundToInt()
-        val tw = ((if (hud.hugsGlyphs) width - 1 else width) * k).roundToInt()
-        val th = ((if (hud.hugsGlyphs) BackdropHud.GLYPH_HEIGHT else height) * k).roundToInt()
-        val pad = hud.padScale / unit
-        val x0 = if (hud.staticWidth) tx - (hud.contentOffsetX / unit).roundToInt() else tx - (hud.padLeft * pad).roundToInt()
-        val y0 = if (hud.staticWidth) ty - (hud.contentOffsetY / unit).roundToInt() else ty - (hud.padTop * pad).roundToInt()
-        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + (hud.padRight * pad).roundToInt()
-        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + (hud.padBottom * pad).roundToInt()
         val radius = min(hud.radius, min(x1 - x0, y1 - y0) / 2)
         val border = if (hud.borderEnabled) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
         val fill = withAlpha(hud.textBgColor.argb, textAlpha)
@@ -44,6 +32,23 @@ object TextBackdrop {
                 ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(hud.borderPolyColor.argb, textAlpha))
             }
         }
+    }
+
+    @JvmStatic
+    fun box(hud: BackdropHud, x: Int, y: Int, width: Int, height: Int): IntArray? {
+        if (!hud.background || width <= 0) return null
+        val k = hud.innerScale
+        val unit = hud.elementScale.coerceAtLeast(0.001f)
+        val tx = (x * k).roundToInt()
+        val ty = (y * k).roundToInt()
+        val tw = ((if (hud.hugsGlyphs) width - 1 else width) * k).roundToInt()
+        val th = ((if (hud.hugsGlyphs) BackdropHud.GLYPH_HEIGHT else height) * k).roundToInt()
+        val pad = hud.padScale / unit
+        val x0 = if (hud.staticWidth) tx - (hud.contentOffsetX / unit).roundToInt() else tx - (hud.padLeft * pad).roundToInt()
+        val y0 = if (hud.staticWidth) ty - (hud.contentOffsetY / unit).roundToInt() else ty - (hud.padTop * pad).roundToInt()
+        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + (hud.padRight * pad).roundToInt()
+        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + (hud.padBottom * pad).roundToInt()
+        return intArrayOf(x0, y0, x1, y1)
     }
 
     fun interface RectFill {

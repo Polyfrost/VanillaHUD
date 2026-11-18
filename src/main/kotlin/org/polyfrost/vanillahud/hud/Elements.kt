@@ -546,7 +546,7 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
 
     //? if > 1.8.9 {
     override fun hasLiveData() = hudAccessor?.let {
-        !it.lastToolHighlight.isEmpty && (!fadeOut || it.toolHighlightTimer > 0)
+        mc.player?.isSpectator == false && !it.lastToolHighlight.isEmpty && (!fadeOut || it.toolHighlightTimer > 0)
     } == true
 
     fun previewItem(): ItemStack =
