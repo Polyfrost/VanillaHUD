@@ -1,15 +1,14 @@
 package org.polyfrost.vanillahud.mixin.elements;
 
 //? if > 1.8.9 {
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 import org.polyfrost.vanillahud.hud.BossBarHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LerpingBossEvent.class)
@@ -23,7 +22,7 @@ public class LerpingBossEventMixin {
         if (!hud.isDrawnAsVanilla() && !hud.getSmoothHealth()) cir.setReturnValue(targetPercent);
     }
 
-    @ModifyConstant(method = "getProgress", constant = @Constant(floatValue = 100.0f))
+    @ModifyExpressionValue(method = "getProgress", at = @At(value = "CONSTANT", args = "floatValue=100.0f"))
     private float vanillahud$lerpSpeed(float original) {
         BossBarHud hud = Huds.INSTANCE.getBossBar();
         return hud.isDrawnAsVanilla() ? original : hud.getLerpSpeed();
