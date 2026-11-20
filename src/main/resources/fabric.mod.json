@@ -30,7 +30,8 @@
         "minecraft": "${minecraft_version_range}",
         "fabricloader": ">=${loader_version}",
         "fabric-api": "*",
-        "oneconfigv1": ">=${oneconfig_version}"
+        "oneconfigv1": ">=${oneconfig_version}",
+        "polycompose": ">=1.0.0"
     },
     "suggests": {
         "soundfix": ">=1.2.0"
