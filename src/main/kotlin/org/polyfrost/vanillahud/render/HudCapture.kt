@@ -301,6 +301,9 @@ object HudCapture {
     fun isActive() = capturing
 
     @JvmStatic
+    fun resourcesReloaded() = SpriteBitmaps.clear()
+
+    @JvmStatic
     fun texture(g: GuiGraphicsExtractor, x: Int, y: Int, w: Int, h: Int, u0: Float, v0: Float, u1: Float, v1: Float): Boolean {
         val l = active ?: return false
         val bitmap = SpriteBitmaps.of(bound ?: return false) ?: return false
@@ -802,6 +805,8 @@ private object SpriteBitmaps {
     private val cache = HashMap<Identifier, Entry>()
 
     private val mc get() = Minecraft.getInstance()
+
+    fun clear() = cache.clear()
 
     private inline fun cached(key: Identifier, owner: Any, read: () -> PolyBitmap?): PolyBitmap? {
         cache[key]?.let { if (it.owner === owner) return it.bitmap }
