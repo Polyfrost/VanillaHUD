@@ -24,7 +24,7 @@ import androidx.compose.runtime.setValue
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
-import org.polyfrost.compose.composables.PolyBox
+import org.polyfrost.compose.composables.NodeBox
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.absoluteAt
@@ -37,7 +37,7 @@ import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
 import org.polyfrost.compose.runtime.PolyApplier
 import org.polyfrost.oneconfig.api.hud.v1.Font
-import org.polyfrost.oneconfig.api.ui.v1.item.PolyItemIcon
+import org.polyfrost.compose.minecraft.mc.NodeMcItemIcon
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.ExperienceLevelHud
@@ -737,7 +737,7 @@ object HudCapture {
             draw()
             restore()
         }
-        PolyBox(modifier = hud.hudBackground(PolyModifier.size(width, height))) {
+        NodeBox(modifier = hud.hudBackground(PolyModifier.size(width, height))) {
             PolyCanvas(PolyModifier.size(width, height), live = true) { x, y, _, _ ->
                 val ops = layer.shown
                 val split = ops.indexOfFirst { it is Item }.let { if (it < 0) ops.size else it }
@@ -757,7 +757,7 @@ object HudCapture {
                         set(PolyModifier.absoluteAt(restX, restY).size(size, size)) { it.applyTo(style) }
                     },
                 ) {
-                    PolyItemIcon(item.stack, size, decorations = item.decorated)
+                    NodeMcItemIcon(item.stack, size, decorations = item.decorated)
                 }
             }
             PolyCanvas(PolyModifier.size(width, height), live = true) { x, y, _, _ ->
