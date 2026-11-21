@@ -37,6 +37,8 @@ import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
 import org.polyfrost.compose.runtime.PolyApplier
 import org.polyfrost.oneconfig.api.hud.v1.Font
+import org.polyfrost.compose.composables.NodeCanvas
+import org.polyfrost.compose.minecraft.mc.McItemIcons
 import org.polyfrost.compose.minecraft.mc.NodeMcItemIcon
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -752,15 +754,21 @@ object HudCapture {
                 // the game stretches about the point 3/4 down the icon, so the resting square is found from there
                 val restX = item.x + (item.width - size) / 2f
                 val restY = item.y + (item.height - size) * 0.75f
-                ComposeNode<StretchNode, PolyApplier>(
-                    factory = ::StretchNode,
-                    update = {
-                        set(item.width / size) { sx = it }
-                        set(item.height / size) { sy = it }
-                        set(PolyModifier.absoluteAt(restX, restY).size(size, size)) { it.applyTo(style) }
-                    },
-                ) {
-                    NodeMcItemIcon(item.stack, size, decorations = item.decorated)
+                NodeBox(PolyModifier.absoluteAt(restX, restY).size(size, size)) {
+                    ComposeNode<StretchNode, PolyApplier>(
+                        factory = ::StretchNode,
+                        update = {
+                            set(item.width / size) { sx = it }
+                            set(item.height / size) { sy = it }
+                            set(PolyModifier.size(size, size)) { it.applyTo(style) }
+                        },
+                    ) {
+                        NodeMcItemIcon(item.stack, size, decorations = false)
+                    }
+                    // outside the stretch, vanilla draws the count and durability bar unstretched
+                    if (item.decorated) {
+                        NodeCanvas(PolyModifier.size(size, size)) { x, y, w, _ -> McItemIcons.drawDecorations(this, item.stack, x, y, w) }
+                    }
                 }
             }
             PolyCanvas(PolyModifier.size(width, height), live = true) { x, y, _, _ ->
@@ -772,29 +780,21 @@ object HudCapture {
     }
 }
 
-/**
- * Stretches the icon of the [PolyItemIcon] it holds the way the game does for an item that was just picked up,
- * about the point 3/4 down it. The icon is the item box's first child and the count and durability bar after it
- * stay unstretched, as the game draws them once it has popped the stretch.
- */
+/** stretches what it holds the way the game does for an item that was just picked up, about the point 3/4 down it */
 private class StretchNode : PolyNode() {
     var sx = 1f
     var sy = 1f
 
     override fun render(ctx: RenderContext) {
-        val box = children.singleOrNull()
-        if (sx == 1f && sy == 1f || box == null) return super.render(ctx)
+        if (sx == 1f && sy == 1f) return super.render(ctx)
         val px = x + width / 2f
         val py = y + height * 0.75f
-        box.children.forEachIndexed { i, child ->
-            if (i != 0) return@forEachIndexed child.render(ctx)
-            ctx.save()
-            ctx.translate(px, py)
-            ctx.scale(sx, sy)
-            ctx.translate(-px, -py)
-            child.render(ctx)
-            ctx.restore()
-        }
+        ctx.save()
+        ctx.translate(px, py)
+        ctx.scale(sx, sy)
+        ctx.translate(-px, -py)
+        super.render(ctx)
+        ctx.restore()
     }
 }
 
