@@ -2,6 +2,7 @@ package org.polyfrost.vanillahud.mixin;
 
 //? if = 1.8.9 {
 /*import net.minecraft.client.render.texture.TextureManager;
+import net.minecraft.client.resource.manager.ResourceManager;
 import net.minecraft.resources.ResourceLocation;
 import org.polyfrost.vanillahud.render.HudCapture;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +15,11 @@ public abstract class CaptureTextureMixin {
     @Inject(method = "bind", at = @At("HEAD"))
     private void vanillahud$bind(ResourceLocation id, CallbackInfo ci) {
         HudCapture.bind(id);
+    }
+
+    @Inject(method = "reload", at = @At("TAIL"))
+    private void vanillahud$reload(ResourceManager manager, CallbackInfo ci) {
+        HudCapture.resourcesReloaded();
     }
 }
 *///?} else {
