@@ -10,9 +10,19 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
 import java.util.function.Consumer
 *///?}
+import org.polyfrost.oneconfig.api.hud.v1.HudGroups
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.compat.HudElementCompat
+import org.polyfrost.vanillahud.hud.AirHud
+import org.polyfrost.vanillahud.hud.ArmorHud
+import org.polyfrost.vanillahud.hud.ExperienceBarHud
+import org.polyfrost.vanillahud.hud.ExperienceLevelHud
+import org.polyfrost.vanillahud.hud.HealthHud
+import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.Huds
+import org.polyfrost.vanillahud.hud.HungerHud
+import org.polyfrost.vanillahud.hud.SubtitleHud
+import org.polyfrost.vanillahud.hud.TitleHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import org.polyfrost.vanillahud.util.HudConfigMigrator
@@ -44,6 +54,13 @@ object VanillaHUDClient : ClientModInitializer {
         Huds.all.forEach {
             HudManager.register(it, "vanillahud", "/assets/vanillahud/vanillahud_dark.svg")
         }
+
+        HudGroups.registerDefault(
+            "vanillahud-hotbar", "Hotbar",
+            HotbarHud::class.java, HealthHud::class.java, ArmorHud::class.java, HungerHud::class.java, AirHud::class.java,
+            ExperienceBarHud::class.java, ExperienceLevelHud::class.java,
+        )
+        HudGroups.registerDefault("vanillahud-title", "Title & Subtitle", TitleHud::class.java, SubtitleHud::class.java)
 
         //? if > 1.8.9 {
         ClientTickEvents.END_CLIENT_TICK.register(ClientTickEvents.EndTick { onTick() })
