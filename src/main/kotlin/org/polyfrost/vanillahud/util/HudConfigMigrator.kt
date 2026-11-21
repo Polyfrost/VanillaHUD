@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 16
+    private const val SCHEMA_VERSION = 17
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -146,6 +146,7 @@ object HudConfigMigrator {
         // a folder below 9 has only just been given the designer migration above
         if (from in 9..13) redoLostDesignerMigration(folder)
         if (from < 15) rescaleTitlePadding(folder)
+        if (from in 9..16) restoreHotbarShadow(folder)
 
         writeStamp(stamp)
     }
@@ -330,7 +331,8 @@ object HudConfigMigrator {
             else -> {
                 obj.addProperty("showBackground", false)
                 obj.addProperty("bgRadius", 0f)
-                obj.addProperty("showShadow", false)
+                obj.addProperty("showShadow", file == HOTBAR_FILE)
+                if (file == HOTBAR_FILE) obj.addProperty("fullShadow", false)
             }
         }
         val font = JsonObject()
@@ -416,6 +418,19 @@ object HudConfigMigrator {
                 if (pad == default && (key == "padRight" || key == "padBottom")) continue
                 obj.addProperty(key, pad * default / scale)
             }
+            writeObject(path, obj)
+        } catch (_: Throwable) {
+        }
+    }
+
+    /** the designer migration switched the shadow off for every hud without text including the hotbar, whose item counts use it */
+    private fun restoreHotbarShadow(folder: Path) {
+        val path = folder.resolve("huds").resolve(HOTBAR_FILE)
+        try {
+            val obj = readObject(path) ?: return
+            if (obj.get("showShadow")?.takeIf { it.isJsonPrimitive }?.asBoolean != false) return
+            obj.addProperty("showShadow", true)
+            obj.addProperty("fullShadow", false)
             writeObject(path, obj)
         } catch (_: Throwable) {
         }
