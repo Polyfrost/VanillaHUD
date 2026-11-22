@@ -162,12 +162,15 @@ object HudCapture {
     @JvmStatic
     fun beginFrame() {
         open.clear()
+        val previewing = VanillaHud.previewing()
+        val previewChanged = gnetum && previewing != wasPreviewing
+        wasPreviewing = previewing
         for (l in layers.values) {
             val hud = l.hud
-            val held = hud != null && gnetum && wouldDraw(hud)
+            val held = !previewChanged && hud != null && gnetum && wouldDraw(hud)
             var ran = false
             for (p in l.parts.values) {
-                if (p.ran) {
+                if (p.ran && !previewChanged) {
                     ran = true
                     val done = p.recording
                     p.recording = p.shown.also { it.clear() }
@@ -208,6 +211,8 @@ object HudCapture {
     // part, since the elements feeding one layer, like the food bar and mount health, can land on
     // different passes.
     private val gnetum = FabricLoader.getInstance().isModLoaded("gnetum")
+
+    private var wasPreviewing = false
 
     private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isEditing || hud.hasContent())
 
