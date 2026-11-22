@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.HudInternals
+import org.polyfrost.vanillahud.hud.Huds
 import org.polyfrost.vanillahud.hud.TabListHud
 import org.polyfrost.vanillahud.hud.VanillaHud
 import kotlin.math.PI
@@ -127,6 +128,11 @@ object HudTransform {
     }
 
     private val placements = HashMap<Class<out VanillaHud>, Placement>()
+
+    @JvmStatic
+    fun placesStatBars() = !HudManager.isSamplingVanilla &&
+        !Huds.health.isDrawnAsVanilla && !Huds.armor.isDrawnAsVanilla &&
+        !Huds.hunger.isDrawnAsVanilla && !Huds.air.isDrawnAsVanilla
 
     /** [part] tells apart the game's HUD elements that draw into the same [provider], see [HudCapture.begin] */
     @JvmStatic
