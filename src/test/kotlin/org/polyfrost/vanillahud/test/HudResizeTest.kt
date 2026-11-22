@@ -228,7 +228,7 @@ class HudResizeTest {
         val bar = fresh(ExperienceBarHud())
         val huds = HudManager.activeInstances
         assertTrue(huds.indexOf(level) < huds.indexOf(bar), "this order is the case under test")
-        VanillaHud.keepLevelAboveBar()
+        VanillaHud.keepOverlapsOrdered()
         assertTrue(huds.indexOf(level) > huds.indexOf(bar))
     }
 

@@ -599,20 +599,17 @@ abstract class VanillaHud(
     private var cachedHeight = 0f
 
     private val mirror = HudStyle()
-    private var layoutFrame = -1L
-    private var textFrame = -1L
-    private var backgroundFrame = -1L
     private var layoutWrites = -1L
     private var textWrites = -1L
     private var backgroundWrites = -1L
 
-    private fun styleStale(stamp: Long, writes: Long): Boolean =
-        stamp != frame || writes != StyleWrites.count || placing > 0 || HudManager.isEditing
+    private fun styleStale(writes: Long): Boolean =
+        writes != StyleWrites.count || placing > 0 || HudManager.isEditing
 
     val layoutStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(layoutFrame, layoutWrites)) {
+            if (styleStale(layoutWrites)) {
                 s.textScale = textScale
                 s.padLeft = padLeft
                 s.padRight = padRight
@@ -623,7 +620,6 @@ abstract class VanillaHud(
                 s.staticH = staticH
                 s.alignment = alignment
                 s.bgRadius = bgRadius
-                layoutFrame = frame
                 layoutWrites = StyleWrites.count
             }
             return s
@@ -632,7 +628,7 @@ abstract class VanillaHud(
     val textStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(textFrame, textWrites)) {
+            if (styleStale(textWrites)) {
                 s.caseType = caseType
                 s.textBold = textBold
                 s.textItalic = textItalic
@@ -648,7 +644,6 @@ abstract class VanillaHud(
                 s.shadowChromaSpeed = shadowChromaSpeed
                 s.shadowOffsetX = shadowOffsetX
                 s.shadowOffsetY = shadowOffsetY
-                textFrame = frame
                 textWrites = StyleWrites.count
             }
             return s
@@ -657,7 +652,7 @@ abstract class VanillaHud(
     val backgroundStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(backgroundFrame, backgroundWrites)) {
+            if (styleStale(backgroundWrites)) {
                 s.showBackground = showBackground
                 s.bgColor = bgColor
                 s.bgChroma = bgChroma
@@ -666,7 +661,6 @@ abstract class VanillaHud(
                 s.borderColor = borderColor
                 s.borderChroma = borderChroma
                 s.borderChromaSpeed = borderChromaSpeed
-                backgroundFrame = frame
                 backgroundWrites = StyleWrites.count
             }
             return s
@@ -941,12 +935,17 @@ abstract class VanillaHud(
         }
 
         /** the level overlaps the bar, and OneConfig paints HUDs in list order with no z setting to ask for */
-        fun keepLevelAboveBar() {
+        fun keepOverlapsOrdered() {
+            keepAbove<ExperienceLevelHud, ExperienceBarHud>()
+            keepAbove<TabListHud, BossBarHud>()
+        }
+
+        private inline fun <reified Top, reified Below> keepAbove() {
             val huds = HudManager.activeInstances
-            val bar = huds.indexOfFirst { it is ExperienceBarHud }
-            val level = huds.indexOfFirst { it is ExperienceLevelHud }
-            if (bar < 0 || level < 0 || level > bar) return
-            huds.add(huds.removeAt(level))
+            val below = huds.indexOfFirst { it is Below }
+            val top = huds.indexOfFirst { it is Top }
+            if (below < 0 || top < 0 || top > below) return
+            huds.add(huds.removeAt(top))
         }
 
         fun forgetProfileStateAll() {

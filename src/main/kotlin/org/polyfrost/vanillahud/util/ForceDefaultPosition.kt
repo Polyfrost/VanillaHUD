@@ -101,7 +101,7 @@ object ForceDefaultPosition {
     @Synchronized
     fun tick() {
         flushBacklog()
-        VanillaHud.keepLevelAboveBar()
+        VanillaHud.keepOverlapsOrdered()
         val huds = HudManager.activeInstances
         for (i in 0 until huds.size) {
             val hud = huds[i] as? VanillaHud ?: continue

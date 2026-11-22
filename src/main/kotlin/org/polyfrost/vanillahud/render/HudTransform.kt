@@ -104,6 +104,7 @@ object HudTransform {
 
     private class Placement {
         var valid = false
+        var frame = -1L
         var w = 0
         var h = 0
         var natW = 0f
@@ -111,6 +112,10 @@ object HudTransform {
         var boxW = 0f
         var boxH = 0f
         var turns = 0
+        var mirrored = false
+        var elementScale = 1f
+        var offX = 0f
+        var offY = 0f
         var rev = 0
         var foreignRev = 0
         var scoreboardRev = 0
@@ -143,14 +148,15 @@ object HudTransform {
         ForeignTransform.enter(graphics, src)
         val w = ForeignTransform.realGuiWidth(graphics)
         val h = ForeignTransform.realGuiHeight(graphics)
-        val turns = src.quarterTurns
-        val natW = src.unrotatedWidth
-        val natH = src.unrotatedHeight
         val p = placements.getOrPut(provider.javaClass) { Placement() }
-        if (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns || p.boxW != src.boxWidth || p.boxH != src.boxHeight || p.oy != src.vanillaOriginY(w, h) ||
+        val again = !editing && p.valid && p.frame == VanillaHud.frame && p.w == w && p.h == h
+        val turns = if (again) p.turns else src.quarterTurns
+        val natW = if (again) p.natW else src.unrotatedWidth
+        val natH = if (again) p.natH else src.unrotatedHeight
+        if (!again && (editing || !p.valid || p.w != w || p.h != h || p.natW != natW || p.natH != natH || p.turns != turns || p.boxW != src.boxWidth || p.boxH != src.boxHeight || p.oy != src.vanillaOriginY(w, h) ||
             p.rev != VanillaHud.positionRevision || p.foreignRev != ForeignTransform.revision || p.scoreboardRev != HudInternals.scoreboardRevision ||
             p.huds != HudManager.activeInstances.size || p.hud !== resolvedHud || p.schema != (resolvedHud?.posSchema ?: 0) ||
-            resolvedHud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) }
+            resolvedHud.let { it != null && (it.frameX != p.hx || it.frameY != p.hy || it.frameScale != p.s) })
         ) {
             val hud = resolvedHud
             hud?.reseedDefaultForScreen()
@@ -183,6 +189,13 @@ object HudTransform {
             p.huds = HudManager.activeInstances.size
             p.schema = hud?.posSchema ?: 0
         }
+        if (!again) {
+            p.mirrored = src.mirrored
+            p.elementScale = src.elementScale
+            p.offX = src.contentOffsetX
+            p.offY = src.contentOffsetY
+        }
+        p.frame = VanillaHud.frame
         val hud = p.hud
         val s = p.s
         val ox = p.ox
@@ -191,7 +204,7 @@ object HudTransform {
         val gy = p.gy
 
         HudCapture.begin(src, part)
-        val elementScale = src.elementScale
+        val elementScale = p.elementScale
         var scissored = false
         val tab = src as? TabListHud
         if (tab != null && tab.animation && !editing) {
@@ -210,7 +223,7 @@ object HudTransform {
         // rotate about the content centre then shift so the rotated bounding box lands on gx gy
         val rotW = if (turns % 2 != 0) natH else natW
         val rotH = if (turns % 2 != 0) natW else natH
-        val mirrored = src.mirrored
+        val mirrored = p.mirrored
         val drawTurns = if (mirrored) (turns + 2) % 4 else turns
         val theta = drawTurns * (PI.toFloat() / 2f)
         val turned = drawTurns != 0
@@ -223,8 +236,8 @@ object HudTransform {
         ForeignTransform.rebase(graphics)
         val pose = graphics.pose()
         val drawn = s * elementScale
-        val contentX = gx + src.contentOffsetX * s
-        val contentY = gy + src.contentOffsetY * s
+        val contentX = gx + p.offX * s
+        val contentY = gy + p.offY * s
         HudCapture.place(p.hx, p.hy, gx, gy, s, contentX, contentY)
         //? if <=1.21.5 && >1.8.9 {
         /*pose.translate(contentX, contentY, 0f)
