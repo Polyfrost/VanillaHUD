@@ -16,32 +16,24 @@ import org.lwjgl.opengl.GL11
 import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ComposeNode
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.composables.NodeBox
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
-import org.polyfrost.compose.composables.absoluteAt
 import org.polyfrost.compose.composables.size
-import org.polyfrost.compose.node.PolyNode
 import org.polyfrost.compose.render.FilterQuality
 import org.polyfrost.compose.render.PolyBitmap
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
-import org.polyfrost.compose.runtime.PolyApplier
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
-import org.polyfrost.compose.composables.NodeCanvas
 import org.polyfrost.compose.minecraft.mc.McItemIcons
-import org.polyfrost.compose.minecraft.mc.NodeMcItemIcon
+import org.polyfrost.compose.minecraft.mc.McItemIconHandle
+import org.polyfrost.compose.minecraft.platform.McWindow
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.ClosedCaptionsHud
@@ -163,7 +155,7 @@ object HudCapture {
         var previous = ArrayList<Any>()
         var shown = ArrayList<Any>()
         var spare = ArrayList<Any>()
-        var items by mutableStateOf<List<Item>>(emptyList())
+        val icons = ArrayList<McItemIconHandle>()
     }
 
     private val layers = HashMap<Class<out VanillaHud>, Layer>()
@@ -260,6 +252,7 @@ object HudCapture {
         tintCount = 0
         open.clear()
         active = null
+        var iconsChanged = false
         val previewing = VanillaHud.previewing()
         val previewChanged = gnetum && previewing != wasPreviewing
         wasPreviewing = previewing
@@ -289,44 +282,76 @@ object HudCapture {
                 for (j in src.indices) done.add(src[j])
             }
             val moved = l.shownX != l.frameX || l.shownY != l.frameY || l.shownScale != l.scale
-            val old = l.items
             val shown = l.shown
             var sameOps = !moved && done.size == shown.size
-            var sameItems = true
-            var n = 0
-            for (i in done.indices) {
+            if (sameOps) for (i in done.indices) {
                 val op = done[i]
-                if (sameOps) {
-                    val y = shown[i]
-                    sameOps = if (op is Item && y is Item) op.same(y) else op == y
-                }
-                if (sameItems && op is Item) {
-                    sameItems = n < old.size && sameItem(op, old[n], l)
-                    n++
-                }
-                if (!sameOps && !sameItems) break
+                val y = shown[i]
+                if (if (op is Item && y is Item) op.same(y) else op == y) continue
+                sameOps = false
+                break
             }
-            if (sameItems && n != old.size) sameItems = false
             if (!sameOps) l.hud?.capturedDrawsChanged()
             l.spare = l.shown
             l.shown = done
             l.shownX = l.frameX
             l.shownY = l.frameY
             l.shownScale = l.scale
-            if (!sameItems) {
-                val items = ArrayList<Item>()
-                for (j in done.indices) {
-                    val i = done[j] as? Item ?: continue
-                    items += Item(i.stack.copy(), (i.x - l.frameX) / l.scale, (i.y - l.frameY) / l.scale, i.width / l.scale, i.height / l.scale).also { it.decorated = i.decorated }
-                }
-                l.items = items
-            }
+            if (syncIcons(l)) iconsChanged = true
         }
+        // render new/changed icons now, since the atlas's own pass comes after OneConfig draws this frame
+        //? if >=1.21.11
+        if (iconsChanged) McItemIcons.renderPending()
     }
 
-    private fun sameItem(op: Item, o: Item, l: Layer): Boolean =
-        o.x == (op.x - l.frameX) / l.scale && o.y == (op.y - l.frameY) / l.scale && o.width == op.width / l.scale &&
-            o.height == op.height / l.scale && o.decorated == op.decorated && ItemStack.matches(op.stack, o.stack)
+    private fun syncIcons(l: Layer): Boolean {
+        val hud = l.hud
+        var n = 0
+        var changed = false
+        if (hud != null) for (op in l.shown) {
+            if (op !is Item) continue
+            val icon = l.icons.getOrNull(n) ?: McItemIcons.open(op.stack).also {
+                l.icons += it
+                changed = true
+            }
+            if (icon.stack !== op.stack) {
+                icon.update(op.stack)
+                changed = true
+            }
+            // the atlas only bumps the revision for count and durability changes on icons that show them
+            icon.decorations = op.decorated
+            icon.setBaseSize(restSize(hud, op, l.scale) * McWindow.guiScale(), 1.5f)
+            n++
+        }
+        while (l.icons.size > n) {
+            l.icons.removeLast().close()
+            changed = true
+        }
+        return changed
+    }
+
+    /** an icon's resting size in the game's units, which it keeps while the game stretches a picked up item */
+    private fun restSize(hud: VanillaHud, op: Item, scale: Float) = if (op.width == op.height) op.width else 16f * hud.elementScale * scale
+
+    @JvmStatic
+    fun closeIcons() {
+        open.clear()
+        active = null
+        for (l in layers.values) {
+            for (icon in l.icons) icon.close()
+            l.icons.clear()
+
+            // drop the recordings too, or a HUD could replay them before its first capture in the next world
+            val hadDraws = l.shown.isNotEmpty()
+            l.parts.clear()
+            l.partList.clear()
+            l.recording.clear()
+            l.previous.clear()
+            l.shown.clear()
+            l.spare.clear()
+            if (hadDraws) l.hud?.capturedDrawsChanged()
+        }
+    }
 
     // Gnetum runs each HUD element on only one of its passes, and on none while it holds the HUD's
     // framerate down, so an element that skipped a frame keeps what it drew last time. That goes per
@@ -1036,10 +1061,12 @@ object HudCapture {
         renderer.text(text, x, y, argb, font)
     }
 
-    private fun RenderContext.replay(ops: List<Any>, from: Int, until: Int) {
+    private fun RenderContext.replay(ops: List<Any>, from: Int, until: Int, item: (RenderContext.(Item, Int) -> Unit)? = null) {
         var clips = 0
+        var items = 0
         for (i in from until until) {
             when (val op = ops[i]) {
+                is Item -> if (item != null) item(op, items++)
                 is Quad -> withPose(op.m) {
                     if (op.bitmap == null) {
                         val argb = tinted(op.color, op.tint)
@@ -1122,38 +1149,9 @@ object HudCapture {
         NodeBox(modifier = hud.hudBackground(PolyModifier.size(width, height))) {
             PolyCanvas(PolyModifier.size(width, height)) { x, y, _, _ ->
                 val ops = layer.shown
-                val split = ops.indexOfFirst { it is Item }.let { if (it < 0) ops.size else it }
-                painting(layer, x, y) { replay(ops, 0, split) }
-            }
-            val items = layer.items
-            for (i in items.indices) key(i) {
-                val item = items[i]
-                // a stretched icon keeps its resting size and is scaled, so OneConfig doesn't re-render it every frame
-                val size = if (item.width == item.height) item.width else 16f * hud.elementScale
-                // the game stretches about the point 3/4 down the icon, so the resting square is found from there
-                val restX = item.x + (item.width - size) / 2f
-                val restY = item.y + (item.height - size) * 0.75f
-                NodeBox(PolyModifier.absoluteAt(restX, restY).size(size, size)) {
-                    ComposeNode<StretchNode, PolyApplier>(
-                        factory = ::StretchNode,
-                        update = {
-                            set(item.width / size) { sx = it }
-                            set(item.height / size) { sy = it }
-                            set(PolyModifier.size(size, size)) { it.applyTo(style) }
-                        },
-                    ) {
-                        NodeMcItemIcon(item.stack, size, decorations = false, maxScale = 1.5f)
-                    }
-                    // outside the stretch, vanilla draws the count and durability bar unstretched
-                    if (item.decorated) {
-                        NodeCanvas(PolyModifier.size(size, size)) { x, y, w, _ -> McItemIcons.drawDecorations(this, item.stack, x, y, w) }
-                    }
+                painting(layer, x, y) {
+                    replay(ops, 0, ops.size) { op, n -> layer.icons.getOrNull(n)?.let { drawIcon(hud, it, op, layer.shownScale) } }
                 }
-            }
-            PolyCanvas(PolyModifier.size(width, height)) { x, y, _, _ ->
-                val ops = layer.shown
-                val split = ops.indexOfFirst { it is Item }
-                if (split >= 0) painting(layer, x, y) { replay(ops, split + 1, ops.size) }
             }
         }
     }
@@ -1167,23 +1165,25 @@ object HudCapture {
         draw()
         restore()
     }
-}
 
-/** stretches what it holds the way the game does for an item that was just picked up, about the point 3/4 down it */
-private class StretchNode : PolyNode() {
-    var sx = 1f
-    var sy = 1f
-
-    override fun render(ctx: RenderContext) {
-        if (sx == 1f && sy == 1f) return super.render(ctx)
-        val px = x + width / 2f
-        val py = y + height * 0.75f
-        ctx.save()
-        ctx.translate(px, py)
-        ctx.scale(sx, sy)
-        ctx.translate(-px, -py)
-        super.render(ctx)
-        ctx.restore()
+    private fun RenderContext.drawIcon(hud: VanillaHud, icon: McItemIconHandle, op: Item, scale: Float) {
+        val size = restSize(hud, op, scale)
+        val x = op.x + (op.width - size) / 2f
+        val y = op.y + (op.height - size) * 0.75f
+        if (op.width == size && op.height == size) icon.draw(this, x, y, size, size)
+        else {
+            // the game stretches an item that was just picked up about the point 3/4 down it
+            val px = op.x + op.width / 2f
+            val py = op.y + op.height * 0.75f
+            save()
+            translate(px, py)
+            scale(op.width / size, op.height / size)
+            translate(-px, -py)
+            icon.draw(this, x, y, size, size)
+            restore()
+        }
+        // vanilla draws the count and durability bar after popping the stretch
+        if (op.decorated) icon.drawDecorations(this, x, y, size)
     }
 }
 
