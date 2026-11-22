@@ -67,9 +67,11 @@ public class GuiMixinHealth {
             *///?}
     )
     private boolean setAlwaysHardcoreHearts(boolean isHardcore) {
-        if (Huds.INSTANCE.getHealth().isDrawnAsVanilla()) return isHardcore;
-        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 1) return true;
-        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 2) return false;
+        HealthHud hud = Huds.INSTANCE.getHealth();
+        if (hud.isDrawnAsVanilla()) return isHardcore;
+        int mode = hud.getHardcoreHearts();
+        if (mode == 1) return true;
+        if (mode == 2) return false;
         return isHardcore;
     }
     //?} else {
@@ -78,9 +80,11 @@ public class GuiMixinHealth {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldData;isHardcore()Z")
     )
     private boolean vanillahud$hardcoreHearts(boolean isHardcore) {
-        if (Huds.INSTANCE.getHealth().isDrawnAsVanilla()) return isHardcore;
-        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 1) return true;
-        if (Huds.INSTANCE.getHealth().getHardcoreHearts() == 2) return false;
+        HealthHud hud = Huds.INSTANCE.getHealth();
+        if (hud.isDrawnAsVanilla()) return isHardcore;
+        int mode = hud.getHardcoreHearts();
+        if (mode == 1) return true;
+        if (mode == 2) return false;
         return isHardcore;
     }
     *///?}

@@ -14,6 +14,21 @@ public abstract class CaptureColorMixin {
     private static void vanillahud$color(float r, float g, float b, float a, CallbackInfo ci) {
         HudCapture.color(r, g, b, a);
     }
+
+    @Inject(method = "enableBlend", at = @At("HEAD"))
+    private static void vanillahud$enableBlend(CallbackInfo ci) {
+        HudCapture.blend(true);
+    }
+
+    @Inject(method = "disableBlend", at = @At("HEAD"))
+    private static void vanillahud$disableBlend(CallbackInfo ci) {
+        HudCapture.blend(false);
+    }
+
+    @Inject(method = {"matrixMode", "loadIdentity", "pushMatrix", "popMatrix", "ortho", "rotatef", "scalef", "scaled", "translatef", "translated", "multMatrix", "callList"}, at = @At("HEAD"))
+    private static void vanillahud$matrix(CallbackInfo ci) {
+        HudCapture.matrixChanged();
+    }
 }
 *///?} else {
 import net.minecraft.client.Minecraft;

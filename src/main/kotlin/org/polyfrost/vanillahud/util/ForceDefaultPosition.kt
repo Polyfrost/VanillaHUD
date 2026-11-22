@@ -102,7 +102,9 @@ object ForceDefaultPosition {
     fun tick() {
         flushBacklog()
         VanillaHud.keepLevelAboveBar()
-        for (hud in HudManager.activeInstances.filterIsInstance<VanillaHud>()) {
+        val huds = HudManager.activeInstances
+        for (i in 0 until huds.size) {
+            val hud = huds[i] as? VanillaHud ?: continue
             hud.restoreDefaultAnchor()
             val moved = hud.movedByUser
             hud.movedByUser = false

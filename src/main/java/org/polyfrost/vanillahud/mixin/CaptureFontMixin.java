@@ -17,7 +17,8 @@ public abstract class CaptureFontMixin {
     private int vanillahud$draw(String text, float x, float y, int color, boolean shadow, Operation<Integer> original) {
         shadow = TextShadowHook.apply(shadow);
         if (text != null && HudCapture.text(LegacyDrawContext.INSTANCE, text, (int) x, (int) y, color, shadow)) {
-            return (int) x + ((Font) (Object) this).width(text) + (shadow ? 1 : 0);
+            int width = HudCapture.getTextWidth();
+            return (int) x + (width >= 0 ? width : ((Font) (Object) this).width(text)) + (shadow ? 1 : 0);
         }
         return original.call(text, x, y, color, shadow);
     }

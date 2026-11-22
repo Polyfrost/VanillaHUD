@@ -14,22 +14,31 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 object TextBackdrop {
+    private val drawBox = IntArray(4)
+
     @JvmStatic
     @OptIn(ExperimentalOneConfigUiApi::class)
     fun draw(graphics: GuiGraphicsExtractor, hud: BackdropHud, x: Int, y: Int, width: Int, height: Int, textColor: Int) {
-        val (x0, y0, x1, y1) = box(hud, x, y, width, height) ?: return
+        if (!hud.background || width <= 0) return
+        val b = drawBox
+        boxInto(hud, x, y, width, height, b)
+        val x0 = b[0]
+        val y0 = b[1]
+        val x1 = b[2]
+        val y1 = b[3]
         val textAlpha = if (textColor ushr 24 == 0) 255 else textColor ushr 24
         val k = hud.innerScale
-        val radius = min(hud.radius, min(x1 - x0, y1 - y0) / 2)
-        val border = if (hud.borderEnabled) min(hud.borderSize.roundToInt(), min(x1 - x0, y1 - y0) / 2) else 0
-        val fill = withAlpha(hud.textBgColor.argb, textAlpha)
+        val half = min(x1 - x0, y1 - y0) / 2
+        val radius = min(hud.radius, half)
+        val border = if (hud.borderEnabled) min(hud.borderSize.roundToInt(), half) else 0
+        val fill = withAlpha(hud.bgArgb, textAlpha)
         scaled(graphics, 1f / k) {
             if (border <= 0) {
                 rounded(graphics, x0, y0, x1, y1, radius, fill)
             } else {
                 val inner = max(radius - border, 0)
                 rounded(graphics, x0 + border, y0 + border, x1 - border, y1 - border, inner, fill)
-                ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(hud.borderPolyColor.argb, textAlpha))
+                ring(graphics, x0, y0, x1, y1, radius, border, inner, withAlpha(HudCapture.borderTint(hud, hud.borderArgb), textAlpha))
             }
         }
     }
@@ -37,18 +46,33 @@ object TextBackdrop {
     @JvmStatic
     fun box(hud: BackdropHud, x: Int, y: Int, width: Int, height: Int): IntArray? {
         if (!hud.background || width <= 0) return null
+        val out = IntArray(4)
+        boxInto(hud, x, y, width, height, out)
+        return out
+    }
+
+    private fun boxInto(hud: BackdropHud, x: Int, y: Int, width: Int, height: Int, out: IntArray) {
         val k = hud.innerScale
         val unit = hud.elementScale.coerceAtLeast(0.001f)
         val tx = (x * k).roundToInt()
         val ty = (y * k).roundToInt()
-        val tw = ((if (hud.hugsGlyphs) width - 1 else width) * k).roundToInt()
-        val th = ((if (hud.hugsGlyphs) BackdropHud.GLYPH_HEIGHT else height) * k).roundToInt()
-        val pad = hud.padScale / unit
-        val x0 = if (hud.staticWidth) tx - (hud.contentOffsetX / unit).roundToInt() else tx - (hud.padLeft * pad).roundToInt()
-        val y0 = if (hud.staticWidth) ty - (hud.contentOffsetY / unit).roundToInt() else ty - (hud.padTop * pad).roundToInt()
-        val x1 = if (hud.staticWidth) x0 + (hud.boxWidth / unit).roundToInt() else tx + tw + (hud.padRight * pad).roundToInt()
-        val y1 = if (hud.staticWidth) y0 + (hud.boxHeight / unit).roundToInt() else ty + th + (hud.padBottom * pad).roundToInt()
-        return intArrayOf(x0, y0, x1, y1)
+        if (hud.staticWidth) {
+            val x0 = tx - (hud.contentOffsetX / unit).roundToInt()
+            val y0 = ty - (hud.contentOffsetY / unit).roundToInt()
+            out[0] = x0
+            out[1] = y0
+            out[2] = x0 + (hud.boxWidth / unit).roundToInt()
+            out[3] = y0 + (hud.boxHeight / unit).roundToInt()
+        } else {
+            val hugs = hud.hugsGlyphs
+            val tw = ((if (hugs) width - 1 else width) * k).roundToInt()
+            val th = ((if (hugs) BackdropHud.GLYPH_HEIGHT else height) * k).roundToInt()
+            val pad = hud.padScale / unit
+            out[0] = tx - (hud.padLeft * pad).roundToInt()
+            out[1] = ty - (hud.padTop * pad).roundToInt()
+            out[2] = tx + tw + (hud.padRight * pad).roundToInt()
+            out[3] = ty + th + (hud.padBottom * pad).roundToInt()
+        }
     }
 
     fun interface RectFill {

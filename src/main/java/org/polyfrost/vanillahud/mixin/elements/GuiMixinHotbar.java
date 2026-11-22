@@ -169,19 +169,20 @@ public abstract class GuiMixinHotbar {
             *///?}
             GuiGraphicsExtractor graphics, int x, int y, DeltaTracker deltaTracker,
             Player player, ItemStack stack, int seed, Operation<Void> original) {
-        if (Huds.INSTANCE.getHotbar().isDrawnAsVanilla()) {
+        HotbarHud hud = Huds.INSTANCE.getHotbar();
+        if (hud.isDrawnAsVanilla()) {
             original.call(self, graphics, x, y, deltaTracker, player, stack, seed);
             return;
         }
-        HudTransform.beginUpright(graphics, Huds.INSTANCE.getHotbar(),
+        HudTransform.beginUpright(graphics, hud,
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
-        TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());
+        TextShadowHook.push(hud.getShowShadow());
         try {
-            original.call(self, graphics, x, y, deltaTracker, player, Huds.INSTANCE.getHotbar().showsDemo() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
+            original.call(self, graphics, x, y, deltaTracker, player, hud.showsDemo() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
         } finally {
             TextShadowHook.pop();
         }
-        HudTransform.endUpright(graphics, Huds.INSTANCE.getHotbar());
+        HudTransform.endUpright(graphics, hud);
     }
     //?} else {
     /*@Unique private boolean vanillahud$active;
@@ -253,19 +254,20 @@ public abstract class GuiMixinHotbar {
     )
     private void vanillahud$slot(GameGui self, int slot, int x, int y, float tickDelta, Player player,
                                  Operation<Void> original) {
-        if (Huds.INSTANCE.getHotbar().isDrawnAsVanilla()) {
+        HotbarHud hud = Huds.INSTANCE.getHotbar();
+        if (hud.isDrawnAsVanilla()) {
             original.call(self, slot, x, y, tickDelta, player);
             return;
         }
-        HudTransform.beginUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar(),
+        HudTransform.beginUpright(LegacyDrawContext.INSTANCE, hud,
                 (float) x + VANILLAHUD$ITEM_HALF, (float) y + VANILLAHUD$ITEM_HALF);
-        TextShadowHook.push(Huds.INSTANCE.getHotbar().getShowShadow());
+        TextShadowHook.push(hud.getShowShadow());
         try {
             original.call(self, slot, x, y, tickDelta, player);
         } finally {
             TextShadowHook.pop();
         }
-        HudTransform.endUpright(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getHotbar());
+        HudTransform.endUpright(LegacyDrawContext.INSTANCE, hud);
     }
     *///?}
 }

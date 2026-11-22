@@ -25,6 +25,13 @@ abstract class BackdropHud(
 
     val radius: Int get() = bgRadius.roundToInt()
 
+    @OptIn(ExperimentalOneConfigUiApi::class)
+    val borderArgb: Int
+        get() {
+            val argb = borderColor
+            return if (borderChroma) PolyColor(argb, true, borderChromaSpeed).argb else argb
+        }
+
     val textShadow: Boolean get() = showShadow
 
     /**

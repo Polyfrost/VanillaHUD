@@ -9,6 +9,7 @@
     },
     "client": [
         "GuiFrameMixin",
+        "CaptureSwapMixin",
         "DrawCaptureMixin",
         "CaptureFontMixin",
         "CaptureItemMixin",

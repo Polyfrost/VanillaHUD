@@ -81,6 +81,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.GameGui;
 import net.minecraft.client.gui.GuiElement;
+import net.minecraft.client.render.Window;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.compat.LegacyIconBatch;
 import org.polyfrost.vanillahud.hud.Huds;
@@ -89,6 +90,8 @@ import org.polyfrost.vanillahud.render.HudCapture;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameGui.class)
 public abstract class UprightIconMixin extends GuiElement {
@@ -103,8 +106,7 @@ public abstract class UprightIconMixin extends GuiElement {
                 ? Huds.INSTANCE.getArmor() : Huds.INSTANCE.getHunger();
         else hud = Huds.INSTANCE.getHealth();
 
-        if (!hud.shouldDraw()) return;
-        HudTransform.beginIcons(LegacyDrawContext.INSTANCE, hud);
+        if (!HudTransform.iconRun(LegacyDrawContext.INSTANCE, hud)) return;
         y += HudTransform.mirrorShift(y, y + height);
         int turns = HudTransform.getIconTurns();
         if (HudCapture.isActive()) {
@@ -115,7 +117,17 @@ public abstract class UprightIconMixin extends GuiElement {
             LegacyIconBatch.quad(x, y, u, v, width, height, width, height, 256, 256, this.drawOffset, turns);
             LegacyIconBatch.draw();
         }
-        HudTransform.endIcons(LegacyDrawContext.INSTANCE);
+    }
+
+    @Inject(method = "renderStatusBars", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/util/profiler/Profiler;pop()V"))
+    private void vanillahud$endStatusIcons(Window window, CallbackInfo ci) {
+        HudTransform.endIconRun(LegacyDrawContext.INSTANCE);
+    }
+
+    @Inject(method = "renderStatusBars", at = @At("RETURN"))
+    private void vanillahud$endStatusIconsOnReturn(Window window, CallbackInfo ci) {
+        HudTransform.endIconRun(LegacyDrawContext.INSTANCE);
     }
 
     @WrapOperation(method = {"renderHotbar", "renderXpBar", "renderJumpBar"}, at = @At(value = "INVOKE",

@@ -5,6 +5,8 @@ package org.polyfrost.vanillahud.mixin.elements;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
+import org.polyfrost.vanillahud.hud.ExperienceBarHud;
+import org.polyfrost.vanillahud.hud.ExperienceLevelHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.injection.At;
@@ -55,8 +57,9 @@ public class GuiMixinExperienceBar {
             target = "Lnet/minecraft/client/gui/GameGui;drawTexture(IIIIII)V"))
     private void vanillahud$xpBarSprite(GameGui self, int x, int y, int u, int v, int width, int height,
                                         Operation<Void> original) {
-        if (!Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
-        HudTransform.begin(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getExperienceBar());
+        ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
+        if (!hud.shouldDraw()) return;
+        HudTransform.begin(LegacyDrawContext.INSTANCE, hud);
         original.call(self, x, y, u, v, width, height);
         HudTransform.end(LegacyDrawContext.INSTANCE);
     }
@@ -65,10 +68,11 @@ public class GuiMixinExperienceBar {
             target = "Lnet/minecraft/client/gui/Font;draw(Ljava/lang/String;III)I"))
     private int vanillahud$xpLevel(Font font, String text, int x, int y, int color,
                                    Operation<Integer> original) {
-        if (!Huds.INSTANCE.getExperienceLevel().shouldDraw()) return 0;
-        HudTransform.beginText(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getExperienceLevel());
+        ExperienceLevelHud hud = Huds.INSTANCE.getExperienceLevel();
+        if (!hud.shouldDraw()) return 0;
+        HudTransform.beginText(LegacyDrawContext.INSTANCE, hud);
         int width = original.call(font, text, x, y, color);
-        HudTransform.endText(LegacyDrawContext.INSTANCE, Huds.INSTANCE.getExperienceLevel());
+        HudTransform.endText(LegacyDrawContext.INSTANCE, hud);
         return width;
     }
     *///?}

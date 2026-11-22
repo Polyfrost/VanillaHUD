@@ -13,6 +13,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import org.polyfrost.compose.layout.PolyAlign
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -116,14 +118,32 @@ abstract class VanillaHud(
         foreignMod = ForeignAttribution.attribute()
     }
 
+    private var displayKey = -1
+    private var displayedPositionProp: Property<*>? = null
+    private var displayedScaleProp: Property<*>? = null
+
     internal fun refreshDetection() {
         val f = foreign
         val moved = f != null && f.moved && !ignoreModPosition && try { pinned } catch (_: Throwable) { false }
         val scaled = f != null && f.scaled && !ignoreModScale
-        val next = if (moved || scaled) ExternalPlacement(foreignMod, moved, scaled) else null
-        if (next != detectedPlacement) detectedPlacement = next
-        ignorePositionProp?.revaluateDisplay()
-        ignoreScaleProp?.revaluateDisplay()
+        val current = detectedPlacement
+        if (moved || scaled) {
+            if (current == null || current.mod != foreignMod || current.moved != moved || current.scaled != scaled) {
+                detectedPlacement = ExternalPlacement(foreignMod, moved, scaled)
+            }
+        } else if (current != null) {
+            detectedPlacement = null
+        }
+        val key = (if (ignoreModPosition) 1 else 0) or (if (f?.moved == true) 2 else 0) or
+            (if (ignoreModScale) 4 else 0) or (if (f?.scaled == true) 8 else 0)
+        val position = ignorePositionProp
+        val scale = ignoreScaleProp
+        if (key == displayKey && position === displayedPositionProp && scale === displayedScaleProp) return
+        displayKey = key
+        displayedPositionProp = position
+        displayedScaleProp = scale
+        position?.revaluateDisplay()
+        scale?.revaluateDisplay()
     }
 
     private fun foreignOptionChanged() {
@@ -517,11 +537,12 @@ abstract class VanillaHud(
     val isDrawnAsVanilla: Boolean get() = !HudManager.isEditing && VanillaHudApi.isDrawnAsVanilla(hudId)
 
     fun shouldDraw(): Boolean {
-        if (isDrawnAsVanilla) return true
-        if (!HudManager.isEditing && hidden) return false
+        val editing = HudManager.isEditing
+        if (!editing && VanillaHudApi.isDrawnAsVanilla(hudId)) return true
+        if (!editing && hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false
-        if (!HudManager.overrideShowInScreens && !HudManager.isEditing) {
+        if (!HudManager.overrideShowInScreens && !editing) {
             if (HudManager.isChatScreenOpen) {
                 if (!showInChat) return false
             } else if (HudManager.isGuiScreenOpen && !showInScreens) return false
@@ -559,7 +580,7 @@ abstract class VanillaHud(
     private var sizeKey = 0
 
     private fun sizeCached(stored: Long): Boolean {
-        if (HudManager.isEditing || placing > 0) return false
+        if (placing > 0 || HudManager.isEditing) return false
         val key = measureKey()
         if (key != sizeKey) {
             sizeKey = key
@@ -602,7 +623,13 @@ abstract class VanillaHud(
     /** the scale the game applies itself inside this element's pose, as a title does */
     open val innerScale: Float get() = 1f
 
-    val bgArgb: Int get() = bgPolyColor.argb
+    val bgArgb: Int get() = HudCapture.backgroundTint(this, bgRawArgb)
+
+    private val bgRawArgb: Int
+        get() {
+            val argb = bgColor
+            return if (bgChroma) PolyColor(argb, true, bgChromaSpeed).argb else argb
+        }
 
     private val pads: Boolean get() = padLeft != 0f || padRight != 0f || padTop != 0f || padBottom != 0f
 
@@ -618,15 +645,17 @@ abstract class VanillaHud(
 
     /** where the content sits inside the box, zero unless the Designer's padding or static size is in use */
     val contentOffsetX: Float
-        get() = when {
-            staticWidth -> (boxWidth - drawnWidth) * alignment.name.let { if ("Left" in it) 0f else if ("Right" in it) 1f else 0.5f }
-            else -> padLeft * padScale
+        get() {
+            if (!staticWidth) return padLeft * padScale
+            val drawn = drawnWidth
+            return (maxOf(staticW, drawn) - drawn) * alignmentFractionX(alignment)
         }
 
     val contentOffsetY: Float
-        get() = when {
-            staticWidth -> (boxHeight - drawnHeight) * alignment.name.let { if ("Top" in it) 0f else if ("Bottom" in it) 1f else 0.5f }
-            else -> padTop * padScale
+        get() {
+            if (!staticWidth) return padTop * padScale
+            val drawn = drawnHeight
+            return (maxOf(staticH, drawn) - drawn) * alignmentFractionY(alignment)
         }
 
     private fun syncRenderedSize() {
@@ -671,23 +700,43 @@ abstract class VanillaHud(
     private var measured: Any? = null
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T : Any> measureOnce(key: () -> Long, measure: () -> T?): T? {
+    protected inline fun <T : Any> measureOnce(key: () -> Long, crossinline measure: () -> T?): T? {
         val base = measureKey()
-        if (measuredFrame == frame && measuredBase == base) return measured as T?
-        val stamp = key()
-        val epoch = clock() shr 10
-        if (!measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp ||
-            measuredEpoch != epoch
-        ) {
-            measured = HudCapture.measuring(this, measure)
-            measuredValid = true
-            measuredStamp = stamp
-            measuredEpoch = epoch
+        if (!measuredAt(base)) {
+            val stamp = key()
+            val epoch = measureEpoch()
+            if (measureStale(base, stamp, epoch)) storeMeasured(HudCapture.measuring(this) { measure() }, stamp, epoch)
+            markMeasured(base)
         }
+        return measuredValue() as T?
+    }
+
+    @PublishedApi
+    internal fun measuredAt(base: Int): Boolean = measuredFrame == frame && measuredBase == base
+
+    @PublishedApi
+    internal fun measureEpoch(): Long = clock() shr 10
+
+    @PublishedApi
+    internal fun measureStale(base: Int, stamp: Long, epoch: Long): Boolean =
+        !measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp || measuredEpoch != epoch
+
+    @PublishedApi
+    internal fun storeMeasured(value: Any?, stamp: Long, epoch: Long) {
+        measured = value
+        measuredValid = true
+        measuredStamp = stamp
+        measuredEpoch = epoch
+    }
+
+    @PublishedApi
+    internal fun markMeasured(base: Int) {
         measuredBase = base
         measuredFrame = frame
-        return measured as T?
     }
+
+    @PublishedApi
+    internal fun measuredValue(): Any? = measured
 
     protected fun mix(h: Long, o: Any?): Long = h * 31 + System.identityHashCode(o)
 
@@ -695,7 +744,8 @@ abstract class VanillaHud(
 
     protected fun mix(h: Long, v: Boolean): Long = h * 31 + if (v) 1 else 0
 
-    private fun measureKey(): Int = HudManager.guiScreenWidth.toInt() * 31 + if (previewing) 1 else 0
+    @PublishedApi
+    internal fun measureKey(): Int = HudManager.guiScreenWidth.toInt() * 31 + if (previewing) 1 else 0
 
     override fun update(): Boolean {
         val size = boxWidth.toBits().toLong() * 31 + boxHeight.toBits()
@@ -781,7 +831,9 @@ abstract class VanillaHud(
                 } catch (_: Throwable) {
                 }
             }
-            for (hud in HudManager.activeInstances) {
+            val huds = HudManager.activeInstances
+            for (i in 0 until huds.size) {
+                val hud = huds[i]
                 if (hud !is VanillaHud || !hud.shouldDraw()) continue
                 try {
                     if (hud.seenForeignRevision != ForeignTransform.revision) {
@@ -826,6 +878,18 @@ abstract class VanillaHud(
 }
 
 private fun cell(f: Float) = if (f < 0.25f) 0 else if (f < 0.75f) 1 else 2
+
+private fun alignmentFractionX(align: PolyAlign): Float = when (align) {
+    PolyAlign.TopLeft, PolyAlign.Left, PolyAlign.BottomLeft -> 0f
+    PolyAlign.TopRight, PolyAlign.Right, PolyAlign.BottomRight -> 1f
+    else -> 0.5f
+}
+
+private fun alignmentFractionY(align: PolyAlign): Float = when (align) {
+    PolyAlign.TopLeft, PolyAlign.Top, PolyAlign.TopRight -> 0f
+    PolyAlign.BottomLeft, PolyAlign.Bottom, PolyAlign.BottomRight -> 1f
+    else -> 0.5f
+}
 
 private val SECTIONS = listOf(
     Section.TopLeft, Section.TopCenter, Section.TopRight,

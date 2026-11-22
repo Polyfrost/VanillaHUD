@@ -23,12 +23,14 @@ import net.minecraft.scoreboard.ScoreboardScore
 import net.minecraft.scoreboard.team.Team
 import net.minecraft.text.Text
 import org.polyfrost.vanillahud.compat.SoundFixCaptions
+import org.polyfrost.vanillahud.mixin.compat.soundfix.ISubtitleEntry
 *///?}
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.config.v1.showWhen
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.previewValue
@@ -39,6 +41,7 @@ import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
 import org.polyfrost.vanillahud.mixin.access.ISubtitle
 import org.polyfrost.vanillahud.mixin.access.ISubtitleOverlay
+import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.DemoData
 import org.polyfrost.vanillahud.util.TabListManager
@@ -254,7 +257,11 @@ abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, ti
 
     override val quarterTurns get() = side.coerceIn(BOTTOM, RIGHT)
 
-    override val mirrored get() = reverseDirection != (quarterTurns == TOP || quarterTurns == RIGHT)
+    override val mirrored: Boolean
+        get() {
+            val turns = quarterTurns
+            return reverseDirection != (turns == TOP || turns == RIGHT)
+        }
 
     // the distance from the bottom edge becomes the distance from the docked edge, and the offset
     // from the screen centre carries over to the free axis so a rotated cluster keeps its layout
@@ -324,18 +331,29 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
     private fun hasItems(): Boolean {
         val inventory = mc.player?.takeIf { hasLiveData() }?.inventory ?: return false
         //? if > 1.8.9 {
-        return (0..8).any { !inventory.getItem(it).isEmpty }
+        for (i in 0..8) if (!inventory.getItem(i).isEmpty) return true
+        return false
         //?} else
         //return inventory.items.take(9).any { it != null }
     }
 }
 
-private fun activeHotbar() = HudManager.activeInstances.firstOrNull { it is HotbarHud } as HotbarHud?
+private fun activeHotbar(): HotbarHud? = activeOf<HotbarHud>()
+
+private inline fun <reified T : Hud> activeOf(): T? {
+    val huds = HudManager.activeInstances
+    for (i in 0 until huds.size) {
+        val hud = huds[i]
+        if (hud is T) return hud
+    }
+    return null
+}
 
 /** the active [T] this bar hangs from, unless either of them is rotated since a rotated bar docks to its own screen edge */
-private inline fun <reified T : RotatableHud> RotatableHud.dockedTo(): T? =
-    (HudManager.activeInstances.firstOrNull { it is T } as T?)
-        ?.takeIf { quarterTurns == RotatableHud.BOTTOM && it.quarterTurns == RotatableHud.BOTTOM }
+private inline fun <reified T : RotatableHud> RotatableHud.dockedTo(): T? {
+    if (quarterTurns != RotatableHud.BOTTOM) return null
+    return activeOf<T>()?.takeIf { it.quarterTurns == RotatableHud.BOTTOM }
+}
 
 //? if > 1.8.9 {
 private fun statusBarsShown() = mc.gameMode?.canHurtPlayer() == true
@@ -531,7 +549,7 @@ class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item
     override val defaultAnchorPoint get() = HudAnchor.Bottom
     override val defaultAnchorTargetPoint get() = HudAnchor.Top
 
-    private val vanillaDrop get() = if (Huds.heldItemTooltip.previewing || statusBarsShown()) 0f else 14f
+    private val vanillaDrop get() = if (previewing || statusBarsShown()) 0f else 14f
 
     // how much of vanilla's creative drop anchorOffsetY already holds, saved with it so a restart doesn't add it again
     @Include
@@ -708,6 +726,52 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
             }
         }
         return true
+    }
+
+    private var sidebarObjective: Any? = null
+    private var sidebarValid = false
+    private var sidebarRevision = 0
+    private var sidebarEpoch = 0L
+    private var sidebarPointsMode = 0
+    private var sidebarHideRepeating = false
+
+    var sidebarShowsPoints = false
+        private set
+
+    var sidebarHasRows = false
+        private set
+
+    var sidebarRows = 0
+        private set
+
+    //? if > 1.8.9 {
+    fun refreshSidebar(objective: Objective) {
+    //?} else
+    //fun refreshSidebar(objective: ScoreboardObjective) {
+        val revision = HudInternals.scoreboardRevision
+        val epoch = clock() shr 10
+        if (sidebarValid && objective === sidebarObjective && revision == sidebarRevision && epoch == sidebarEpoch &&
+            scoreboardPoints == sidebarPointsMode && hideRepeatingScores == sidebarHideRepeating
+        ) return
+        //? if > 1.8.9 {
+        val scores = objective.scoreboard.listPlayerScores(objective)
+        sidebarHasRows = scores.any { !it.isHidden }
+        //?} else {
+        /*val scores = objective.scoreboard.getScores(objective)
+        var rows = 0
+        for (score in scores) {
+            val owner = score.owner
+            if (owner != null && !owner.startsWith("#")) rows++
+        }
+        sidebarRows = minOf(rows, 15)
+        *///?}
+        sidebarShowsPoints = showScorePoints(scores)
+        sidebarObjective = objective
+        sidebarRevision = revision
+        sidebarEpoch = epoch
+        sidebarPointsMode = scoreboardPoints
+        sidebarHideRepeating = hideRepeatingScores
+        sidebarValid = true
     }
 
     override val naturalWidth get() = 90f
@@ -1264,7 +1328,20 @@ abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, t
     protected abstract val placeholder: String
     //? if > 1.8.9 {
     protected abstract fun live(): Component?
-    private fun text(): String? = live()?.string
+
+    private var textSource: Component? = null
+    private var textFrame = -1L
+    private var textValue: String? = null
+
+    private fun text(): String? {
+        val source = live() ?: return null
+        if (source === textSource && textFrame == frame) return textValue
+        val value = source.string
+        textSource = source
+        textFrame = frame
+        textValue = value
+        return value
+    }
 
     fun previewText(): Component =
         previewValue(hudId, { live()?.takeIf { active() && it.string.isNotEmpty() } }, null) ?: Component.literal(placeholder)
@@ -1479,7 +1556,16 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
     fun captionTextArgb(vanilla: Int): Int {
         val fade = vanilla and 0xFF
-        val color = PolyColor(textColor, textChroma, textChromaSpeed).argb
+        val argb = captionTextRgb(fade)
+        return if (textChroma) HudCapture.captionTint(this, fade, argb, faded(textColor, fade)) else argb
+    }
+
+    fun captionTextRgb(fade: Int): Int {
+        val argb = textColor
+        return faded(if (textChroma) PolyColor(argb, true, textChromaSpeed).argb else argb, fade)
+    }
+
+    private fun faded(color: Int, fade: Int): Int {
         val a = color ushr 24 and 0xFF
         val r = (color ushr 16 and 0xFF) * fade / 255
         val g = (color ushr 8 and 0xFF) * fade / 255
@@ -1501,10 +1587,34 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
         return overlay.audibleSubtitles.mapNotNull { (it as? ISubtitle)?.subtitleText }
     }
 
+    private fun textsKey(): Long {
+        val subtitles = (hudAccessor?.subtitleOverlay as? ISubtitleOverlay)?.audibleSubtitles ?: return mix(0L, 0)
+        var h = 0L
+        var n = 0
+        for (subtitle in subtitles) {
+            val text = (subtitle as? ISubtitle)?.subtitleText ?: continue
+            h = mix(h, text)
+            n++
+        }
+        return mix(h, n)
+    }
+
     override fun hasLiveData() = mc.options.showSubtitles().get() &&
         (hudAccessor?.subtitleOverlay as? ISubtitleOverlay)?.subtitles?.isNotEmpty() == true
     //?} else {
     /*private fun texts(): List<String> = SoundFixCaptions.texts()
+
+    private fun textsKey(): Long {
+        val subtitles = SoundFixCaptions.audible() ?: return mix(0L, 0)
+        var h = 0L
+        var n = 0
+        for (subtitle in subtitles) {
+            val text = (subtitle as? ISubtitleEntry)?.subtitleText ?: continue
+            h = mix(h, text)
+            n++
+        }
+        return mix(h, n)
+    }
 
     override fun hasLiveData() = SoundFixCaptions.hasLiveData()
 
@@ -1516,12 +1626,7 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
     private class Size(val width: Float, val height: Float)
 
-    private fun size(): Size? = measureOnce({
-        val shown = texts()
-        var h = 0L
-        for (text in shown) h = mix(h, text)
-        mix(h, shown.size)
-    }) { measureSize() }
+    private fun size(): Size? = measureOnce({ textsKey() }) { measureSize() }
 
     private fun measureSize(): Size {
         val texts = texts()
