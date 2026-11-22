@@ -1,3 +1,8 @@
+## 3.5.14
+- Large performance improvements, most of all on 1.8.9: HUDs are only redrawn when what they show changes, and text, icons and the scoreboard do far less work each frame
+- Fixed the hotbar drawing in a different order than vanilla, which broke mods that draw on top of it
+- Fixed status bars staying on screen after a gamemode switch with Gnetum installed
+
 ## 3.5.13
 - Fixed HUD elements that should be hidden staying on screen after closing the mod menu with Gnetum installed
 
