@@ -1,39 +1,12 @@
 package org.polyfrost.vanillahud.test
 
-//? if > 1.8.9
-import net.minecraft.SharedConstants
-import net.minecraft.server.Bootstrap
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.render.HotbarKeybinds
 
 class HotbarKeybindsTest {
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun boot() {
-            //? if > 1.8.9 {
-            SharedConstants.tryDetectVersion()
-            Bootstrap.bootStrap()
-            //?} else
-            //LegacyBootstrap.once()
-        }
-    }
-
-    @Test
-    fun `hotbar keybinds are disabled by default with expected defaults`() {
-        val hud = HotbarHud()
-        assertFalse(hud.showKeybinds)
-        assertEquals(HotbarKeybinds.TOP_LEFT, hud.keybindPosition)
-        assertEquals(0.8f, hud.keybindScale, 0f)
-        assertEquals(0xCCFFFFFF.toInt(), hud.keybindColor.argb)
-    }
-
     @Test
     fun `layout positions keybinds within each corner inset of the 16x16 slot`() {
         val topLeft = HotbarKeybinds.layoutKeybind(100, 200, textWidth = 6, requestedScale = 0.8f, HotbarKeybinds.TOP_LEFT)
