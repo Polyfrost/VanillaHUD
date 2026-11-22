@@ -239,6 +239,8 @@ class BossBarHud : BackdropHud("vanillahud-bossbar.json", "Boss Bar", Category.C
 abstract class RotatableHud(hudId: String, title: String) : VanillaHud(hudId, title, Category.PLAYER) {
     override val composeBackground get() = true
 
+    override fun hasContent() = previewing || hasLiveData()
+
     @Dropdown(
         title = "Side",
         description = "Which screen edge the element docks against. Left and Right rotate it a quarter turn.",
@@ -316,8 +318,6 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
     override val homeAnchorY get() = 1f
 
     override fun hasLiveData() = mc.player?.isSpectator == false
-
-    override fun hasContent() = previewing || hasLiveData()
 
     fun showsDemo(): Boolean = previewing && previewValue("hotbar", { hasItems().takeIf { it } }, null) == null
 
