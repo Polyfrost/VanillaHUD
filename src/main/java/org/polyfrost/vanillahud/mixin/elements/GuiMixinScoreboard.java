@@ -269,6 +269,7 @@ public class GuiMixinScoreboard {
         this.vanillahud$showScorePoints = hud.getSidebarShowsPoints();
         this.vanillahud$rowsLeft = hud.getSidebarRows();
         this.vanillahud$firstRow = true;
+        this.vanillahud$radius = hud.getRadius();
     }
 
     // wraps the call so argentum's deferred batch still draws inside the transform
@@ -310,10 +311,10 @@ public class GuiMixinScoreboard {
     }
 
     @Unique
-    private static void vanillahud$fill(Operation<Void> original, ScoreboardHud hud, int x0, int y0, int x1, int y1, int color,
+    private static void vanillahud$fill(Operation<Void> original, int radius, int x0, int y0, int x1, int y1, int color,
                                         boolean roundTop, boolean roundBottom) {
         if ((color >>> 24) == 0) return;
-        TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, hud.getRadius(),
+        TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, radius,
                 roundTop, roundBottom, (a, b, c, d) -> {
                     if (!HudCapture.fill(LegacyDrawContext.INSTANCE, a, b, c, d, color)) original.call(a, b, c, d, color);
                 });
@@ -325,6 +326,8 @@ public class GuiMixinScoreboard {
     private int vanillahud$rowsLeft;
     @Unique
     private boolean vanillahud$firstRow;
+    @Unique
+    private int vanillahud$radius;
 
     // a legacy colour code in the string wins over the colour argument, so it has to go before
     // the configured score colour can take effect
@@ -358,10 +361,11 @@ public class GuiMixinScoreboard {
         boolean bottom = this.vanillahud$firstRow;
         this.vanillahud$firstRow = false;
         boolean top = --this.vanillahud$rowsLeft <= 0;
-        boolean titled = hud.getScoreboardTitle() && (hud.getTitleBgColor() >>> 24) != 0;
+        boolean shown = hud.getBackgroundStyle().showBackground;
+        boolean titled = hud.getScoreboardTitle() && shown && (hud.getTitleColor().getArgb() >>> 24) != 0;
         // with no title, the top row also covers the 1px gap so its corners round cleanly
         if (top && !titled) y0--;
-        vanillahud$fill(original, hud, x0, y0, x1, y1, hud.getBodyBgColor(), top && !titled, bottom);
+        vanillahud$fill(original, this.vanillahud$radius, x0, y0, x1, y1, shown ? hud.getBgArgb() : 0, top && !titled, bottom);
     }
 
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
@@ -374,7 +378,7 @@ public class GuiMixinScoreboard {
         }
         if (!hud.getScoreboardTitle()) return;
         if (vanillahud$solidHidden(hud)) return;
-        vanillahud$fill(original, hud, x0, y0, x1, y1, hud.getTitleBgColor(), true, false);
+        vanillahud$fill(original, this.vanillahud$radius, x0, y0, x1, y1, hud.getTitleBgColor(), true, false);
     }
 
     @WrapOperation(method = "renderScoreboardObjective", at = @At(value = "INVOKE",
@@ -387,7 +391,7 @@ public class GuiMixinScoreboard {
         }
         if (vanillahud$solidHidden(hud)) return;
         if (!hud.getScoreboardTitle() || (hud.getTitleBgColor() >>> 24) == 0) return;
-        vanillahud$fill(original, hud, x0, y0, x1, y1, hud.getBodyBgColor(), false, false);
+        vanillahud$fill(original, this.vanillahud$radius, x0, y0, x1, y1, hud.getBodyBgColor(), false, false);
     }
 
     // vanilla folds ": <score>" into every row when it sizes the sidebar, so hiding the score

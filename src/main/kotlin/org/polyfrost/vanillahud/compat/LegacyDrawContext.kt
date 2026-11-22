@@ -5,7 +5,6 @@ package org.polyfrost.vanillahud.compat
 import net.minecraft.client.render.Window
 import net.minecraft.client.render.platform.GlStateManager
 import org.lwjgl.opengl.GL11
-import org.polyfrost.vanillahud.hud.VanillaHud
 import org.polyfrost.vanillahud.render.HudCapture
 
 /**
@@ -19,7 +18,6 @@ import org.polyfrost.vanillahud.render.HudCapture
 object LegacyDrawContext {
     private val mc: Minecraft get() = Minecraft.getInstance()
 
-    private var windowFrame = Long.MIN_VALUE
     private var windowDisplayWidth = -1
     private var windowDisplayHeight = -1
     private var windowGuiScale = -1
@@ -30,14 +28,10 @@ object LegacyDrawContext {
 
     private fun window() {
         val client = mc
-        val frame = VanillaHud.frame
         val guiScale = client.options.guiScale
         val unicode = client.isUnicode
-        if (frame == windowFrame && client.width == windowDisplayWidth && client.height == windowDisplayHeight &&
-            guiScale == windowGuiScale && unicode == windowUnicode
-        ) return
+        if (client.width == windowDisplayWidth && client.height == windowDisplayHeight && guiScale == windowGuiScale && unicode == windowUnicode) return
         val window = Window(client)
-        windowFrame = frame
         windowDisplayWidth = client.width
         windowDisplayHeight = client.height
         windowGuiScale = guiScale

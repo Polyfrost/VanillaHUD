@@ -607,7 +607,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         bgColor = 0x4C000000
     }
 
-    val radius: Int get() = bgRadius.roundToInt()
+    val radius: Int get() = layoutStyle.bgRadius.roundToInt()
 
     override fun hasBorder() = false
 
@@ -667,9 +667,9 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     override val stretchesBackground get() = true
 
-    val titleBgColor: Int get() = if (showBackground) titleColor.argb else 0
+    val titleBgColor: Int get() = if (backgroundStyle.showBackground) titleColor.argb else 0
 
-    val bodyBgColor: Int get() = if (showBackground) bgArgb else 0
+    val bodyBgColor: Int get() = if (backgroundStyle.showBackground) bgArgb else 0
 
     val hasCustomBackground: Boolean get() = backgroundImagePath.isNotBlank()
 
@@ -683,7 +683,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 
     fun imageY1(y: Int): Int = imageY0(y - height.roundToInt()) + (boxHeight / imageScale).roundToInt()
 
-    val textShadow: Boolean get() = showShadow
+    val textShadow: Boolean get() = textStyle.showShadow
 
     //? if > 1.8.9 {
     fun showScorePoints(scores: Collection<PlayerScoreEntry>): Boolean {
@@ -1018,13 +1018,13 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     @Color(title = "Footer Background Color")
     var footerBgColor = PolyColor(0x80000000.toInt())
 
-    val radius: Int get() = bgRadius.roundToInt()
+    val radius: Int get() = layoutStyle.bgRadius.roundToInt()
 
     override val stretchesBackground get() = true
 
     val tabWidgetArgb: Int get() = tabWidgetColor.argb
     val headerBgArgb: Int get() = if (showBackground) headerBgColor.argb else 0
-    val bodyBgArgb: Int get() = if (showBackground) bgArgb else 0
+    val bodyBgArgb: Int get() = if (backgroundStyle.showBackground) bgArgb else 0
     val footerBgArgb: Int get() = if (showBackground) footerBgColor.argb else 0
 
     fun hidesPing(ping: Int): Boolean {
@@ -1550,9 +1550,9 @@ class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed C
 
     override val everyFillIsBackground get() = true
 
-    val captionBgArgb: Int get() = if (showBackground) bgArgb else 0
+    val captionBgArgb: Int get() = if (backgroundStyle.showBackground) bgArgb else 0
 
-    val textShadow: Boolean get() = showShadow
+    val textShadow: Boolean get() = textStyle.showShadow
 
     fun captionTextArgb(vanilla: Int): Int {
         val fade = vanilla and 0xFF

@@ -46,6 +46,7 @@ import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.ClosedCaptionsHud
 import org.polyfrost.vanillahud.hud.ExperienceLevelHud
+import org.polyfrost.vanillahud.hud.HudStyle
 import org.polyfrost.vanillahud.hud.VanillaHud
 import java.util.TreeMap
 import kotlin.math.PI
@@ -110,7 +111,15 @@ object HudCapture {
 
     private data class Quad(val m: Pose, val bitmap: PolyBitmap?, val x0: Float, val y0: Float, val x1: Float, val y1: Float, val u0: Float, val v0: Float, val u1: Float, val v1: Float, val color: Int, val tint: Tint? = null)
 
-    private data class Run(val m: Pose, val text: String, val x: Float, val y: Float, val color: Int, val shadow: Boolean, val hud: VanillaHud, val chroma: Boolean, val tint: Tint?)
+    private data class Run(val m: Pose, val text: String, val x: Float, val y: Float, val color: Int, val shadow: Boolean, val hud: VanillaHud, val chroma: Boolean, val tint: Tint?) {
+        var key: TextKey? = null
+
+        fun same(m: Pose, text: String, x: Float, y: Float, color: Int, shadow: Boolean, hud: VanillaHud, chroma: Boolean, tint: Tint?) =
+            this.x.toRawBits() == x.toRawBits() && this.y.toRawBits() == y.toRawBits() && this.color == color && this.shadow == shadow &&
+                this.chroma == chroma && this.hud === hud && this.tint == tint && this.m == m && this.text == text
+    }
+
+    private class TextKey(val src: String, val style: Int, val font: Int, val runs: List<Run0>, val texts: Array<String>)
 
     private data class ClipStart(val m: Pose, val x0: Float, val y0: Float, val x1: Float, val y1: Float)
 
@@ -151,6 +160,7 @@ object HudCapture {
         val partList = ArrayList<Part>()
         /** the open part's recording */
         var recording = ArrayList<Any>()
+        var previous = ArrayList<Any>()
         var shown = ArrayList<Any>()
         var spare = ArrayList<Any>()
         var items by mutableStateOf<List<Item>>(emptyList())
@@ -219,8 +229,8 @@ object HudCapture {
         if (tint == null) return color
         val hud = tint.hud
         val live = when (tint.kind) {
-            TINT_BACKGROUND -> argbOf(hud.bgColor, hud.bgChroma, hud.bgChromaSpeed)
-            TINT_BORDER -> argbOf(hud.borderColor, hud.borderChroma, hud.borderChromaSpeed)
+            TINT_BACKGROUND -> hud.backgroundStyle.let { argbOf(it.bgColor, it.bgChroma, it.bgChromaSpeed) }
+            TINT_BORDER -> hud.backgroundStyle.let { argbOf(it.borderColor, it.borderChroma, it.borderChromaSpeed) }
             else -> (hud as? ClosedCaptionsHud)?.captionTextRgb(tint.param) ?: 0
         }
         return (color and 0xFF000000.toInt()) or (live and 0xFFFFFF)
@@ -228,19 +238,21 @@ object HudCapture {
 
     @JvmStatic
     fun backgroundTint(hud: VanillaHud, argb: Int): Int {
-        if (hud.bgChroma) registerTint(TINT_BACKGROUND, hud, 0, argb, hud.bgColor)
+        val s = hud.backgroundStyle
+        if (s.bgChroma) registerTint(TINT_BACKGROUND, hud, 0, argb, s.bgColor)
         return argb
     }
 
     @JvmStatic
     @OptIn(ExperimentalOneConfigUiApi::class)
     fun borderTint(hud: VanillaHud, argb: Int): Int {
-        if (hud.borderEnabled && hud.borderChroma) registerTint(TINT_BORDER, hud, 0, argb, hud.borderColor)
+        val s = hud.backgroundStyle
+        if (s.borderEnabled && s.borderChroma) registerTint(TINT_BORDER, hud, 0, argb, s.borderColor)
         return argb
     }
 
     fun captionTint(hud: ClosedCaptionsHud, fade: Int, argb: Int, staticArgb: Int): Int {
-        if (hud.textChroma) registerTint(TINT_CAPTION, hud, fade, argb, staticArgb)
+        if (hud.textStyle.textChroma) registerTint(TINT_CAPTION, hud, fade, argb, staticArgb)
         return argb
     }
 
@@ -338,6 +350,7 @@ object HudCapture {
         }
         p.ran = true
         l.recording = p.recording
+        l.previous = p.shown
         open.add(p)
         active = l
         //? if = 1.8.9
@@ -352,6 +365,7 @@ object HudCapture {
             val q = open[i]
             if (q.layer === p.layer) {
                 p.layer.recording = q.recording
+                p.layer.previous = q.shown
                 break
             }
         }
@@ -372,12 +386,32 @@ object HudCapture {
 
     private var lastPose = Pose(0f, 0f, 0f, 0f, 0f, 0f)
 
+    private val poses = arrayOfNulls<Pose>(64)
+    private var poseNext = 0
+
+    private fun samePose(p: Pose, m00: Float, m01: Float, m10: Float, m11: Float, m20: Float, m21: Float) =
+        p.m20.toRawBits() == m20.toRawBits() && p.m21.toRawBits() == m21.toRawBits() && p.m00.toRawBits() == m00.toRawBits() &&
+            p.m01.toRawBits() == m01.toRawBits() && p.m10.toRawBits() == m10.toRawBits() && p.m11.toRawBits() == m11.toRawBits()
+
     private fun poseOf(m00: Float, m01: Float, m10: Float, m11: Float, m20: Float, m21: Float): Pose {
         val p = lastPose
-        if (p.m00.toRawBits() == m00.toRawBits() && p.m01.toRawBits() == m01.toRawBits() && p.m10.toRawBits() == m10.toRawBits() &&
-            p.m11.toRawBits() == m11.toRawBits() && p.m20.toRawBits() == m20.toRawBits() && p.m21.toRawBits() == m21.toRawBits()
-        ) return p
-        return Pose(m00, m01, m10, m11, m20, m21).also { lastPose = it }
+        if (samePose(p, m00, m01, m10, m11, m20, m21)) return p
+        val ring = poses
+        var i = poseNext
+        var left = ring.size
+        while (left-- > 0) {
+            i = if (i == 0) ring.size - 1 else i - 1
+            val q = ring[i] ?: continue
+            if (samePose(q, m00, m01, m10, m11, m20, m21)) {
+                lastPose = q
+                return q
+            }
+        }
+        val made = Pose(m00, m01, m10, m11, m20, m21)
+        ring[poseNext] = made
+        poseNext = if (poseNext == ring.size - 1) 0 else poseNext + 1
+        lastPose = made
+        return made
     }
 
     //? if >=1.21.8 {
@@ -469,8 +503,13 @@ object HudCapture {
     @JvmStatic
     fun isActive() = capturing
 
+    private var fontGeneration = 0
+
     @JvmStatic
-    fun resourcesReloaded() = SpriteBitmaps.clear()
+    fun resourcesReloaded() {
+        fontGeneration++
+        SpriteBitmaps.clear()
+    }
 
     @JvmStatic
     fun texture(g: GuiGraphicsExtractor, x: Int, y: Int, w: Int, h: Int, u0: Float, v0: Float, u1: Float, v1: Float): Boolean {
@@ -523,7 +562,7 @@ object HudCapture {
         val right = snap(m.x(maxOf(x0, x1).toFloat(), 0f), contentR, boxR)
         val top = snap(m.y(0f, minOf(y0, y1).toFloat()), l.contentY, l.boxY)
         val bottom = snap(m.y(0f, maxOf(y0, y1).toFloat()), contentB, boxB)
-        val box = Corners(l.boxX, l.boxY, boxR, boxB, hud.bgRadius * l.scale, 0f)
+        val box = Corners(l.boxX, l.boxY, boxR, boxB, hud.layoutStyle.bgRadius * l.scale, 0f)
         l.recording += Rounded(SCREEN, box, left, top, right, bottom, color, tint)
     }
 
@@ -643,14 +682,40 @@ object HudCapture {
         textWidth = -1
         val l = active ?: return false
         val hud = l.hud ?: return false
+        if (hud is ExperienceLevelHud && color and 0xFFFFFF == 0) return true
         //? if >=1.21.6 {
-        if (color ushr 24 != 0) textWidth = addRuns(l, hud, pose(g), legacyRuns(text), x, y, color, shadow, tintOf(color))
+        if (color ushr 24 != 0) textWidth = addText(l, hud, pose(g), text, x, y, color, shadow, tintOf(color))
         //?} elif > 1.8.9 {
-        /*textWidth = addRuns(l, hud, pose(g), legacyRuns(text), x, y, fontColor(color, blending = true), shadow, tintOf(color))
+        /*textWidth = addText(l, hud, pose(g), text, x, y, fontColor(color, blending = true), shadow, tintOf(color))
         *///?} else {
-        /*textWidth = addRuns(l, hud, pose(g), legacyRuns(drawableText(text)), x, y, fontColor(color, blending), shadow, tintOf(color))
+        /*textWidth = addText(l, hud, pose(g), text, x, y, fontColor(color, blending), shadow, tintOf(color))
         *///?}
         return true
+    }
+
+    private fun styleKey(s: HudStyle) =
+        (s.caseType shl 3) or (if (s.textBold) 4 else 0) or (if (s.textItalic) 2 else 0) or (if (s.textUnderline) 1 else 0)
+
+    //? if = 1.8.9 {
+    /*private fun fontKey() = if (Minecraft.getInstance().isUnicode) fontGeneration * 2 + 1 else fontGeneration * 2
+    *///?} else
+    private fun fontKey() = 0
+
+    private fun addText(l: Layer, hud: VanillaHud, m: Pose, text: String, x: Int, y: Int, color: Int, shadow: Boolean, tint: Tint?): Int {
+        val s = hud.textStyle
+        val style = styleKey(s)
+        val font = fontKey()
+        val pos = l.recording.size
+        val previous = l.previous
+        val last = if (pos < previous.size) (previous[pos] as? Run)?.key else null
+        val key = if (last != null && last.style == style && last.font == font && last.src == text) last else {
+            //? if = 1.8.9 {
+            /*val runs = legacyRuns(drawableText(text))
+            *///?} else
+            val runs = legacyRuns(text)
+            TextKey(text, style, font, runs, Array(runs.size) { styled(s, runs[it]) })
+        }
+        return addRuns(l, hud, m, key.runs, key, x, y, color, shadow, tint)
     }
 
     //? if > 1.8.9 {
@@ -671,7 +736,7 @@ object HudCapture {
             !runs.custom
         }
         if (runs.custom) return false
-        textWidth = addRuns(l, hud, pose(g), runs.finish(), x, y,
+        textWidth = addRuns(l, hud, pose(g), runs.finish(), null, x, y,
             //? if >=1.21.6 {
             color,
             //?} else
@@ -749,23 +814,37 @@ object HudCapture {
         return runs
     }
 
-    private fun addRuns(l: Layer, hud: VanillaHud, m: Pose, runs: List<Run0>, x: Int, y: Int, color: Int, shadow: Boolean, tint: Tint?): Int {
+    private fun addRuns(l: Layer, hud: VanillaHud, m: Pose, runs: List<Run0>, key: TextKey?, x: Int, y: Int, color: Int, shadow: Boolean, tint: Tint?): Int {
         // vanilla outlines the experience level with four black draws, the hud's own shadow replaces them
         if (hud is ExperienceLevelHud && color and 0xFFFFFF == 0) return -1
+        val s = hud.textStyle
         val measure = restyledHud() === hud
-        val runShadow = shadow || hud.showShadow
+        val runShadow = shadow || s.showShadow
+        val recording = l.recording
+        val previous = l.previous
+        val pos = recording.size
+        val fy = y.toFloat()
         var cursor = x.toFloat()
         var total = 0.0
         val last = runs.lastIndex
         for (i in runs.indices) {
             val r = runs[i]
-            val run = styled(hud, r)
-            val chroma = chromaText(hud, r)
-            val argb = if (chroma) color else runColor(hud, r, color)
+            val run = if (key != null) key.texts[i] else styled(s, r)
+            val chroma = chromaText(hud, s, r)
+            val argb = if (chroma) color else runColor(hud, s, r, color)
             val runTint = if (!chroma && !r.hasRgb && argb == color) tint else null
-            l.recording += Run(m, run, cursor, y.toFloat(), stable(argb, runTint), runShadow, hud, chroma, runTint)
+            val stored = stable(argb, runTint)
+            val at = pos + i
+            val old = if (at < previous.size) previous[at] as? Run else null
+            if (old != null && old.key === (if (i == 0) key else null) && old.same(m, run, cursor, fy, stored, runShadow, hud, chroma, runTint)) {
+                recording += old
+            } else {
+                val made = Run(m, run, cursor, fy, stored, runShadow, hud, chroma, runTint)
+                if (i == 0) made.key = key
+                recording += made
+            }
             if (measure || i < last) {
-                val w = widthOf(hud, run)
+                val w = widthOf(hud, s, run)
                 cursor += w
                 total += w.toDouble()
             }
@@ -773,33 +852,33 @@ object HudCapture {
         return if (measure) ceil(total).toInt() else -1
     }
 
-    private fun styled(hud: VanillaHud, r: Run0): String {
-        val text = when (hud.caseType) {
+    private fun styled(s: HudStyle, r: Run0): String {
+        val text = when (s.caseType) {
             1 -> r.text.uppercase()
             2 -> r.text.lowercase()
             else -> r.text
         }
-        if (!hud.textBold && !hud.textItalic && !hud.textUnderline && r.codes.isEmpty()) return text
+        if (!s.textBold && !s.textItalic && !s.textUnderline && r.codes.isEmpty()) return text
         return buildString {
-            if (hud.textBold) append("§l")
-            if (hud.textItalic) append("§o")
-            if (hud.textUnderline) append("§n")
+            if (s.textBold) append("§l")
+            if (s.textItalic) append("§o")
+            if (s.textUnderline) append("§n")
             append(r.codes)
             append(text)
         }
     }
 
-    private fun runColor(hud: VanillaHud, r: Run0, color: Int): Int {
+    private fun runColor(hud: VanillaHud, s: HudStyle, r: Run0, color: Int): Int {
         if (r.hasRgb) return (color and 0xFF000000.toInt()) or r.rgb
-        val custom = hud.textColor != -1 || hud.textChroma
+        val custom = s.textColor != -1 || s.textChroma
         if (!custom || hud.managesTextColor) return color
-        return textColor(hud, color)
+        return textColor(s, color)
     }
 
-    private fun chromaText(hud: VanillaHud, r: Run0) = !r.hasRgb && hud.textChroma && !hud.managesTextColor
+    private fun chromaText(hud: VanillaHud, s: HudStyle, r: Run0) = !r.hasRgb && s.textChroma && !hud.managesTextColor
 
-    private fun textColor(hud: VanillaHud, color: Int): Int {
-        val picked = argbOf(hud.textColor, hud.textChroma, hud.textChromaSpeed)
+    private fun textColor(s: HudStyle, color: Int): Int {
+        val picked = argbOf(s.textColor, s.textChroma, s.textChromaSpeed)
         val alpha = (picked ushr 24) * (color ushr 24) / 255
         return (alpha shl 24) or (picked and 0xFFFFFF)
     }
@@ -834,8 +913,8 @@ object HudCapture {
     /** set while [widthOf] asks the game's font, whose width hook would otherwise style the text twice */
     private var rawWidth = false
 
-    private fun widthOf(hud: VanillaHud, text: String): Float {
-        if (hud.font == Font.Poppins) return poppins(hud).measureTextWidth(stripFormat(text))
+    private fun widthOf(hud: VanillaHud, s: HudStyle, text: String): Float {
+        if (s.font == Font.Poppins) return poppins(hud).measureTextWidth(stripFormat(text))
         val outer = rawWidth
         rawWidth = true
         try {
@@ -847,8 +926,9 @@ object HudCapture {
 
     /** the width [addRuns] lays [runs] out at, with the hud's case and bold applied to each */
     private fun widthOf(hud: VanillaHud, runs: List<Run0>): Int {
+        val s = hud.textStyle
         var sum = 0.0
-        for (i in runs.indices) sum += widthOf(hud, styled(hud, runs[i])).toDouble()
+        for (i in runs.indices) sum += widthOf(hud, s, styled(s, runs[i])).toDouble()
         return ceil(sum).toInt()
     }
 
@@ -870,7 +950,9 @@ object HudCapture {
      */
     private fun restyledHud(): VanillaHud? {
         if (rawWidth) return null
-        return (measuringHud ?: active?.hud)?.takeIf { it.font == Font.Poppins || it.textBold || it.caseType != 0 }
+        val hud = measuringHud ?: active?.hud ?: return null
+        val s = hud.textStyle
+        return if (s.font == Font.Poppins || s.textBold || s.caseType != 0) hud else null
     }
 
     @JvmStatic
@@ -914,20 +996,21 @@ object HudCapture {
     private fun RenderContext.drawRun(op: Run) {
         deviceTransform()?.let { (sx, sy, tx, ty) -> translate(snap(op.x, sx, tx) - op.x, snap(op.y, sy, ty) - op.y) }
         val hud = op.hud
-        val shadowColor = if (op.shadow) hud.shadowColor else 0
-        val shadowChroma = op.shadow && hud.shadowChroma
-        val shadow = if (op.shadow) argbOf(shadowColor, shadowChroma, hud.shadowChromaSpeed) else 0
-        val color = if (op.chroma) textColor(hud, op.color) else tinted(op.color, op.tint)
-        if (hud.font == Font.Poppins) {
+        val s = hud.textStyle
+        val shadowColor = if (op.shadow) s.shadowColor else 0
+        val shadowChroma = op.shadow && s.shadowChroma
+        val shadow = if (op.shadow) argbOf(shadowColor, shadowChroma, s.shadowChromaSpeed) else 0
+        val color = if (op.chroma) textColor(s, op.color) else tinted(op.color, op.tint)
+        if (s.font == Font.Poppins) {
             val plain = stripFormat(op.text)
             val font = poppins(hud)
             val metrics = font.metrics
             translate(0f, (Minecraft.getInstance().font.lineHeight - metrics.descent - metrics.ascent) / 2f)
-            if (op.shadow) fontText(plain, op.x + hud.shadowOffsetX / 2f, op.y + hud.shadowOffsetY / 2f, shadow, font)
+            if (op.shadow) fontText(plain, op.x + s.shadowOffsetX / 2f, op.y + s.shadowOffsetY / 2f, shadow, font)
             fontText(plain, op.x, op.y, color, font)
             return
         }
-        val fullShadow = op.shadow && hud.fullShadow
+        val fullShadow = op.shadow && s.fullShadow
         if (fullShadow && hud is ExperienceLevelHud && shadow ushr 24 == 0xFF) {
             // vanilla's four draws a pixel off each side, which leave the corners open where mcTextOutline fills them
             val outline = stripColors(op.text)

@@ -19,6 +19,7 @@ import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.ExternalPlacement
+import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Hud
@@ -596,6 +597,73 @@ abstract class VanillaHud(
     private var heightFrame = -1L
     private var cachedHeight = 0f
 
+    private val mirror = HudStyle()
+    private var layoutFrame = -1L
+    private var textFrame = -1L
+    private var backgroundFrame = -1L
+
+    private fun styleStale(stamp: Long): Boolean = stamp != frame || placing > 0 || HudManager.isEditing
+
+    val layoutStyle: HudStyle
+        get() {
+            val s = mirror
+            if (styleStale(layoutFrame)) {
+                s.textScale = textScale
+                s.padLeft = padLeft
+                s.padRight = padRight
+                s.padTop = padTop
+                s.padBottom = padBottom
+                s.staticWidth = staticWidth
+                s.staticW = staticW
+                s.staticH = staticH
+                s.alignment = alignment
+                s.bgRadius = bgRadius
+                layoutFrame = frame
+            }
+            return s
+        }
+
+    val textStyle: HudStyle
+        get() {
+            val s = mirror
+            if (styleStale(textFrame)) {
+                s.caseType = caseType
+                s.textBold = textBold
+                s.textItalic = textItalic
+                s.textUnderline = textUnderline
+                s.font = font
+                s.textColor = textColor
+                s.textChroma = textChroma
+                s.textChromaSpeed = textChromaSpeed
+                s.showShadow = showShadow
+                s.fullShadow = fullShadow
+                s.shadowColor = shadowColor
+                s.shadowChroma = shadowChroma
+                s.shadowChromaSpeed = shadowChromaSpeed
+                s.shadowOffsetX = shadowOffsetX
+                s.shadowOffsetY = shadowOffsetY
+                textFrame = frame
+            }
+            return s
+        }
+
+    val backgroundStyle: HudStyle
+        get() {
+            val s = mirror
+            if (styleStale(backgroundFrame)) {
+                s.showBackground = showBackground
+                s.bgColor = bgColor
+                s.bgChroma = bgChroma
+                s.bgChromaSpeed = bgChromaSpeed
+                s.borderEnabled = borderEnabled
+                s.borderColor = borderColor
+                s.borderChroma = borderChroma
+                s.borderChromaSpeed = borderChromaSpeed
+                backgroundFrame = frame
+            }
+            return s
+        }
+
     open val width: Float get() = if (turned) unrotatedHeight else unrotatedWidth
     open val height: Float get() = if (turned) unrotatedWidth else unrotatedHeight
 
@@ -603,7 +671,7 @@ abstract class VanillaHud(
     protected open val composeBackground: Boolean get() = false
 
     /** the Designer's size and resize handles change [textScale], and here that sizes the whole element with its background */
-    open val ownScale: Float get() = textScale
+    open val ownScale: Float get() = layoutStyle.textScale
 
     val elementScale: Float get() = ownScale * appliedForeignScale
 
@@ -618,7 +686,11 @@ abstract class VanillaHud(
 
     open val everyFillIsBackground: Boolean get() = false
 
-    val customBackgroundBox: Boolean get() = bgRadius > 0f || pads || staticWidth
+    val customBackgroundBox: Boolean
+        get() {
+            val s = layoutStyle
+            return s.bgRadius > 0f || pads(s) || s.staticWidth
+        }
 
     /** the scale the game applies itself inside this element's pose, as a title does */
     open val innerScale: Float get() = 1f
@@ -627,35 +699,44 @@ abstract class VanillaHud(
 
     private val bgRawArgb: Int
         get() {
-            val argb = bgColor
-            return if (bgChroma) PolyColor(argb, true, bgChromaSpeed).argb else argb
+            val s = backgroundStyle
+            val argb = s.bgColor
+            return if (s.bgChroma) PolyColor(argb, true, s.bgChromaSpeed).argb else argb
         }
 
-    private val pads: Boolean get() = padLeft != 0f || padRight != 0f || padTop != 0f || padBottom != 0f
+    private fun pads(s: HudStyle): Boolean = s.padLeft != 0f || s.padRight != 0f || s.padTop != 0f || s.padBottom != 0f
 
     private val drawnWidth: Float get() = width * elementScale
 
     private val drawnHeight: Float get() = height * elementScale
 
     val boxWidth: Float
-        get() = if (staticWidth) maxOf(staticW, drawnWidth) else drawnWidth + (padLeft + padRight) * padScale
+        get() {
+            val s = layoutStyle
+            return if (s.staticWidth) maxOf(s.staticW, drawnWidth) else drawnWidth + (s.padLeft + s.padRight) * padScale
+        }
 
     val boxHeight: Float
-        get() = if (staticWidth) maxOf(staticH, drawnHeight) else drawnHeight + (padTop + padBottom) * padScale
+        get() {
+            val s = layoutStyle
+            return if (s.staticWidth) maxOf(s.staticH, drawnHeight) else drawnHeight + (s.padTop + s.padBottom) * padScale
+        }
 
     /** where the content sits inside the box, zero unless the Designer's padding or static size is in use */
     val contentOffsetX: Float
         get() {
-            if (!staticWidth) return padLeft * padScale
+            val s = layoutStyle
+            if (!s.staticWidth) return s.padLeft * padScale
             val drawn = drawnWidth
-            return (maxOf(staticW, drawn) - drawn) * alignmentFractionX(alignment)
+            return (maxOf(s.staticW, drawn) - drawn) * alignmentFractionX(s.alignment)
         }
 
     val contentOffsetY: Float
         get() {
-            if (!staticWidth) return padTop * padScale
+            val s = layoutStyle
+            if (!s.staticWidth) return s.padTop * padScale
             val drawn = drawnHeight
-            return (maxOf(staticH, drawn) - drawn) * alignmentFractionY(alignment)
+            return (maxOf(s.staticH, drawn) - drawn) * alignmentFractionY(s.alignment)
         }
 
     private fun syncRenderedSize() {
@@ -875,6 +956,44 @@ abstract class VanillaHud(
         @JvmStatic
         fun previewing(): Boolean = (HudManager.isEditorOpen || HudManager.isConfigUiOpen) && !HudManager.isSamplingVanilla
     }
+}
+
+class HudStyle internal constructor() {
+    @JvmField var textScale = 1f
+    @JvmField var padLeft = 0f
+    @JvmField var padRight = 0f
+    @JvmField var padTop = 0f
+    @JvmField var padBottom = 0f
+    @JvmField var staticWidth = false
+    @JvmField var staticW = 0f
+    @JvmField var staticH = 0f
+    @JvmField var alignment = PolyAlign.Center
+    @JvmField var bgRadius = 0f
+
+    @JvmField var caseType = 0
+    @JvmField var textBold = false
+    @JvmField var textItalic = false
+    @JvmField var textUnderline = false
+    @JvmField var font = Font.Minecraft
+    @JvmField var textColor = 0
+    @JvmField var textChroma = false
+    @JvmField var textChromaSpeed = 1f
+    @JvmField var showShadow = false
+    @JvmField var fullShadow = false
+    @JvmField var shadowColor = 0
+    @JvmField var shadowChroma = false
+    @JvmField var shadowChromaSpeed = 1f
+    @JvmField var shadowOffsetX = 0f
+    @JvmField var shadowOffsetY = 0f
+
+    @JvmField var showBackground = false
+    @JvmField var bgColor = 0
+    @JvmField var bgChroma = false
+    @JvmField var bgChromaSpeed = 1f
+    @JvmField var borderEnabled = false
+    @JvmField var borderColor = 0
+    @JvmField var borderChroma = false
+    @JvmField var borderChromaSpeed = 1f
 }
 
 private fun cell(f: Float) = if (f < 0.25f) 0 else if (f < 0.75f) 1 else 2
