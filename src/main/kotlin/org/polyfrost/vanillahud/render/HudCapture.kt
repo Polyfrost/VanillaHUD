@@ -190,14 +190,25 @@ object HudCapture {
             l.shownX = l.frameX
             l.shownY = l.frameY
             l.shownScale = l.scale
-            val items = done.filterIsInstance<Item>().map { i ->
-                Item(i.stack, (i.x - l.frameX) / l.scale, (i.y - l.frameY) / l.scale, i.width / l.scale, i.height / l.scale).also { it.decorated = i.decorated }
-            }
             val old = l.items
-            if (items.size != old.size || items.indices.any { !items[it].same(old[it]) }) {
-                l.items = items.map { i -> Item(i.stack.copy(), i.x, i.y, i.width, i.height).also { it.decorated = i.decorated } }
+            if (!sameItems(done, old, l)) {
+                l.items = done.filterIsInstance<Item>().map { i ->
+                    Item(i.stack.copy(), (i.x - l.frameX) / l.scale, (i.y - l.frameY) / l.scale, i.width / l.scale, i.height / l.scale).also { it.decorated = i.decorated }
+                }
             }
         }
+    }
+
+    private fun sameItems(ops: List<Any>, old: List<Item>, l: Layer): Boolean {
+        var n = 0
+        for (op in ops) {
+            if (op !is Item) continue
+            val o = old.getOrNull(n++) ?: return false
+            if (o.x != (op.x - l.frameX) / l.scale || o.y != (op.y - l.frameY) / l.scale || o.width != op.width / l.scale ||
+                o.height != op.height / l.scale || o.decorated != op.decorated || !ItemStack.matches(op.stack, o.stack)
+            ) return false
+        }
+        return n == old.size
     }
 
     private fun sameOps(a: List<Any>, b: List<Any>): Boolean = a.size == b.size && a.indices.all {
@@ -643,7 +654,7 @@ object HudCapture {
     private fun RenderContext.drawRun(op: Run) {
         deviceTransform()?.let { (sx, sy, tx, ty) -> translate(snap(op.x, sx, tx) - op.x, snap(op.y, sy, ty) - op.y) }
         val hud = op.hud
-        val shadow = PolyColor(hud.shadowColor, hud.shadowChroma, hud.shadowChromaSpeed).argb
+        val shadow = if (op.shadow) PolyColor(hud.shadowColor, hud.shadowChroma, hud.shadowChromaSpeed).argb else 0
         if (hud.font == Font.Poppins) {
             val plain = op.text.replace(FORMAT_CODE, "")
             val font = poppins(hud)
@@ -720,6 +731,10 @@ object HudCapture {
 
     private fun RenderContext.withPoseOpen(m: Pose) {
         translate(m.m20, m.m21)
+        if (m.m01 == 0f && m.m10 == 0f && m.m00 > 0f) {
+            if (m.m00 != 1f) scale(m.m00, abs(m.m11))
+            return
+        }
         val turn = Math.toDegrees(atan2(m.m01, m.m00).toDouble()).toFloat()
         if (turn != 0f) renderer.rotate(turn)
         val sx = hypot(m.m00, m.m01)
@@ -727,6 +742,11 @@ object HudCapture {
     }
 
     private fun RenderContext.undoPose(m: Pose) {
+        if (m.m01 == 0f && m.m10 == 0f && m.m00 > 0f) {
+            if (m.m00 != 1f) scale(1f / m.m00, 1f / abs(m.m11))
+            translate(-m.m20, -m.m21)
+            return
+        }
         val sx = hypot(m.m00, m.m01)
         if (sx != 1f) scale(1f / sx, 1f / hypot(m.m10, m.m11))
         val turn = Math.toDegrees(atan2(m.m01, m.m00).toDouble()).toFloat()

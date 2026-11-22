@@ -419,6 +419,7 @@ abstract class VanillaHud(
         val w = HudManager.guiScreenWidth.toInt()
         val h = HudManager.guiScreenHeight.toInt()
         if (w <= 0 || h <= 0) return
+        placing++
         try {
             syncRenderedSize()
             captureDefaults()
@@ -433,6 +434,8 @@ abstract class VanillaHud(
             forcePending = false
         } catch (_: Throwable) {
             measureOwed = true
+        } finally {
+            placing--
         }
     }
 
@@ -459,11 +462,14 @@ abstract class VanillaHud(
     fun pinToVanillaOrigin(screenWidth: Int, screenHeight: Int, scale: Float = effectiveScale) {
         if (tree == null || !positionSchemaReady) return
         if (HudManager.guiScreenWidth.toInt() != screenWidth || HudManager.guiScreenHeight.toInt() != screenHeight) return
+        placing++
         try {
             syncRenderedSize()
             placeAt(scaledOriginX(screenWidth, screenHeight, scale), scaledOriginY(screenWidth, screenHeight, scale))
         } catch (_: Throwable) {
             measureOwed = true
+        } finally {
+            placing--
         }
     }
 
@@ -476,6 +482,7 @@ abstract class VanillaHud(
         val screenSame = seed != null && w == seed.w && h == seed.h && quarterTurns == seed.turns &&
             growthAnchor == seed.anchor && seed.foreignRevision == ForeignTransform.revision
         if (screenSame && !measure) return
+        placing++
         try {
             val scale = effectiveScale
             if (screenSame && (boxWidth * scale).coerceAtLeast(1f) == seed!!.hudW &&
@@ -496,6 +503,8 @@ abstract class VanillaHud(
         } catch (_: Throwable) {
             commitSeed(w, h, -1f, -1f)
             measureOwed = true
+        } finally {
+            placing--
         }
     }
 
@@ -527,8 +536,44 @@ abstract class VanillaHud(
     protected open val exampleText: String? get() = null
 
     /** content size before [quarterTurns] is applied which is what the render transform works in */
-    val unrotatedWidth: Float get() = measuredWidth()
-    val unrotatedHeight: Float get() = measuredHeight()
+    val unrotatedWidth: Float
+        get() {
+            if (!sizeCached(widthFrame)) {
+                cachedWidth = measuredWidth()
+                widthFrame = frame
+            }
+            return cachedWidth
+        }
+
+    val unrotatedHeight: Float
+        get() {
+            if (!sizeCached(heightFrame)) {
+                cachedHeight = measuredHeight()
+                heightFrame = frame
+            }
+            return cachedHeight
+        }
+
+    private var placing = 0
+
+    private var sizeKey = 0
+
+    private fun sizeCached(stored: Long): Boolean {
+        if (HudManager.isEditing || placing > 0) return false
+        val key = measureKey()
+        if (key != sizeKey) {
+            sizeKey = key
+            widthFrame = -1L
+            heightFrame = -1L
+            return false
+        }
+        return stored == frame
+    }
+
+    private var widthFrame = -1L
+    private var cachedWidth = 0f
+    private var heightFrame = -1L
+    private var cachedHeight = 0f
 
     open val width: Float get() = if (turned) unrotatedHeight else unrotatedWidth
     open val height: Float get() = if (turned) unrotatedWidth else unrotatedHeight
