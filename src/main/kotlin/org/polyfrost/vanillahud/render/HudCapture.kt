@@ -18,6 +18,7 @@ import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font as McFont
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.composables.NodeBox
@@ -125,7 +126,18 @@ object HudCapture {
     class Item(val stack: ItemStack, val x: Float, val y: Float, val width: Float, val height: Float) {
         var decorated = false
 
-        fun same(o: Item) = x == o.x && y == o.y && width == o.width && height == o.height && decorated == o.decorated && ItemStack.matches(stack, o.stack)
+        //? if = 1.8.9 {
+        /*private val size = stack.size
+        private val damage = stack.damage
+        private val nbt = stack.nbt
+
+        private fun sameStack(o: Item) = stack === o.stack && size == o.size && damage == o.damage && nbt === o.nbt ||
+            ItemStack.matches(stack, o.stack)
+        *///?} else {
+        private fun sameStack(o: Item) = ItemStack.matches(stack, o.stack)
+        //?}
+
+        fun same(o: Item) = x == o.x && y == o.y && width == o.width && height == o.height && decorated == o.decorated && sameStack(o)
     }
 
     /** what one of the game's HUD elements drew into a layer, which several of them can feed */
@@ -883,14 +895,7 @@ object HudCapture {
             2 -> r.text.lowercase()
             else -> r.text
         }
-        if (!s.textBold && !s.textItalic && !s.textUnderline && r.codes.isEmpty()) return text
-        return buildString {
-            if (s.textBold) append("§l")
-            if (s.textItalic) append("§o")
-            if (s.textUnderline) append("§n")
-            append(r.codes)
-            append(text)
-        }
+        return if (s.prefix.isEmpty() && r.codes.isEmpty()) text else s.prefix + r.codes + text
     }
 
     private fun runColor(hud: VanillaHud, s: HudStyle, r: Run0, color: Int): Int {
@@ -940,14 +945,38 @@ object HudCapture {
 
     private fun widthOf(hud: VanillaHud, s: HudStyle, text: String): Float {
         if (s.font == Font.Poppins) return poppins(hud).measureTextWidth(stripFormat(text))
+        //? if = 1.8.9 {
+        /*return cachedRawWidth(Minecraft.getInstance().font, text).toFloat()
+        *///?} else
+        return measureRaw(Minecraft.getInstance().font, text).toFloat()
+    }
+
+    private fun measureRaw(font: McFont, text: String): Int {
         val outer = rawWidth
         rawWidth = true
         try {
-            return Minecraft.getInstance().font.width(text).toFloat()
+            return font.width(text)
         } finally {
             rawWidth = outer
         }
     }
+
+    //? if = 1.8.9 {
+    /*private val rawWidths = HashMap<String, Int>()
+    private var rawWidthsFont = -1
+
+    private fun cachedRawWidth(font: McFont, text: String): Int {
+        val key = fontKey()
+        if (key != rawWidthsFont || rawWidths.size > 4096) {
+            rawWidths.clear()
+            rawWidthsFont = key
+        }
+        return rawWidths.getOrPut(text) { measureRaw(font, text) }
+    }
+
+    @JvmStatic
+    fun width(font: McFont, text: String): Int = fontWidth(cachedRawWidth(font, text), text)
+    *///?}
 
     /** the width [addRuns] lays [runs] out at, with the hud's case and bold applied to each */
     private fun widthOf(hud: VanillaHud, runs: List<Run0>): Int {

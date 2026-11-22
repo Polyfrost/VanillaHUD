@@ -64,12 +64,15 @@ object HudTransform {
     private fun resolve(provider: VanillaHud): VanillaHud? =
         HudManager.activeInstances.firstOrNull(provider.javaClass::isInstance) as VanillaHud?
 
-    private val MISSING = Any()
+    private var resolveGen = 0
 
-    private val resolved = HashMap<Class<out VanillaHud>, Any>()
-
-    private fun resolveCached(provider: VanillaHud): VanillaHud? =
-        resolved.getOrPut(provider.javaClass) { resolve(provider) ?: MISSING } as? VanillaHud
+    private fun resolveCached(provider: VanillaHud): VanillaHud? {
+        if (provider.resolvedGen != resolveGen) {
+            provider.resolvedGen = resolveGen
+            provider.resolved = resolve(provider)
+        }
+        return provider.resolved
+    }
 
     private var resolvedFrom: Array<Hud> = emptyArray()
 
@@ -296,7 +299,7 @@ object HudTransform {
 
     @JvmStatic
     fun resetFrame() {
-        if (instancesChanged()) resolved.clear()
+        if (instancesChanged()) resolveGen++
         iconRunHud = null
         iconRunDrawn = false
         ForeignTransform.reset()

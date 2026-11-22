@@ -75,6 +75,8 @@ abstract class VanillaHud(
     internal var foreignInner: ForeignPlacement? = null
     internal var foreignLogicalX = 0f
     internal var foreignLogicalY = 0f
+    internal var resolvedGen = -1
+    internal var resolved: VanillaHud? = null
 
     /** what other mods do to this HUD, null while nothing does */
     var foreign: ForeignPlacement? = null
@@ -541,7 +543,7 @@ abstract class VanillaHud(
     fun shouldDraw(): Boolean {
         val editing = HudManager.isEditing
         if (!editing && VanillaHudApi.isDrawnAsVanilla(hudId)) return true
-        if (!editing && hidden) return false
+        if (!editing && layoutStyle.hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false
         if (!HudManager.overrideShowInScreens && !editing) {
@@ -620,6 +622,7 @@ abstract class VanillaHud(
                 s.staticH = staticH
                 s.alignment = alignment
                 s.bgRadius = bgRadius
+                s.hidden = hidden
                 layoutWrites = StyleWrites.count
             }
             return s
@@ -644,6 +647,7 @@ abstract class VanillaHud(
                 s.shadowChromaSpeed = shadowChromaSpeed
                 s.shadowOffsetX = shadowOffsetX
                 s.shadowOffsetY = shadowOffsetY
+                s.prefix = (if (s.textBold) "§l" else "") + (if (s.textItalic) "§o" else "") + (if (s.textUnderline) "§n" else "")
                 textWrites = StyleWrites.count
             }
             return s
@@ -987,6 +991,7 @@ class HudStyle internal constructor() {
     @JvmField var staticH = 0f
     @JvmField var alignment = PolyAlign.Center
     @JvmField var bgRadius = 0f
+    @JvmField var hidden = false
 
     @JvmField var caseType = 0
     @JvmField var textBold = false
@@ -1003,6 +1008,7 @@ class HudStyle internal constructor() {
     @JvmField var shadowChromaSpeed = 1f
     @JvmField var shadowOffsetX = 0f
     @JvmField var shadowOffsetY = 0f
+    @JvmField var prefix = ""
 
     @JvmField var showBackground = false
     @JvmField var bgColor = 0
