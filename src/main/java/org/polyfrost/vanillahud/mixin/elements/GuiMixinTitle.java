@@ -11,7 +11,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
 import org.polyfrost.vanillahud.hook.TextShadowHook;
-import org.polyfrost.vanillahud.hud.BackdropHud;
+import org.polyfrost.vanillahud.hud.SubtitleHud;
 import org.polyfrost.vanillahud.hud.TitleHud;
 import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.polyfrost.vanillahud.hud.Huds;
@@ -26,7 +26,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //? if = 1.8.9 {
 /*import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.render.HudTransform;
-import org.polyfrost.vanillahud.hud.SubtitleHud;
 import net.minecraft.client.render.platform.GlStateManager;
 *///?}
 
@@ -94,8 +93,9 @@ public class GuiMixinTitle {
     private void vanillahud$titleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         TitleHud hud = Huds.INSTANCE.getTitle();
         if (hud.isDrawnAsVanilla()) return;
-        vanillahud$customScale(graphics, hud.getTitleScale() / 4.0F);
-        vanillahud$autoScale(graphics, title, hud.getTitleScale(), hud.getAutoTitleScale());
+        float scale = hud.getTitleScale();
+        vanillahud$customScale(graphics, scale / 4.0F);
+        vanillahud$autoScale(graphics, title, scale, hud.getAutoTitleScale());
     }
 
     @Inject(
@@ -112,10 +112,11 @@ public class GuiMixinTitle {
                     *///?}
                     ordinal = 1, shift = At.Shift.AFTER))
     private void vanillahud$subtitleScale(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (Huds.INSTANCE.getSubtitle().isDrawnAsVanilla()) return;
-        float scale = Huds.INSTANCE.getSubtitle().getSubtitleScale();
+        SubtitleHud hud = Huds.INSTANCE.getSubtitle();
+        if (hud.isDrawnAsVanilla()) return;
+        float scale = hud.getSubtitleScale();
         vanillahud$customScale(graphics, scale / 2.0F);
-        vanillahud$autoScale(graphics, subtitle, scale, Huds.INSTANCE.getSubtitle().getAutoTitleScale());
+        vanillahud$autoScale(graphics, subtitle, scale, hud.getAutoTitleScale());
     }
 
     @WrapOperation(
@@ -144,7 +145,7 @@ public class GuiMixinTitle {
             //?} else
             //return 0;
         }
-        BackdropHud hud = Huds.INSTANCE.getTitle();
+        TitleHud hud = Huds.INSTANCE.getTitle();
         //? if >=1.21.8 {
         if (hud.isDrawnAsVanilla()) {
             original.call(graphics, font, text, x, y, width, color);
@@ -152,7 +153,7 @@ public class GuiMixinTitle {
         }
         //?} else
         //if (hud.isDrawnAsVanilla()) return original.call(graphics, font, text, x, y, width, color);
-        if (Huds.INSTANCE.getTitle().getInstantFade()) color |= 0xFF000000;
+        if (hud.getInstantFade()) color |= 0xFF000000;
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
         try {
@@ -191,7 +192,7 @@ public class GuiMixinTitle {
             //?} else
             //return 0;
         }
-        BackdropHud hud = Huds.INSTANCE.getSubtitle();
+        SubtitleHud hud = Huds.INSTANCE.getSubtitle();
         //? if >=1.21.8 {
         if (hud.isDrawnAsVanilla()) {
             original.call(graphics, font, text, x, y, width, color);
@@ -199,7 +200,7 @@ public class GuiMixinTitle {
         }
         //?} else
         //if (hud.isDrawnAsVanilla()) return original.call(graphics, font, text, x, y, width, color);
-        if (Huds.INSTANCE.getSubtitle().getInstantFade()) color |= 0xFF000000;
+        if (hud.getInstantFade()) color |= 0xFF000000;
         TextBackdrop.draw(graphics, hud, x, y, width, 9, color);
         TextShadowHook.push(hud.getTextShadow());
         try {
@@ -279,8 +280,9 @@ public class GuiMixinTitle {
         ctx.pose().scale(2.0F, 2.0F);
         boolean vanilla = hud.isDrawnAsVanilla();
         if (!vanilla) {
-            vanillahud$customScale(hud.getSubtitleScale() / 2.0F);
-            vanillahud$autoScale(subtitle, hud.getSubtitleScale(), hud.getAutoTitleScale());
+            float scale = hud.getSubtitleScale();
+            vanillahud$customScale(scale / 2.0F);
+            vanillahud$autoScale(subtitle, scale, hud.getAutoTitleScale());
         }
         GlStateManager.enableBlend();
         int width = font.width(subtitle);
@@ -320,8 +322,9 @@ public class GuiMixinTitle {
     private void vanillahud$titleScale(float tickDelta, CallbackInfo ci) {
         TitleHud hud = Huds.INSTANCE.getTitle();
         if (hud.isDrawnAsVanilla()) return;
-        vanillahud$customScale(hud.getTitleScale() / 4.0F);
-        vanillahud$autoScale(title, hud.getTitleScale(), hud.getAutoTitleScale());
+        float scale = hud.getTitleScale();
+        vanillahud$customScale(scale / 4.0F);
+        vanillahud$autoScale(title, scale, hud.getAutoTitleScale());
     }
 
     @Unique

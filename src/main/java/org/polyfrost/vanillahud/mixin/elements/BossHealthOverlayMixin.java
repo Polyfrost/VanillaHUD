@@ -195,9 +195,9 @@ public class BossHealthOverlayMixin {
     /*
     @WrapMethod(method = "renderBossBars")
     private void vanillahud$boss(Operation<Void> original) {
-        if ((BossBar.name == null || BossBar.timer <= 0) && !Huds.INSTANCE.getBossBar().getPreviewing()) return;
-
         BossBarHud hud = Huds.INSTANCE.getBossBar();
+        if ((BossBar.name == null || BossBar.timer <= 0) && !hud.getPreviewing()) return;
+
         if (!hud.shouldDraw()) return;
 
         HudTransform.begin(LegacyDrawContext.INSTANCE, hud);

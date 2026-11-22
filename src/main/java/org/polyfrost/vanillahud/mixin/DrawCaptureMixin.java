@@ -44,8 +44,9 @@ public abstract class DrawCaptureMixin {
 
     @WrapMethod(method = "blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V")
     private void vanillahud$sprite(RenderPipeline pipeline, TextureAtlasSprite sprite, int x, int y, int w, int h, int color, Operation<Void> original) {
-        boolean stretched = getSpriteScaling(sprite) instanceof GuiSpriteScaling.Stretch;
-        if (pipeline == RenderPipelines.GUI_TEXTURED && stretched && HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, color)) return;
+        if (pipeline == RenderPipelines.GUI_TEXTURED && HudCapture.INSTANCE.getCapturing() &&
+                getSpriteScaling(sprite) instanceof GuiSpriteScaling.Stretch &&
+                HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, color)) return;
         original.call(pipeline, sprite, x, y, w, h, color);
     }
 
@@ -144,20 +145,22 @@ public abstract class DrawCaptureMixin {
 
     @WrapMethod(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V")
     private void vanillahud$sprite(Function<Identifier, RenderType> type, TextureAtlasSprite sprite, int x, int y, int w, int h, int color, Operation<Void> original) {
-        boolean stretched = Minecraft.getInstance().getGuiSprites().getSpriteScaling(sprite) instanceof GuiSpriteScaling.Stretch;
-        if (stretched && vanillahud$plain(type, sprite.atlasLocation()) && HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, color)) return;
+        if (HudCapture.INSTANCE.getCapturing() &&
+                Minecraft.getInstance().getGuiSprites().getSpriteScaling(sprite) instanceof GuiSpriteScaling.Stretch &&
+                vanillahud$plain(type, sprite.atlasLocation()) && HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, color)) return;
         original.call(type, sprite, x, y, w, h, color);
     }
 
     @WrapMethod(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIIIIIII)V")
     private void vanillahud$spritePart(Function<Identifier, RenderType> type, TextureAtlasSprite sprite, int texW, int texH, int u, int v, int x, int y, int w, int h, int color, Operation<Void> original) {
-        if (vanillahud$plain(type, sprite.atlasLocation()) && HudCapture.sprite(vanillahud$self(), sprite, texW, texH, u, v, w, h, x, y, w, h, color)) return;
+        if (HudCapture.INSTANCE.getCapturing() && vanillahud$plain(type, sprite.atlasLocation()) &&
+                HudCapture.sprite(vanillahud$self(), sprite, texW, texH, u, v, w, h, x, y, w, h, color)) return;
         original.call(type, sprite, texW, texH, u, v, x, y, w, h, color);
     }
 
     @WrapMethod(method = "innerBlit(Ljava/util/function/Function;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V")
     private void vanillahud$texture(Function<Identifier, RenderType> type, Identifier id, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, Operation<Void> original) {
-        if (vanillahud$plain(type, id) && HudCapture.texture(vanillahud$self(), id, x0, x1, y0, y1, u0, u1, v0, v1, color)) return;
+        if (HudCapture.INSTANCE.getCapturing() && vanillahud$plain(type, id) && HudCapture.texture(vanillahud$self(), id, x0, x1, y0, y1, u0, u1, v0, v1, color)) return;
         original.call(type, id, x0, x1, y0, y1, u0, u1, v0, v1, color);
     }
 
@@ -188,7 +191,10 @@ public abstract class DrawCaptureMixin {
     @WrapMethod(method = "drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I")
     private int vanillahud$string(Font font, String text, int x, int y, int color, boolean shadow, Operation<Integer> original) {
         boolean drop = TextShadowHook.apply(shadow);
-        if (text != null && HudCapture.text(vanillahud$self(), text, x, y, color, drop)) return x + font.width(text) + (drop ? 1 : 0);
+        if (text != null && HudCapture.text(vanillahud$self(), text, x, y, color, drop)) {
+            int width = HudCapture.getTextWidth();
+            return x + (width >= 0 ? width : font.width(text)) + (drop ? 1 : 0);
+        }
         return original.call(font, text, x, y, color, shadow);
     }
 
@@ -238,37 +244,37 @@ public abstract class DrawCaptureMixin {
 
     @WrapMethod(method = "blitSprite(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V")
     private void vanillahud$sprite(TextureAtlasSprite sprite, int x, int y, int z, int w, int h, Operation<Void> original) {
-        if (HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, vanillahud$tint())) return;
+        if (HudCapture.INSTANCE.getCapturing() && HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, vanillahud$tint())) return;
         original.call(sprite, x, y, z, w, h);
     }
 
     @WrapMethod(method = "blitSprite(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIIIIIII)V")
     private void vanillahud$spritePart(TextureAtlasSprite sprite, int texW, int texH, int u, int v, int x, int y, int z, int w, int h, Operation<Void> original) {
-        if (HudCapture.sprite(vanillahud$self(), sprite, texW, texH, u, v, w, h, x, y, w, h, vanillahud$tint())) return;
+        if (HudCapture.INSTANCE.getCapturing() && HudCapture.sprite(vanillahud$self(), sprite, texW, texH, u, v, w, h, x, y, w, h, vanillahud$tint())) return;
         original.call(sprite, texW, texH, u, v, x, y, z, w, h);
     }
 
     @WrapMethod(method = "blit(IIIIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;)V")
     private void vanillahud$atlasSprite(int x, int y, int z, int w, int h, TextureAtlasSprite sprite, Operation<Void> original) {
-        if (HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, vanillahud$tint())) return;
+        if (HudCapture.INSTANCE.getCapturing() && HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, vanillahud$tint())) return;
         original.call(x, y, z, w, h, sprite);
     }
 
     @WrapMethod(method = "blit(IIIIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;FFFF)V")
     private void vanillahud$atlasSpriteTinted(int x, int y, int z, int w, int h, TextureAtlasSprite sprite, float r, float g, float b, float a, Operation<Void> original) {
-        if (HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, vanillahud$argb(r, g, b, a))) return;
+        if (HudCapture.INSTANCE.getCapturing() && HudCapture.sprite(vanillahud$self(), sprite, x, y, w, h, vanillahud$argb(r, g, b, a))) return;
         original.call(x, y, z, w, h, sprite, r, g, b, a);
     }
 
     @WrapMethod(method = "innerBlit(Lnet/minecraft/resources/Identifier;IIIIIFFFF)V")
     private void vanillahud$texture(Identifier id, int x0, int x1, int y0, int y1, int z, float u0, float u1, float v0, float v1, Operation<Void> original) {
-        if (HudCapture.texture(vanillahud$self(), id, x0, x1, y0, y1, u0, u1, v0, v1, vanillahud$tint())) return;
+        if (HudCapture.INSTANCE.getCapturing() && HudCapture.texture(vanillahud$self(), id, x0, x1, y0, y1, u0, u1, v0, v1, vanillahud$tint())) return;
         original.call(id, x0, x1, y0, y1, z, u0, u1, v0, v1);
     }
 
     @WrapMethod(method = "innerBlit(Lnet/minecraft/resources/Identifier;IIIIIFFFFFFFF)V")
     private void vanillahud$textureTinted(Identifier id, int x0, int x1, int y0, int y1, int z, float u0, float u1, float v0, float v1, float r, float g, float b, float a, Operation<Void> original) {
-        if (HudCapture.texture(vanillahud$self(), id, x0, x1, y0, y1, u0, u1, v0, v1, vanillahud$argb(r, g, b, a))) return;
+        if (HudCapture.INSTANCE.getCapturing() && HudCapture.texture(vanillahud$self(), id, x0, x1, y0, y1, u0, u1, v0, v1, vanillahud$argb(r, g, b, a))) return;
         original.call(id, x0, x1, y0, y1, z, u0, u1, v0, v1, r, g, b, a);
     }
 
@@ -299,7 +305,10 @@ public abstract class DrawCaptureMixin {
     @WrapMethod(method = "drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I")
     private int vanillahud$string(Font font, String text, int x, int y, int color, boolean shadow, Operation<Integer> original) {
         boolean drop = TextShadowHook.apply(shadow);
-        if (text != null && HudCapture.text(vanillahud$self(), text, x, y, color, drop)) return x + font.width(text) + (drop ? 1 : 0);
+        if (text != null && HudCapture.text(vanillahud$self(), text, x, y, color, drop)) {
+            int width = HudCapture.getTextWidth();
+            return x + (width >= 0 ? width : font.width(text)) + (drop ? 1 : 0);
+        }
         return original.call(font, text, x, y, color, shadow);
     }
 
@@ -325,19 +334,19 @@ public abstract class DrawCaptureMixin {
     @WrapMethod(method = "drawTexture(IIIIII)V")
     private void vanillahud$quad(int x, int y, int u, int v, int w, int h, Operation<Void> original) {
         float s = 1f / 256f;
-        if (HudCapture.texture(LegacyDrawContext.INSTANCE, x, y, w, h, u * s, v * s, (u + w) * s, (v + h) * s)) return;
+        if (HudCapture.isActive() && HudCapture.texture(LegacyDrawContext.INSTANCE, x, y, w, h, u * s, v * s, (u + w) * s, (v + h) * s)) return;
         original.call(x, y, u, v, w, h);
     }
 
     @WrapMethod(method = "drawTexture(IIFFIIFF)V")
     private static void vanillahud$sized(int x, int y, float u, float v, int w, int h, float texW, float texH, Operation<Void> original) {
-        if (HudCapture.texture(LegacyDrawContext.INSTANCE, x, y, w, h, u / texW, v / texH, (u + w) / texW, (v + h) / texH)) return;
+        if (HudCapture.isActive() && HudCapture.texture(LegacyDrawContext.INSTANCE, x, y, w, h, u / texW, v / texH, (u + w) / texW, (v + h) / texH)) return;
         original.call(x, y, u, v, w, h, texW, texH);
     }
 
     @WrapMethod(method = "drawTexture(IIFFIIIIFF)V")
     private static void vanillahud$scaled(int x, int y, float u, float v, int uW, int vH, int w, int h, float texW, float texH, Operation<Void> original) {
-        if (HudCapture.texture(LegacyDrawContext.INSTANCE, x, y, w, h, u / texW, v / texH, (u + uW) / texW, (v + vH) / texH)) return;
+        if (HudCapture.isActive() && HudCapture.texture(LegacyDrawContext.INSTANCE, x, y, w, h, u / texW, v / texH, (u + uW) / texW, (v + vH) / texH)) return;
         original.call(x, y, u, v, uW, vH, w, h, texW, texH);
     }
 

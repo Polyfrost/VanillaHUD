@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 //?} else {
 /*import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 *///?}
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.hud.HudInternals
 import org.polyfrost.vanillahud.hud.TabListHud
@@ -21,7 +22,8 @@ import kotlin.math.roundToInt
 object HudTransform {
     private var depth = 0
 
-    private val scissors = ArrayDeque<Int>()
+    private var scissors = IntArray(8)
+    private var scissorDepth = 0
     private const val PUSHED = 0
     private const val SCISSORED = 1
     private const val SKIPPED = 2
@@ -39,6 +41,11 @@ object HudTransform {
     private var mirrors = FloatArray(8)
     private var mirrorDepth = 0
     private var mirror2Y = Float.NaN
+
+    private fun pushScissor(state: Int) {
+        if (scissorDepth == scissors.size) scissors = scissors.copyOf(scissorDepth * 2)
+        scissors[scissorDepth++] = state
+    }
 
     private fun push(graphics: GuiGraphicsExtractor) {
         graphics.pose().pushMatrix()
@@ -63,6 +70,24 @@ object HudTransform {
 
     private fun resolveCached(provider: VanillaHud): VanillaHud? =
         resolved.getOrPut(provider.javaClass) { resolve(provider) ?: MISSING } as? VanillaHud
+
+    private var resolvedFrom: Array<Hud> = emptyArray()
+
+    private fun instancesChanged(): Boolean {
+        val list = HudManager.activeInstances
+        val n = list.size
+        var changed = n != resolvedFrom.size
+        if (!changed) {
+            for (i in 0 until n) {
+                if (list[i] !== resolvedFrom[i]) {
+                    changed = true
+                    break
+                }
+            }
+        }
+        if (changed) resolvedFrom = Array(n) { list[it] }
+        return changed
+    }
 
     /**
      * The HUD the options actually live on.
@@ -111,7 +136,7 @@ object HudTransform {
         val resolvedHud = resolveCached(provider)
         val src = resolvedHud ?: provider
         if (HudManager.isSamplingVanilla || src.isDrawnAsVanilla || !editing && !src.hasContent()) {
-            scissors.addLast(SKIPPED)
+            pushScissor(SKIPPED)
             ForeignTransform.enterSkipped()
             return
         }
@@ -166,39 +191,43 @@ object HudTransform {
         val gy = p.gy
 
         HudCapture.begin(src, part)
+        val elementScale = src.elementScale
         var scissored = false
         val tab = src as? TabListHud
         if (tab != null && tab.animation && !editing) {
             val frac = tab.clipFraction()
             if (frac < 1f) {
                 val foreign = if (frac > 0f) tab.foreignBounds() else null
-                val tabScale = s * src.elementScale
+                val tabScale = s * elementScale
                 val top = if (foreign != null) gy + (foreign.top - oy) * tabScale else gy
                 val clipH = (foreign?.height ?: src.height) * tabScale
                 graphics.enableScissor(0, floor(top).toInt(), w, ceil(top + clipH * frac).toInt())
                 scissored = true
             }
         }
-        scissors.addLast(if (scissored) SCISSORED else PUSHED)
+        pushScissor(if (scissored) SCISSORED else PUSHED)
 
         // rotate about the content centre then shift so the rotated bounding box lands on gx gy
         val rotW = if (turns % 2 != 0) natH else natW
         val rotH = if (turns % 2 != 0) natW else natH
-        val drawTurns = drawTurns(src)
+        val mirrored = src.mirrored
+        val drawTurns = if (mirrored) (turns + 2) % 4 else turns
         val theta = drawTurns * (PI.toFloat() / 2f)
         val turned = drawTurns != 0
 
-        mirror2Y = if (src.mirrored) 2f * oy + natH else Float.NaN
+        mirror2Y = if (mirrored) 2f * oy + natH else Float.NaN
         if (mirrorDepth == mirrors.size) mirrors = mirrors.copyOf(mirrorDepth * 2)
         mirrors[mirrorDepth++] = mirror2Y
 
         push(graphics)
         ForeignTransform.rebase(graphics)
         val pose = graphics.pose()
-        val drawn = s * src.elementScale
-        HudCapture.place(p.hx, p.hy, gx, gy, s, gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
+        val drawn = s * elementScale
+        val contentX = gx + src.contentOffsetX * s
+        val contentY = gy + src.contentOffsetY * s
+        HudCapture.place(p.hx, p.hy, gx, gy, s, contentX, contentY)
         //? if <=1.21.5 && >1.8.9 {
-        /*pose.translate(gx + src.contentOffsetX * s, gy + src.contentOffsetY * s, 0f)
+        /*pose.translate(contentX, contentY, 0f)
         pose.scale(drawn, drawn, 1f)
         if (turned) {
             pose.translate(rotW / 2f, rotH / 2f, 0f)
@@ -208,7 +237,7 @@ object HudTransform {
             pose.translate(-ox, -oy, 0f)
         }
         *///?} else {
-        pose.translate(gx + src.contentOffsetX * s, gy + src.contentOffsetY * s)
+        pose.translate(contentX, contentY)
         pose.scale(drawn, drawn)
         if (turned) {
             pose.translate(rotW / 2f, rotH / 2f)
@@ -229,14 +258,39 @@ object HudTransform {
         if (iconDepth++ == 0) iconTurns = drawTurns(live(provider))
     }
 
+    private var iconRunHud: VanillaHud? = null
+    private var iconRunDrawn = false
+
+    @JvmStatic
+    fun iconRun(graphics: GuiGraphicsExtractor, provider: VanillaHud): Boolean {
+        if (provider === iconRunHud) return iconRunDrawn
+        endIconRun(graphics)
+        val drawn = provider.shouldDraw()
+        iconRunHud = provider
+        iconRunDrawn = drawn
+        if (drawn) beginIcons(graphics, provider)
+        return drawn
+    }
+
+    @JvmStatic
+    fun endIconRun(graphics: GuiGraphicsExtractor) {
+        if (iconRunHud == null) return
+        val drawn = iconRunDrawn
+        iconRunHud = null
+        iconRunDrawn = false
+        if (drawn) endIcons(graphics)
+    }
+
     @JvmStatic
     fun resetFrame() {
-        resolved.clear()
+        if (instancesChanged()) resolved.clear()
+        iconRunHud = null
+        iconRunDrawn = false
         ForeignTransform.reset()
         iconDepth = 0
         iconTurns = 0
         depth = 0
-        scissors.clear()
+        scissorDepth = 0
         uprightDepth = 0
         mirrorDepth = 0
         mirror2Y = Float.NaN
@@ -287,8 +341,8 @@ object HudTransform {
     /** keeps content around [cx] [cy] upright when rotated, or moves it to its flipped height */
     @JvmStatic
     fun beginUpright(graphics: GuiGraphicsExtractor, provider: VanillaHud, cx: Float, cy: Float) {
-        if (uprightIsNoop(provider)) return
         val turns = drawTurns(live(provider))
+        if (turns == 0 && mirror2Y.isNaN()) return
         push(graphics)
         uprightDepth++
         val pose = graphics.pose()
@@ -346,7 +400,7 @@ object HudTransform {
 
     @JvmStatic
     fun end(graphics: GuiGraphicsExtractor) {
-        val state = scissors.removeLastOrNull()
+        val state = if (scissorDepth > 0) scissors[--scissorDepth] else -1
         ForeignTransform.leave()
         if (state == SKIPPED) return
         if (mirrorDepth > 0) mirrorDepth--

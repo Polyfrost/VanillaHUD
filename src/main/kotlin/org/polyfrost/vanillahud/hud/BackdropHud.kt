@@ -18,14 +18,21 @@ abstract class BackdropHud(
         bgColor = defaultBgColor
     }
 
-    val background: Boolean get() = showBackground
+    val background: Boolean get() = backgroundStyle.showBackground
 
     @OptIn(ExperimentalOneConfigUiApi::class)
     val textBgColor: PolyColor get() = bgPolyColor
 
-    val radius: Int get() = bgRadius.roundToInt()
+    val radius: Int get() = layoutStyle.bgRadius.roundToInt()
 
-    val textShadow: Boolean get() = showShadow
+    val borderArgb: Int
+        get() {
+            val s = backgroundStyle
+            val argb = s.borderColor
+            return if (s.borderChroma) PolyColor(argb, true, s.borderChromaSpeed).argb else argb
+        }
+
+    val textShadow: Boolean get() = textStyle.showShadow
 
     /**
      * The box holds the letters alone, without the font's trailing advance or descender row, and

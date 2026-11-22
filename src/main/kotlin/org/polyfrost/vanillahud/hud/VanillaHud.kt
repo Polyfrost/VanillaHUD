@@ -13,10 +13,14 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
+import org.polyfrost.compose.layout.PolyAlign
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.ExternalPlacement
+import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.hud.v1.HudAnchor
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.Hud
@@ -116,14 +120,32 @@ abstract class VanillaHud(
         foreignMod = ForeignAttribution.attribute()
     }
 
+    private var displayKey = -1
+    private var displayedPositionProp: Property<*>? = null
+    private var displayedScaleProp: Property<*>? = null
+
     internal fun refreshDetection() {
         val f = foreign
         val moved = f != null && f.moved && !ignoreModPosition && try { pinned } catch (_: Throwable) { false }
         val scaled = f != null && f.scaled && !ignoreModScale
-        val next = if (moved || scaled) ExternalPlacement(foreignMod, moved, scaled) else null
-        if (next != detectedPlacement) detectedPlacement = next
-        ignorePositionProp?.revaluateDisplay()
-        ignoreScaleProp?.revaluateDisplay()
+        val current = detectedPlacement
+        if (moved || scaled) {
+            if (current == null || current.mod != foreignMod || current.moved != moved || current.scaled != scaled) {
+                detectedPlacement = ExternalPlacement(foreignMod, moved, scaled)
+            }
+        } else if (current != null) {
+            detectedPlacement = null
+        }
+        val key = (if (ignoreModPosition) 1 else 0) or (if (f?.moved == true) 2 else 0) or
+            (if (ignoreModScale) 4 else 0) or (if (f?.scaled == true) 8 else 0)
+        val position = ignorePositionProp
+        val scale = ignoreScaleProp
+        if (key == displayKey && position === displayedPositionProp && scale === displayedScaleProp) return
+        displayKey = key
+        displayedPositionProp = position
+        displayedScaleProp = scale
+        position?.revaluateDisplay()
+        scale?.revaluateDisplay()
     }
 
     private fun foreignOptionChanged() {
@@ -517,11 +539,12 @@ abstract class VanillaHud(
     val isDrawnAsVanilla: Boolean get() = !HudManager.isEditing && VanillaHudApi.isDrawnAsVanilla(hudId)
 
     fun shouldDraw(): Boolean {
-        if (isDrawnAsVanilla) return true
-        if (!HudManager.isEditing && hidden) return false
+        val editing = HudManager.isEditing
+        if (!editing && VanillaHudApi.isDrawnAsVanilla(hudId)) return true
+        if (!editing && hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false
-        if (!HudManager.overrideShowInScreens && !HudManager.isEditing) {
+        if (!HudManager.overrideShowInScreens && !editing) {
             if (HudManager.isChatScreenOpen) {
                 if (!showInChat) return false
             } else if (HudManager.isGuiScreenOpen && !showInScreens) return false
@@ -559,7 +582,7 @@ abstract class VanillaHud(
     private var sizeKey = 0
 
     private fun sizeCached(stored: Long): Boolean {
-        if (HudManager.isEditing || placing > 0) return false
+        if (placing > 0 || HudManager.isEditing) return false
         val key = measureKey()
         if (key != sizeKey) {
             sizeKey = key
@@ -575,6 +598,80 @@ abstract class VanillaHud(
     private var heightFrame = -1L
     private var cachedHeight = 0f
 
+    private val mirror = HudStyle()
+    private var layoutFrame = -1L
+    private var textFrame = -1L
+    private var backgroundFrame = -1L
+    private var layoutWrites = -1L
+    private var textWrites = -1L
+    private var backgroundWrites = -1L
+
+    private fun styleStale(stamp: Long, writes: Long): Boolean =
+        stamp != frame || writes != StyleWrites.count || placing > 0 || HudManager.isEditing
+
+    val layoutStyle: HudStyle
+        get() {
+            val s = mirror
+            if (styleStale(layoutFrame, layoutWrites)) {
+                s.textScale = textScale
+                s.padLeft = padLeft
+                s.padRight = padRight
+                s.padTop = padTop
+                s.padBottom = padBottom
+                s.staticWidth = staticWidth
+                s.staticW = staticW
+                s.staticH = staticH
+                s.alignment = alignment
+                s.bgRadius = bgRadius
+                layoutFrame = frame
+                layoutWrites = StyleWrites.count
+            }
+            return s
+        }
+
+    val textStyle: HudStyle
+        get() {
+            val s = mirror
+            if (styleStale(textFrame, textWrites)) {
+                s.caseType = caseType
+                s.textBold = textBold
+                s.textItalic = textItalic
+                s.textUnderline = textUnderline
+                s.font = font
+                s.textColor = textColor
+                s.textChroma = textChroma
+                s.textChromaSpeed = textChromaSpeed
+                s.showShadow = showShadow
+                s.fullShadow = fullShadow
+                s.shadowColor = shadowColor
+                s.shadowChroma = shadowChroma
+                s.shadowChromaSpeed = shadowChromaSpeed
+                s.shadowOffsetX = shadowOffsetX
+                s.shadowOffsetY = shadowOffsetY
+                textFrame = frame
+                textWrites = StyleWrites.count
+            }
+            return s
+        }
+
+    val backgroundStyle: HudStyle
+        get() {
+            val s = mirror
+            if (styleStale(backgroundFrame, backgroundWrites)) {
+                s.showBackground = showBackground
+                s.bgColor = bgColor
+                s.bgChroma = bgChroma
+                s.bgChromaSpeed = bgChromaSpeed
+                s.borderEnabled = borderEnabled
+                s.borderColor = borderColor
+                s.borderChroma = borderChroma
+                s.borderChromaSpeed = borderChromaSpeed
+                backgroundFrame = frame
+                backgroundWrites = StyleWrites.count
+            }
+            return s
+        }
+
     open val width: Float get() = if (turned) unrotatedHeight else unrotatedWidth
     open val height: Float get() = if (turned) unrotatedWidth else unrotatedHeight
 
@@ -582,7 +679,7 @@ abstract class VanillaHud(
     protected open val composeBackground: Boolean get() = false
 
     /** the Designer's size and resize handles change [textScale], and here that sizes the whole element with its background */
-    open val ownScale: Float get() = textScale
+    open val ownScale: Float get() = layoutStyle.textScale
 
     val elementScale: Float get() = ownScale * appliedForeignScale
 
@@ -597,36 +694,57 @@ abstract class VanillaHud(
 
     open val everyFillIsBackground: Boolean get() = false
 
-    val customBackgroundBox: Boolean get() = bgRadius > 0f || pads || staticWidth
+    val customBackgroundBox: Boolean
+        get() {
+            val s = layoutStyle
+            return s.bgRadius > 0f || pads(s) || s.staticWidth
+        }
 
     /** the scale the game applies itself inside this element's pose, as a title does */
     open val innerScale: Float get() = 1f
 
-    val bgArgb: Int get() = bgPolyColor.argb
+    val bgArgb: Int get() = HudCapture.backgroundTint(this, bgRawArgb)
 
-    private val pads: Boolean get() = padLeft != 0f || padRight != 0f || padTop != 0f || padBottom != 0f
+    private val bgRawArgb: Int
+        get() {
+            val s = backgroundStyle
+            val argb = s.bgColor
+            return if (s.bgChroma) PolyColor(argb, true, s.bgChromaSpeed).argb else argb
+        }
+
+    private fun pads(s: HudStyle): Boolean = s.padLeft != 0f || s.padRight != 0f || s.padTop != 0f || s.padBottom != 0f
 
     private val drawnWidth: Float get() = width * elementScale
 
     private val drawnHeight: Float get() = height * elementScale
 
     val boxWidth: Float
-        get() = if (staticWidth) maxOf(staticW, drawnWidth) else drawnWidth + (padLeft + padRight) * padScale
+        get() {
+            val s = layoutStyle
+            return if (s.staticWidth) maxOf(s.staticW, drawnWidth) else drawnWidth + (s.padLeft + s.padRight) * padScale
+        }
 
     val boxHeight: Float
-        get() = if (staticWidth) maxOf(staticH, drawnHeight) else drawnHeight + (padTop + padBottom) * padScale
+        get() {
+            val s = layoutStyle
+            return if (s.staticWidth) maxOf(s.staticH, drawnHeight) else drawnHeight + (s.padTop + s.padBottom) * padScale
+        }
 
     /** where the content sits inside the box, zero unless the Designer's padding or static size is in use */
     val contentOffsetX: Float
-        get() = when {
-            staticWidth -> (boxWidth - drawnWidth) * alignment.name.let { if ("Left" in it) 0f else if ("Right" in it) 1f else 0.5f }
-            else -> padLeft * padScale
+        get() {
+            val s = layoutStyle
+            if (!s.staticWidth) return s.padLeft * padScale
+            val drawn = drawnWidth
+            return (maxOf(s.staticW, drawn) - drawn) * alignmentFractionX(s.alignment)
         }
 
     val contentOffsetY: Float
-        get() = when {
-            staticWidth -> (boxHeight - drawnHeight) * alignment.name.let { if ("Top" in it) 0f else if ("Bottom" in it) 1f else 0.5f }
-            else -> padTop * padScale
+        get() {
+            val s = layoutStyle
+            if (!s.staticWidth) return s.padTop * padScale
+            val drawn = drawnHeight
+            return (maxOf(s.staticH, drawn) - drawn) * alignmentFractionY(s.alignment)
         }
 
     private fun syncRenderedSize() {
@@ -671,23 +789,43 @@ abstract class VanillaHud(
     private var measured: Any? = null
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T : Any> measureOnce(key: () -> Long, measure: () -> T?): T? {
+    protected inline fun <T : Any> measureOnce(key: () -> Long, crossinline measure: () -> T?): T? {
         val base = measureKey()
-        if (measuredFrame == frame && measuredBase == base) return measured as T?
-        val stamp = key()
-        val epoch = clock() shr 10
-        if (!measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp ||
-            measuredEpoch != epoch
-        ) {
-            measured = HudCapture.measuring(this, measure)
-            measuredValid = true
-            measuredStamp = stamp
-            measuredEpoch = epoch
+        if (!measuredAt(base)) {
+            val stamp = key()
+            val epoch = measureEpoch()
+            if (measureStale(base, stamp, epoch)) storeMeasured(HudCapture.measuring(this) { measure() }, stamp, epoch)
+            markMeasured(base)
         }
+        return measuredValue() as T?
+    }
+
+    @PublishedApi
+    internal fun measuredAt(base: Int): Boolean = measuredFrame == frame && measuredBase == base
+
+    @PublishedApi
+    internal fun measureEpoch(): Long = clock() shr 10
+
+    @PublishedApi
+    internal fun measureStale(base: Int, stamp: Long, epoch: Long): Boolean =
+        !measuredValid || HudManager.isEditing || measuredBase != base || measuredStamp != stamp || measuredEpoch != epoch
+
+    @PublishedApi
+    internal fun storeMeasured(value: Any?, stamp: Long, epoch: Long) {
+        measured = value
+        measuredValid = true
+        measuredStamp = stamp
+        measuredEpoch = epoch
+    }
+
+    @PublishedApi
+    internal fun markMeasured(base: Int) {
         measuredBase = base
         measuredFrame = frame
-        return measured as T?
     }
+
+    @PublishedApi
+    internal fun measuredValue(): Any? = measured
 
     protected fun mix(h: Long, o: Any?): Long = h * 31 + System.identityHashCode(o)
 
@@ -695,7 +833,8 @@ abstract class VanillaHud(
 
     protected fun mix(h: Long, v: Boolean): Long = h * 31 + if (v) 1 else 0
 
-    private fun measureKey(): Int = HudManager.guiScreenWidth.toInt() * 31 + if (previewing) 1 else 0
+    @PublishedApi
+    internal fun measureKey(): Int = HudManager.guiScreenWidth.toInt() * 31 + if (previewing) 1 else 0
 
     override fun update(): Boolean {
         val size = boxWidth.toBits().toLong() * 31 + boxHeight.toBits()
@@ -781,7 +920,9 @@ abstract class VanillaHud(
                 } catch (_: Throwable) {
                 }
             }
-            for (hud in HudManager.activeInstances) {
+            val huds = HudManager.activeInstances
+            for (i in 0 until huds.size) {
+                val hud = huds[i]
                 if (hud !is VanillaHud || !hud.shouldDraw()) continue
                 try {
                     if (hud.seenForeignRevision != ForeignTransform.revision) {
@@ -825,7 +966,68 @@ abstract class VanillaHud(
     }
 }
 
+private object StyleWrites {
+    @Volatile
+    @JvmField
+    var count = 0L
+
+    init {
+        Snapshot.registerGlobalWriteObserver { count++ }
+        Snapshot.registerApplyObserver { changed, _ -> if (changed.isNotEmpty()) count++ }
+    }
+}
+
+class HudStyle internal constructor() {
+    @JvmField var textScale = 1f
+    @JvmField var padLeft = 0f
+    @JvmField var padRight = 0f
+    @JvmField var padTop = 0f
+    @JvmField var padBottom = 0f
+    @JvmField var staticWidth = false
+    @JvmField var staticW = 0f
+    @JvmField var staticH = 0f
+    @JvmField var alignment = PolyAlign.Center
+    @JvmField var bgRadius = 0f
+
+    @JvmField var caseType = 0
+    @JvmField var textBold = false
+    @JvmField var textItalic = false
+    @JvmField var textUnderline = false
+    @JvmField var font = Font.Minecraft
+    @JvmField var textColor = 0
+    @JvmField var textChroma = false
+    @JvmField var textChromaSpeed = 1f
+    @JvmField var showShadow = false
+    @JvmField var fullShadow = false
+    @JvmField var shadowColor = 0
+    @JvmField var shadowChroma = false
+    @JvmField var shadowChromaSpeed = 1f
+    @JvmField var shadowOffsetX = 0f
+    @JvmField var shadowOffsetY = 0f
+
+    @JvmField var showBackground = false
+    @JvmField var bgColor = 0
+    @JvmField var bgChroma = false
+    @JvmField var bgChromaSpeed = 1f
+    @JvmField var borderEnabled = false
+    @JvmField var borderColor = 0
+    @JvmField var borderChroma = false
+    @JvmField var borderChromaSpeed = 1f
+}
+
 private fun cell(f: Float) = if (f < 0.25f) 0 else if (f < 0.75f) 1 else 2
+
+private fun alignmentFractionX(align: PolyAlign): Float = when (align) {
+    PolyAlign.TopLeft, PolyAlign.Left, PolyAlign.BottomLeft -> 0f
+    PolyAlign.TopRight, PolyAlign.Right, PolyAlign.BottomRight -> 1f
+    else -> 0.5f
+}
+
+private fun alignmentFractionY(align: PolyAlign): Float = when (align) {
+    PolyAlign.TopLeft, PolyAlign.Top, PolyAlign.TopRight -> 0f
+    PolyAlign.BottomLeft, PolyAlign.Bottom, PolyAlign.BottomRight -> 1f
+    else -> 0.5f
+}
 
 private val SECTIONS = listOf(
     Section.TopLeft, Section.TopCenter, Section.TopRight,

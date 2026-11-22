@@ -64,8 +64,8 @@ public abstract class GuiEditorMixin {
     private int titleFadeOutTime;
 
     @Unique
-    private static boolean vanillahud$editing(VanillaHud hud) {
-        return hud.getPreviewing();
+    private static boolean vanillahud$editing() {
+        return VanillaHud.previewing();
     }
 
     @Unique
@@ -76,8 +76,7 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static boolean vanillahud$statusBars() {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) || vanillahud$editing(Huds.INSTANCE.getArmor())
-                || vanillahud$editing(Huds.INSTANCE.getHunger()) || vanillahud$editing(Huds.INSTANCE.getAir());
+        return vanillahud$editing();
     }
 
     @ModifyExpressionValue(
@@ -88,49 +87,49 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getArmorValue()I"))
     private static int vanillahud$forceArmor(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getArmor()) ? vanillahud$held("armor", original, original > 0, 20) : original;
+        return vanillahud$editing() ? vanillahud$held("armor", original, original > 0, 20) : original;
     }
 
     //~ if >=26 'renderPlayerHealth' -> 'extractPlayerHealth'
     @ModifyExpressionValue(method = "extractPlayerHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getHealth()F"))
     private float vanillahud$forceHealth(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) ? vanillahud$held("health", original, original > 0, 20F) : original;
+        return vanillahud$editing() ? vanillahud$held("health", original, original > 0, 20F) : original;
     }
 
     //~ if >=26 'renderPlayerHealth' -> 'extractPlayerHealth'
     @ModifyExpressionValue(method = "extractPlayerHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttributeValue(Lnet/minecraft/core/Holder;)D"))
     private double vanillahud$forceMaxHealth(double original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) ? vanillahud$held("maxHealth", original, original > 0, 20.0) : original;
+        return vanillahud$editing() ? vanillahud$held("maxHealth", original, original > 0, 20.0) : original;
     }
 
     //~ if >=26 'renderPlayerHealth' -> 'extractPlayerHealth'
     @ModifyExpressionValue(method = "extractPlayerHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAbsorptionAmount()F"))
     private float vanillahud$forceAbsorption(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) ? vanillahud$held("absorption", original, true, 0F) : original;
+        return vanillahud$editing() ? vanillahud$held("absorption", original, true, 0F) : original;
     }
 
     //~ if >=26 'renderPlayerHealth' -> 'extractPlayerHealth'
     @ModifyExpressionValue(method = "extractPlayerHealth", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;hasEffect(Lnet/minecraft/core/Holder;)Z"))
     private boolean vanillahud$forceNoRegeneration(boolean original) {
-        return !vanillahud$editing(Huds.INSTANCE.getHealth()) && original;
+        return !vanillahud$editing() && original;
     }
 
     //~ if >=26 'renderFood' -> 'extractFood'
     @ModifyExpressionValue(method = "extractFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;getFoodLevel()I"))
     private int vanillahud$forceFood(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? vanillahud$held("food", original, original > 0, 20) : original;
+        return vanillahud$editing() ? vanillahud$held("food", original, original > 0, 20) : original;
     }
 
     //~ if >=26 'renderFood' -> 'extractFood'
     @ModifyExpressionValue(method = "extractFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;getSaturationLevel()F"))
     private float vanillahud$forceSaturation(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? vanillahud$held("saturation", original, true, 5F) : original;
+        return vanillahud$editing() ? vanillahud$held("saturation", original, true, 5F) : original;
     }
 
     //~ if >=26 'renderFood' -> 'extractFood'
     @ModifyExpressionValue(method = "extractFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;hasEffect(Lnet/minecraft/core/Holder;)Z"))
     private boolean vanillahud$forceNoHunger(boolean original) {
-        return !vanillahud$editing(Huds.INSTANCE.getHunger()) && original;
+        return !vanillahud$editing() && original;
     }
 
     //~ if >=26 'renderItemHotbar' -> 'extractItemHotbar'
@@ -147,7 +146,7 @@ public abstract class GuiEditorMixin {
             //?}
     )
     private void vanillahud$forceActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!vanillahud$editing(Huds.INSTANCE.getActionBar())) {
+        if (!vanillahud$editing()) {
             original.call(graphics, delta);
             return;
         }
@@ -171,7 +170,7 @@ public abstract class GuiEditorMixin {
             //?}
     )
     private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, Operation<Void> original) {
-        if (!vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip())) {
+        if (!vanillahud$editing()) {
             original.call(graphics);
             return;
         }
@@ -192,7 +191,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;canHurtPlayer()Z"))
     private boolean vanillahud$forceItemNameOffset(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip()) || original;
+        return vanillahud$editing() || original;
     }
 
     @WrapMethod(
@@ -203,7 +202,7 @@ public abstract class GuiEditorMixin {
             //?}
     )
     private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!vanillahud$editing(Huds.INSTANCE.getTitle())) {
+        if (!vanillahud$editing()) {
             original.call(graphics, delta);
             return;
         }
@@ -246,33 +245,33 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAirSupply()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getAir()) ? vanillahud$held("air", original, original > 0 && original < 300, 299) : original;
+        return vanillahud$editing() ? vanillahud$held("air", original, original > 0 && original < 300, 299) : original;
     }
 
     //? if <=1.21.5 {
     /*@ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpLevelVisible(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
+        return vanillahud$editing() || original;
     }
 
     @ModifyExpressionValue(method = "renderExperienceLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) ? vanillahud$held("xpLevel", original, original > 0, 30) : original;
+        return vanillahud$editing() ? vanillahud$held("xpLevel", original, original > 0, 30) : original;
     }
 
     @ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;jumpableVehicle()Lnet/minecraft/world/entity/PlayerRideableJumping;"))
     private PlayerRideableJumping vanillahud$forceNoJumpBar(PlayerRideableJumping original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) ? null : original;
+        return vanillahud$editing() ? null : original;
     }
 
     @ModifyExpressionValue(method = "renderExperienceBar", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceProgress:F", opcode = Opcodes.GETFIELD))
     private float vanillahud$forceXpProgress(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) ? vanillahud$held("xpProgress", original, original > 0, 0.5F) : original;
+        return vanillahud$editing() ? vanillahud$held("xpProgress", original, original > 0, 0.5F) : original;
     }
     *///?} else {
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;jumpableVehicle()Lnet/minecraft/world/entity/PlayerRideableJumping;"))
     private PlayerRideableJumping vanillahud$forceNoJumpBar(PlayerRideableJumping original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) ? null : original;
+        return vanillahud$editing() ? null : original;
     }
 
     @ModifyExpressionValue(
@@ -283,7 +282,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
     private boolean vanillahud$forceXpHasExperience(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
+        return vanillahud$editing() || original;
     }
 
     @ModifyExpressionValue(
@@ -294,19 +293,19 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;experienceLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) ? vanillahud$held("xpLevel", original, original > 0, 30) : original;
+        return vanillahud$editing() ? vanillahud$held("xpLevel", original, original > 0, 30) : original;
     }
     //?}
 
     //? if <=1.21.5 {
     /*@ModifyExpressionValue(method = "renderHotbarAndDecorations", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;isExperienceBarVisible()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || original;
+        return vanillahud$editing() || original;
     }
     *///?} else {
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasExperience()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || original;
+        return vanillahud$editing() || original;
     }
     //?}
 
@@ -340,7 +339,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/scores/Scoreboard;getDisplayObjective(Lnet/minecraft/world/scores/DisplaySlot;)Lnet/minecraft/world/scores/Objective;", ordinal = 1))
     private Objective vanillahud$forceScoreboard(Objective original) {
-        return vanillahud$editing(Huds.INSTANCE.getScoreboard()) ? Huds.INSTANCE.getScoreboard().previewObjective() : original;
+        return vanillahud$editing() ? Huds.INSTANCE.getScoreboard().previewObjective() : original;
     }
 
     @ModifyExpressionValue(
@@ -352,7 +351,7 @@ public abstract class GuiEditorMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getActiveEffects()Ljava/util/Collection;")
     )
     private Collection<MobEffectInstance> vanillahud$forceEffects(Collection<MobEffectInstance> original) {
-        if (vanillahud$editing(Huds.INSTANCE.getStatusEffects())) return Huds.INSTANCE.getStatusEffects().previewEffects();
+        if (vanillahud$editing()) return Huds.INSTANCE.getStatusEffects().previewEffects();
         return original;
     }
 }
@@ -396,8 +395,8 @@ public abstract class GuiEditorMixin {
     @Shadow private int titleFadeOutTime;
 
     @Unique
-    private static boolean vanillahud$editing(VanillaHud hud) {
-        return hud.getPreviewing();
+    private static boolean vanillahud$editing() {
+        return VanillaHud.previewing();
     }
 
     @Unique
@@ -408,8 +407,7 @@ public abstract class GuiEditorMixin {
 
     @Unique
     private static boolean vanillahud$statusBars() {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) || vanillahud$editing(Huds.INSTANCE.getArmor())
-                || vanillahud$editing(Huds.INSTANCE.getHunger()) || vanillahud$editing(Huds.INSTANCE.getAir());
+        return vanillahud$editing();
     }
 
     @WrapMethod(method = "render")
@@ -417,8 +415,8 @@ public abstract class GuiEditorMixin {
         // a HEAD inject would run inside this wrapper, after the demo fields go in, so hasLiveData would read the demo as live.
         // starting the frame here caches previewing from the real fields first
         VanillaHud.beginFrame(LegacyDrawContext.INSTANCE);
-        boolean actionBar = vanillahud$editing(Huds.INSTANCE.getActionBar());
-        boolean titles = vanillahud$editing(Huds.INSTANCE.getTitle());
+        boolean actionBar = vanillahud$editing();
+        boolean titles = vanillahud$editing();
         String message = this.overlayMessage;
         int messageTime = this.overlayMessageCooldown;
         boolean tinted = this.overlayMessageTinted;
@@ -458,12 +456,12 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/options/GameOptions;itemInHandTooltips:Z", opcode = Opcodes.GETFIELD))
     private boolean vanillahud$forceItemNameEnabled(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip()) || original;
+        return vanillahud$editing() || original;
     }
 
     @WrapMethod(method = "renderSelectedItemName")
     private void vanillahud$forceItemName(Window window, Operation<Void> original) {
-        if (!vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip())) {
+        if (!vanillahud$editing()) {
             original.call(window);
             return;
         }
@@ -481,7 +479,7 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "renderSelectedItemName", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/ClientPlayerInteractionManager;hasStatusBars()Z"))
     private boolean vanillahud$forceItemNameOffset(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getHeldItemTooltip()) || original;
+        return vanillahud$editing() || original;
     }
 
     // the bottom cluster: the status bars and the experience bar are gated on the game mode,
@@ -495,67 +493,67 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/ClientPlayerInteractionManager;hasXpBar()Z"))
     private boolean vanillahud$forceXpBar(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) || vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) || original;
+        return vanillahud$editing() || original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;getArmorProtection()I"))
     private int vanillahud$forceArmor(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getArmor()) ? vanillahud$held("armor", original, original > 0, 20) : original;
+        return vanillahud$editing() ? vanillahud$held("armor", original, original > 0, 20) : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;getHealth()F"))
     private float vanillahud$forceHealth(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) ? vanillahud$held("health", original, original > 0, 20F) : original;
+        return vanillahud$editing() ? vanillahud$held("health", original, original > 0, 20F) : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/living/attribute/EntityAttributeInstance;get()D"))
     private double vanillahud$forceMaxHealth(double original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) ? vanillahud$held("maxHealth", original, original > 0, 20.0) : original;
+        return vanillahud$editing() ? vanillahud$held("maxHealth", original, original > 0, 20.0) : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;getAbsorption()F"))
     private float vanillahud$forceAbsorption(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getHealth()) ? vanillahud$held("absorption", original, true, 0F) : original;
+        return vanillahud$editing() ? vanillahud$held("absorption", original, true, 0F) : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;hasStatusEffect(Lnet/minecraft/entity/living/effect/StatusEffect;)Z"))
     private boolean vanillahud$forceNoEffects(boolean original) {
-        return !vanillahud$editing(Huds.INSTANCE.getHealth()) && original;
+        return !vanillahud$editing() && original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/living/player/HungerManager;getFoodLevel()I"))
     private int vanillahud$forceFood(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? vanillahud$held("food", original, original > 0, 20) : original;
+        return vanillahud$editing() ? vanillahud$held("food", original, original > 0, 20) : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/living/player/HungerManager;getLastFoodLevel()I"))
     private int vanillahud$forceLastFood(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? vanillahud$held("lastFood", original, original > 0, 20) : original;
+        return vanillahud$editing() ? vanillahud$held("lastFood", original, original > 0, 20) : original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/living/player/HungerManager;getSaturationLevel()F"))
     private float vanillahud$forceSaturation(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getHunger()) ? vanillahud$held("saturation", original, true, 5F) : original;
+        return vanillahud$editing() ? vanillahud$held("saturation", original, true, 5F) : original;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/LocalPlayer;isRidingRideableMob()Z"))
     private boolean vanillahud$forceNoJumpBar(boolean original) {
-        return !vanillahud$editing(Huds.INSTANCE.getExperienceBar()) && original;
+        return !vanillahud$editing() && original;
     }
 
     @ModifyExpressionValue(method = "renderXpBar", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/player/LocalPlayer;xpProgress:F", opcode = Opcodes.GETFIELD))
     private float vanillahud$forceXpProgress(float original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceBar()) ? vanillahud$held("xpProgress", original, original > 0, 0.5F) : original;
+        return vanillahud$editing() ? vanillahud$held("xpProgress", original, original > 0, 0.5F) : original;
     }
 
     @ModifyExpressionValue(method = "renderItemSlot", at = @At(value = "FIELD",
@@ -567,20 +565,20 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/player/Player;isSubmergedIn(Lnet/minecraft/block/material/Material;)Z"))
     private boolean vanillahud$forceAirVisible(boolean original) {
-        return vanillahud$editing(Huds.INSTANCE.getAir()) || original;
+        return vanillahud$editing() || original;
     }
 
     @ModifyExpressionValue(method = "renderStatusBars", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/LocalPlayer;getBreath()I"))
     private int vanillahud$forceAir(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getAir()) ? vanillahud$held("air", original, original > 0 && original < 300, 299) : original;
+        return vanillahud$editing() ? vanillahud$held("air", original, original > 0 && original < 300, 299) : original;
     }
 
     // both reads gate the level text, so neither carries an ordinal on purpose
     @ModifyExpressionValue(method = "renderXpBar", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/player/LocalPlayer;xpLevel:I", opcode = Opcodes.GETFIELD))
     private int vanillahud$forceXpLevel(int original) {
-        return vanillahud$editing(Huds.INSTANCE.getExperienceLevel()) ? vanillahud$held("xpLevel", original, original > 0, 30) : original;
+        return vanillahud$editing() ? vanillahud$held("xpLevel", original, original > 0, 30) : original;
     }
 
     // the tab list is hidden unless the key is held, and hidden again on a single player
@@ -602,14 +600,14 @@ public abstract class GuiEditorMixin {
             target = "Lnet/minecraft/scoreboard/Scoreboard;getDisplayObjective(I)Lnet/minecraft/scoreboard/ScoreboardObjective;",
             ordinal = 1))
     private ScoreboardObjective vanillahud$forceScoreboard(ScoreboardObjective original) {
-        return vanillahud$editing(Huds.INSTANCE.getScoreboard()) ? Huds.INSTANCE.getScoreboard().previewObjective() : original;
+        return vanillahud$editing() ? Huds.INSTANCE.getScoreboard().previewObjective() : original;
     }
 
     // the one 1.8.9 boss bar is static state the server owns and the method decrements its
     // timer, so the preview swaps the values in around the call instead of writing over them
     @WrapMethod(method = "renderBossBars")
     private void vanillahud$forceBossBar(Operation<Void> original) {
-        if (!vanillahud$editing(Huds.INSTANCE.getBossBar())) {
+        if (!vanillahud$editing()) {
             original.call();
             return;
         }

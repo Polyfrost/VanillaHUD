@@ -18,18 +18,45 @@ import org.polyfrost.vanillahud.render.HudCapture
 object LegacyDrawContext {
     private val mc: Minecraft get() = Minecraft.getInstance()
 
-    private fun window(): Window = Window(mc)
+    private var windowDisplayWidth = -1
+    private var windowDisplayHeight = -1
+    private var windowGuiScale = -1
+    private var windowUnicode = false
+    private var windowWidth = 0
+    private var windowHeight = 0
+    private var windowScale = 1
 
-    fun guiWidth(): Int = window().width
+    private fun window() {
+        val client = mc
+        val guiScale = client.options.guiScale
+        val unicode = client.isUnicode
+        if (client.width == windowDisplayWidth && client.height == windowDisplayHeight && guiScale == windowGuiScale && unicode == windowUnicode) return
+        val window = Window(client)
+        windowDisplayWidth = client.width
+        windowDisplayHeight = client.height
+        windowGuiScale = guiScale
+        windowUnicode = unicode
+        windowWidth = window.width
+        windowHeight = window.height
+        windowScale = window.scale
+    }
 
-    fun guiHeight(): Int = window().height
+    fun guiWidth(): Int {
+        window()
+        return windowWidth
+    }
+
+    fun guiHeight(): Int {
+        window()
+        return windowHeight
+    }
 
     fun pose(): LegacyPose = LegacyPose
 
     fun enableScissor(x0: Int, y0: Int, x1: Int, y1: Int) {
         HudCapture.clipStart(this, x0, y0, x1, y1)
-        val window = window()
-        val factor = window.scale.coerceAtLeast(1)
+        window()
+        val factor = windowScale.coerceAtLeast(1)
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
         // glScissor works in physical pixels measured from the bottom left
         GL11.glScissor(

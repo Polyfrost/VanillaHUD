@@ -9,7 +9,7 @@ import java.lang.reflect.Method
 object TabListCompat {
     class Bounds(val top: Float, val height: Float)
 
-    private val providers: List<Provider> by lazy {
+    private val providers: List<Provider> by lazy(LazyThreadSafetyMode.NONE) {
         buildList {
             // SkyHanni cancels the whole tab list layer so it wins over SkyCubed when both are on
             if (isLoaded("skyhanni")) add(SkyHanni)
@@ -24,7 +24,12 @@ object TabListCompat {
     }
 
     fun bounds(header: Component?, footer: Component?): Bounds? {
-        return providers.firstNotNullOfOrNull { it.bounds(header, footer) }
+        val list = providers
+        for (i in list.indices) {
+            val bounds = list[i].bounds(header, footer)
+            if (bounds != null) return bounds
+        }
+        return null
     }
 
     private interface Provider {

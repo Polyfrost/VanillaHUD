@@ -55,13 +55,14 @@ public class GuiMixinLocatorBar {
             *///?}
     )
     private void vanillahud$locatorBar(ContextualBar bar, GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
+        ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
+        if (!hud.shouldDraw()) return;
 
         // part 1 sits over the bar's background, which Fabric draws as a separate element that
         // Gnetum can run on another pass
-        HudTransform.begin(graphics, Huds.INSTANCE.getExperienceBar(), 1);
+        HudTransform.begin(graphics, hud, 1);
         original.call(bar, graphics, delta);
-        if (vanillahud$overlaysLocator()
+        if (vanillahud$overlaysLocator(hud)
                 && Minecraft.getInstance().player.connection.getWaypointManager().hasWaypoints()) {
             if (vanillahud$locator == null) {
                 //? if >=26.2 {
@@ -80,8 +81,7 @@ public class GuiMixinLocatorBar {
     @Unique private ContextualBar vanillahud$locator;
 
     @Unique
-    private static boolean vanillahud$overlaysLocator() {
-        ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
+    private static boolean vanillahud$overlaysLocator(ExperienceBarHud hud) {
         if (!hud.getOverlayLocatorBar() || hud.getPreviewing() || hud.isDrawnAsVanilla()) return false;
         Minecraft minecraft = Minecraft.getInstance();
         return minecraft.player.jumpableVehicle() != null || minecraft.gameMode.hasExperience();
@@ -90,7 +90,9 @@ public class GuiMixinLocatorBar {
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/waypoints/ClientWaypointManager;hasWaypoints()Z"))
     private boolean vanillahud$keepBarUnderLocator(boolean original) {
-        return original && !Huds.INSTANCE.getExperienceBar().getPreviewing() && !vanillahud$overlaysLocator();
+        if (!original) return false;
+        ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
+        return !hud.getPreviewing() && !vanillahud$overlaysLocator(hud);
     }
 
     @ModifyExpressionValue(method = "nextContextualInfoState", at = @At(value = "INVOKE",
@@ -114,11 +116,12 @@ public class GuiMixinLocatorBar {
             *///?}
     )
     private void vanillahud$experienceBar(ContextualBar bar, GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
+        ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
         //? if >=26.2 {
-        if (bar instanceof ExperienceBar && !Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
+        if (bar instanceof ExperienceBar && !hud.shouldDraw()) return;
         //?} else
-        //if (bar instanceof ExperienceBarRenderer && !Huds.INSTANCE.getExperienceBar().shouldDraw()) return;
-        if (!Huds.INSTANCE.getExperienceBar().getPreviewing()) {
+        //if (bar instanceof ExperienceBarRenderer && !hud.shouldDraw()) return;
+        if (!hud.getPreviewing()) {
             original.call(bar, graphics, delta);
             return;
         }

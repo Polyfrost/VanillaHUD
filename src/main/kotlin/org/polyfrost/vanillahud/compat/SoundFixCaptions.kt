@@ -32,6 +32,8 @@ object SoundFixCaptions {
     fun texts(): List<String> =
         overlay?.audibleSubtitles?.mapNotNull { (it as? ISubtitleEntry)?.subtitleText }.orEmpty()
 
+    fun audible(): List<*>? = overlay?.audibleSubtitles
+
     fun hasLiveData() = overlay?.let { it.showSubtitles && it.subtitles.isNotEmpty() } == true
 
     @JvmStatic

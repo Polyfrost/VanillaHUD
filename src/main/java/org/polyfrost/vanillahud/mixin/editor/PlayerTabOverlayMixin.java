@@ -8,6 +8,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.hud.TabListHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -17,8 +18,9 @@ import java.util.List;
 public abstract class PlayerTabOverlayMixin {
     @ModifyReturnValue(method = "getPlayerInfos", at = @At("RETURN"))
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
-        if (!Huds.INSTANCE.getTabList().getPreviewing()) return original;
-        return Huds.INSTANCE.getTabList().previewPlayers("tabPlayers", original);
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (!hud.getPreviewing()) return original;
+        return hud.previewPlayers("tabPlayers", original);
     }
 
     @ModifyExpressionValue(
@@ -30,9 +32,10 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;header:Lnet/minecraft/network/chat/Component;", opcode = Opcodes.GETFIELD)
     )
     private Component vanillahud$header(Component header) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) return header;
-        if (!Huds.INSTANCE.getTabList().getShowHeader()) return null;
-        if (Huds.INSTANCE.getTabList().getPreviewing()) return Huds.INSTANCE.getTabList().previewHeader(header);
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) return header;
+        if (!hud.getShowHeader()) return null;
+        if (hud.getPreviewing()) return hud.previewHeader(header);
         return header;
     }
 
@@ -45,9 +48,10 @@ public abstract class PlayerTabOverlayMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;footer:Lnet/minecraft/network/chat/Component;", opcode = Opcodes.GETFIELD)
     )
     private Component vanillahud$footer(Component footer) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) return footer;
-        if (!Huds.INSTANCE.getTabList().getShowFooter()) return null;
-        if (Huds.INSTANCE.getTabList().getPreviewing()) return Huds.INSTANCE.getTabList().previewFooter(footer);
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) return footer;
+        if (!hud.getShowFooter()) return null;
+        if (hud.getPreviewing()) return hud.previewFooter(footer);
         return footer;
     }
 }

@@ -111,16 +111,15 @@ public abstract class PlayerTabOverlayMixin {
     private boolean vanillahud$headerDrawn;
 
     @Unique
-    private boolean vanillahud$footerPending() {
-        TabListHud hud = Huds.INSTANCE.getTabList();
+    private boolean vanillahud$footerPending(TabListHud hud) {
         return hud.getShowFooter() && (hud.getPreviewing() || ((IPlayerTabOverlay) (Object) this).getFooter() != null);
     }
 
     @Unique
-    private static void vanillahud$fill(Operation<Void> original, GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color,
+    private static void vanillahud$fill(Operation<Void> original, GuiGraphicsExtractor graphics, TabListHud hud, int x0, int y0, int x1, int y1, int color,
                                         boolean roundTop, boolean roundBottom) {
         if ((color >>> 24) == 0) return;
-        TextBackdrop.roundedSegment(graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getRadius(), roundTop, roundBottom,
+        TextBackdrop.roundedSegment(graphics, x0, y0, x1, y1, hud.getRadius(), roundTop, roundBottom,
                 (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
     }
 
@@ -135,13 +134,14 @@ public abstract class PlayerTabOverlayMixin {
                     ordinal = 0)
     )
     private void vanillahud$headerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(graphics, x0, y0, x1, y1, color);
             return;
         }
-        int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
+        int argb = hud.getHeaderBgArgb();
         this.vanillahud$headerDrawn = (argb >>> 24) != 0;
-        vanillahud$fill(original, graphics, x0, y0, x1, y1, argb, true, false);
+        vanillahud$fill(original, graphics, hud, x0, y0, x1, y1, argb, true, false);
     }
 
     @WrapOperation(
@@ -155,14 +155,16 @@ public abstract class PlayerTabOverlayMixin {
                     ordinal = 1)
     )
     private void vanillahud$bodyBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(graphics, x0, y0, x1, y1, color);
             return;
         }
         boolean header = this.vanillahud$headerDrawn;
         this.vanillahud$headerDrawn = false;
-        vanillahud$markShape(x0, y0, x1, y1, header, vanillahud$footerPending());
-        vanillahud$fill(original, graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getBodyBgArgb(), !header, !vanillahud$footerPending());
+        boolean footer = vanillahud$footerPending(hud);
+        vanillahud$markShape(x0, y0, x1, y1, header, footer);
+        vanillahud$fill(original, graphics, hud, x0, y0, x1, y1, hud.getBodyBgArgb(), !header, !footer);
     }
 
     @WrapOperation(
@@ -176,11 +178,12 @@ public abstract class PlayerTabOverlayMixin {
                     ordinal = 3)
     )
     private void vanillahud$footerBg(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(graphics, x0, y0, x1, y1, color);
             return;
         }
-        vanillahud$fill(original, graphics, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
+        vanillahud$fill(original, graphics, hud, x0, y0, x1, y1, hud.getFooterBgArgb(), false, true);
     }
 
     //? if >=1.21.8 {
@@ -282,13 +285,14 @@ public abstract class PlayerTabOverlayMixin {
                                              Operation<Void> original,
                                              @Share("vhTabSlotRight") LocalIntRef slotRight) {
         slotRight.set(x2);
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(graphics, x1, y1, x2, y2, color);
             return;
         }
         if ((color >>> 24) == 0) return;
         TextBackdrop.roundedClip(graphics, x1, y1, x2, y2, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
-                Huds.INSTANCE.getTabList().getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
+                hud.getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
                 (a, b, c, d) -> original.call(graphics, a, b, c, d, color));
     }
 
@@ -308,8 +312,9 @@ public abstract class PlayerTabOverlayMixin {
     //? if <1.21.6 {
     /*private int vanillahud$clipName(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color,
                                    Operation<Integer> original, @Share("vhTabSlotRight") LocalIntRef slotRight) {
-        int clipRight = slotRight.get() - vanillahud$pingReserve();
-        boolean clip = vanillahud$pingReserve() > 0 && clipRight > x && x + this.minecraft.font.width(name) > clipRight;
+        int reserve = vanillahud$pingReserve();
+        int clipRight = slotRight.get() - reserve;
+        boolean clip = reserve > 0 && clipRight > x && x + this.minecraft.font.width(name) > clipRight;
         if (clip) graphics.enableScissor(x, y - 1, clipRight, y + 9);
         int r = original.call(graphics, font, name, x, y, color);
         if (clip) graphics.disableScissor();
@@ -318,8 +323,9 @@ public abstract class PlayerTabOverlayMixin {
     *///?} else {
     private void vanillahud$clipName(GuiGraphicsExtractor graphics, Font font, Component name, int x, int y, int color,
                                      Operation<Void> original, @Share("vhTabSlotRight") LocalIntRef slotRight) {
-        int clipRight = slotRight.get() - vanillahud$pingReserve();
-        boolean clip = vanillahud$pingReserve() > 0 && clipRight > x && x + this.minecraft.font.width(name) > clipRight;
+        int reserve = vanillahud$pingReserve();
+        int clipRight = slotRight.get() - reserve;
+        boolean clip = reserve > 0 && clipRight > x && x + this.minecraft.font.width(name) > clipRight;
         if (clip) graphics.enableScissor(x, y - 1, clipRight, y + 9);
         original.call(graphics, font, name, x, y, color);
         if (clip) graphics.disableScissor();
@@ -451,15 +457,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = PlayerTabOverlay.class, priority = 1100)
 public abstract class PlayerTabOverlayMixin {
     @Unique
-    private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color) {
-        vanillahud$fill(original, x0, y0, x1, y1, color, false, false);
+    private static void vanillahud$fill(Operation<Void> original, TabListHud hud, int x0, int y0, int x1, int y1, int color) {
+        vanillahud$fill(original, hud, x0, y0, x1, y1, color, false, false);
     }
 
     @Unique
-    private static void vanillahud$fill(Operation<Void> original, int x0, int y0, int x1, int y1, int color,
+    private static void vanillahud$fill(Operation<Void> original, TabListHud hud, int x0, int y0, int x1, int y1, int color,
                                         boolean roundTop, boolean roundBottom) {
         if ((color >>> 24) == 0) return;
-        TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getRadius(), roundTop, roundBottom,
+        TextBackdrop.roundedSegment(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, hud.getRadius(), roundTop, roundBottom,
                 (a, b, c, d) -> original.call(a, b, c, d, color));
     }
 
@@ -514,50 +520,54 @@ public abstract class PlayerTabOverlayMixin {
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 0))
     private void vanillahud$headerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(x0, y0, x1, y1, color);
             return;
         }
-        int argb = Huds.INSTANCE.getTabList().getHeaderBgArgb();
+        int argb = hud.getHeaderBgArgb();
         this.vanillahud$headerDrawn = (argb >>> 24) != 0;
-        vanillahud$fill(original, x0, y0, x1, y1, argb, true, false);
+        vanillahud$fill(original, hud, x0, y0, x1, y1, argb, true, false);
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 1))
     private void vanillahud$bodyBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(x0, y0, x1, y1, color);
             return;
         }
         boolean header = this.vanillahud$headerDrawn;
         this.vanillahud$headerDrawn = false;
         vanillahud$markShape(x0, y0, x1, y1, header, this.vanillahud$hasFooter);
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getBodyBgArgb(), !header, !this.vanillahud$hasFooter);
+        vanillahud$fill(original, hud, x0, y0, x1, y1, hud.getBodyBgArgb(), !header, !this.vanillahud$hasFooter);
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 2))
     private void vanillahud$widget(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(x0, y0, x1, y1, color);
             return;
         }
-        int argb = Huds.INSTANCE.getTabList().getTabWidgetArgb();
+        int argb = hud.getTabWidgetArgb();
         if ((argb >>> 24) == 0) return;
         TextBackdrop.roundedClip(LegacyDrawContext.INSTANCE, x0, y0, x1, y1, vanillahud$shapeX0, vanillahud$shapeTop, vanillahud$shapeX1, vanillahud$shapeBottom,
-                Huds.INSTANCE.getTabList().getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
+                hud.getRadius(), vanillahud$shapeRoundTop, vanillahud$shapeRoundBottom,
                 (a, b, c, d) -> original.call(a, b, c, d, argb));
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/overlay/PlayerTabOverlay;fill(IIIII)V", ordinal = 3))
     private void vanillahud$footerBg(int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
-        if (Huds.INSTANCE.getTabList().isDrawnAsVanilla()) {
+        TabListHud hud = Huds.INSTANCE.getTabList();
+        if (hud.isDrawnAsVanilla()) {
             original.call(x0, y0, x1, y1, color);
             return;
         }
-        vanillahud$fill(original, x0, y0, x1, y1, Huds.INSTANCE.getTabList().getFooterBgArgb(), false, true);
+        vanillahud$fill(original, hud, x0, y0, x1, y1, hud.getFooterBgArgb(), false, true);
     }
 
     @ModifyExpressionValue(method = "render", at = {
