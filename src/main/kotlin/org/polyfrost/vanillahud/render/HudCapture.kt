@@ -763,7 +763,7 @@ object HudCapture {
                             set(PolyModifier.size(size, size)) { it.applyTo(style) }
                         },
                     ) {
-                        NodeMcItemIcon(item.stack, size, decorations = false)
+                        NodeMcItemIcon(item.stack, size, decorations = false, maxScale = 1.5f)
                     }
                     // outside the stretch, vanilla draws the count and durability bar unstretched
                     if (item.decorated) {

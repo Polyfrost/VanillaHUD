@@ -25,6 +25,7 @@ val mcDependencyVersion: String = sc.properties.getOrNull<String>("deps.minecraf
 val versionrange: String = sc.properties["mod.mc_compat"]
 val loaderversion: String = sc.properties["deps.fabric_loader"]
 val oneconfigversion: String = sc.properties["deps.oneconfig"]
+val polycomposeversion: String = sc.properties["deps.polycompose"]
 val fapiversion: String? = sc.properties.getOrNull("deps.fabric_api")
 val isOrnithe = mcversion == "1.8.9"
 
@@ -107,6 +108,9 @@ dependencies {
     val loader = if (isOrnithe) "ornithe" else "fabric"
     modImplementation("org.polyfrost.oneconfig:$mcversion-$loader:$oneconfigversion") {
         // Loom strips the nested Kotlin jars from a remapped copy, so the plain copy above must stay the only candidate
+        exclude(group = "net.fabricmc", module = "fabric-language-kotlin")
+    }
+    modImplementation("org.polyfrost:polycompose-$mcversion-$loader:$polycomposeversion") {
         exclude(group = "net.fabricmc", module = "fabric-language-kotlin")
     }
 
@@ -194,7 +198,8 @@ tasks {
             "mod_version" to modversion,
             "minecraft_version_range" to versionrange,
             "loader_version" to loaderversion,
-            "oneconfig_version" to oneconfigversion
+            "oneconfig_version" to oneconfigversion,
+            "polycompose_version" to polycomposeversion
         )
 
         inputs.properties(props)
