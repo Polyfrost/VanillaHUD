@@ -13,6 +13,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Property
@@ -601,13 +602,17 @@ abstract class VanillaHud(
     private var layoutFrame = -1L
     private var textFrame = -1L
     private var backgroundFrame = -1L
+    private var layoutWrites = -1L
+    private var textWrites = -1L
+    private var backgroundWrites = -1L
 
-    private fun styleStale(stamp: Long): Boolean = stamp != frame || placing > 0 || HudManager.isEditing
+    private fun styleStale(stamp: Long, writes: Long): Boolean =
+        stamp != frame || writes != StyleWrites.count || placing > 0 || HudManager.isEditing
 
     val layoutStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(layoutFrame)) {
+            if (styleStale(layoutFrame, layoutWrites)) {
                 s.textScale = textScale
                 s.padLeft = padLeft
                 s.padRight = padRight
@@ -619,6 +624,7 @@ abstract class VanillaHud(
                 s.alignment = alignment
                 s.bgRadius = bgRadius
                 layoutFrame = frame
+                layoutWrites = StyleWrites.count
             }
             return s
         }
@@ -626,7 +632,7 @@ abstract class VanillaHud(
     val textStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(textFrame)) {
+            if (styleStale(textFrame, textWrites)) {
                 s.caseType = caseType
                 s.textBold = textBold
                 s.textItalic = textItalic
@@ -643,6 +649,7 @@ abstract class VanillaHud(
                 s.shadowOffsetX = shadowOffsetX
                 s.shadowOffsetY = shadowOffsetY
                 textFrame = frame
+                textWrites = StyleWrites.count
             }
             return s
         }
@@ -650,7 +657,7 @@ abstract class VanillaHud(
     val backgroundStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(backgroundFrame)) {
+            if (styleStale(backgroundFrame, backgroundWrites)) {
                 s.showBackground = showBackground
                 s.bgColor = bgColor
                 s.bgChroma = bgChroma
@@ -660,6 +667,7 @@ abstract class VanillaHud(
                 s.borderChroma = borderChroma
                 s.borderChromaSpeed = borderChromaSpeed
                 backgroundFrame = frame
+                backgroundWrites = StyleWrites.count
             }
             return s
         }
@@ -955,6 +963,17 @@ abstract class VanillaHud(
          */
         @JvmStatic
         fun previewing(): Boolean = (HudManager.isEditorOpen || HudManager.isConfigUiOpen) && !HudManager.isSamplingVanilla
+    }
+}
+
+private object StyleWrites {
+    @Volatile
+    @JvmField
+    var count = 0L
+
+    init {
+        Snapshot.registerGlobalWriteObserver { count++ }
+        Snapshot.registerApplyObserver { changed, _ -> if (changed.isNotEmpty()) count++ }
     }
 }
 
