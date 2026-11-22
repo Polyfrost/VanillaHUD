@@ -36,6 +36,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.previewValue
 import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.compat.PolytoneXpColor
 import org.polyfrost.vanillahud.compat.TabListCompat
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
@@ -504,6 +505,8 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
         textColor = 0xFF80FF20.toInt()
         shadowColor = 0xFF000000.toInt()
     }
+
+    override val managesTextColor get() = PolytoneXpColor.packSetsColor
 
     override val naturalWidth get() = 18f
     override val naturalHeight get() = 9f
