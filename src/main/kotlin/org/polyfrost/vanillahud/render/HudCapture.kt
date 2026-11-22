@@ -874,7 +874,7 @@ private object SpriteBitmaps {
     }
 
     private fun load(id: Identifier): PolyBitmap? = runCatching {
-        mc.resourceManager.getResource(id).orElse(null)?.open()?.use { PolyBitmap.decode(it.readBytes()) }
+        mc.resourceManager.getResource(id).orElse(null)?.open()?.use { PolyBitmap.decode(it.readAllBytes()) }
     }.getOrNull()
     //?} else {
     /*fun of(id: Identifier): PolyBitmap? {
@@ -883,7 +883,7 @@ private object SpriteBitmaps {
     }
 
     private fun load(id: Identifier): PolyBitmap? = runCatching {
-        mc.resourceManager.getResource(id).asStream().use { PolyBitmap.decode(it.readBytes()) }
+        mc.resourceManager.getResource(id).asStream().use { PolyBitmap.decode(it.readAllBytes()) }
     }.getOrNull()
 
     /** skins and other runtime textures only exist on the GPU here, read once per texture */
