@@ -4,12 +4,13 @@ import net.fabricmc.api.ClientModInitializer
 //? if > 1.8.9 {
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 //?} else {
-/*import org.polyfrost.oneconfig.api.event.v1.EventManager
-import org.polyfrost.oneconfig.api.event.v1.events.InitializationEvent
+/*import org.polyfrost.oneconfig.api.event.v1.events.InitializationEvent
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
-import java.util.function.Consumer
 *///?}
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.event.v1.events.WorldEvent
+import java.util.function.Consumer
 import org.polyfrost.oneconfig.api.hud.v1.HudGroups
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.vanillahud.compat.HudElementCompat
@@ -24,6 +25,7 @@ import org.polyfrost.vanillahud.hud.HungerHud
 import org.polyfrost.vanillahud.hud.SubtitleHud
 import org.polyfrost.vanillahud.hud.TitleHud
 import org.polyfrost.vanillahud.hud.VanillaHud
+import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import org.polyfrost.vanillahud.util.HudConfigMigrator
 
@@ -69,6 +71,9 @@ object VanillaHUDClient : ClientModInitializer {
         // the editor previews keep whatever they measured when the editor opened
         EventManager.register(TickEvent.End::class.java, Consumer { onTick() })
         *///?}
+
+        // close every icon, or animated ones keep the atlas redrawing even after the world unloads
+        EventManager.register(WorldEvent.Unload::class.java, Consumer { HudCapture.closeIcons() })
 
         HudElementCompat.init()
     }
