@@ -1,3 +1,11 @@
+## 3.5.12
+- The hotbar, status bars and experience bar now move together as one group by default, and so do the title and subtitle
+- Needs OneConfig 1.9.1 and PolyCompose 3.0.2
+- Fixed hotbar items disappearing during the pickup animation
+- Fixed hotbar items being rendered again and again during the pickup animation, which also keeps them sharp
+- Fixed the hotbar text shadow setting being lost when moving over old configs
+- Fixed HUD textures not updating after a resource pack reload on 1.8.9
+
 ## 3.5.11
 - Updated to OneConfig 1.9.0, which needs PolyCompose installed
 - The health, hunger, armor and air bars and the experience bar are now separate HUDs you can move on their own
