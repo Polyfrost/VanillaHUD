@@ -1,7 +1,7 @@
 mod.id = "vanillahud"
 mod.name = "VanillaHUD"
 mod.group = "org.polyfrost"
-mod.version = "3.5.12"
+mod.version = "3.5.13"
 
 deps.fabric_loader = "0.19.5"
 deps.oneconfig = "1.9.1"

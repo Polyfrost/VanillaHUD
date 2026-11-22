@@ -1,3 +1,6 @@
+## 3.5.13
+- Fixed HUD elements that should be hidden staying on screen after closing the mod menu with Gnetum installed
+
 ## 3.5.12
 - The hotbar, status bars and experience bar now move together as one group by default, and so do the title and subtitle
 - Needs OneConfig 1.9.1 and PolyCompose 3.0.2
