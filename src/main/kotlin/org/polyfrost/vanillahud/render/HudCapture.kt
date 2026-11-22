@@ -219,6 +219,23 @@ object HudCapture {
     /** an icon's resting size in the game's units, which it keeps while the game stretches a picked up item */
     private fun restSize(hud: VanillaHud, op: Item, scale: Float) = if (op.width == op.height) op.width else 16f * hud.elementScale * scale
 
+    @JvmStatic
+    fun closeIcons() {
+        open.clear()
+        for (l in layers.values) {
+            for (icon in l.icons) icon.close()
+            l.icons.clear()
+
+            // drop the recordings too, or a HUD could replay them before its first capture in the next world
+            val hadDraws = l.shown.isNotEmpty()
+            l.parts.clear()
+            l.recording.clear()
+            l.shown.clear()
+            l.spare.clear()
+            if (hadDraws) l.hud?.capturedDrawsChanged()
+        }
+    }
+
     private fun sameOps(a: List<Any>, b: List<Any>): Boolean = a.size == b.size && a.indices.all {
         val x = a[it]
         val y = b[it]
