@@ -193,6 +193,9 @@ abstract class VanillaHud(
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
 
+    /** an origin that moves without the size changing, which makes the defaults stale */
+    protected open fun seedOrigin(screenWidth: Int, screenHeight: Int): Float = 0f
+
     /** top left of the rotated bounding box at rest which differs from the vanilla origin only when [quarterTurns] is set */
     open fun defaultOriginX(screenWidth: Int, screenHeight: Int): Float = vanillaOriginX(screenWidth, screenHeight)
     open fun defaultOriginY(screenWidth: Int, screenHeight: Int): Float = vanillaOriginY(screenWidth, screenHeight)
@@ -352,7 +355,7 @@ abstract class VanillaHud(
     override fun deletable() = false
     override fun showByDefault() = true
 
-    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?, val foreignRevision: Int)
+    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?, val foreignRevision: Int, val origin: Float)
 
     private var seed: Seed? = null
     private var forcePending = false
@@ -503,8 +506,10 @@ abstract class VanillaHud(
         val h = HudManager.guiScreenHeight.toInt()
         if (w <= 0 || h <= 0) return
         val seed = seed
+        val origin = seedOrigin(w, h)
         val screenSame = seed != null && w == seed.w && h == seed.h && quarterTurns == seed.turns &&
-            growthAnchor == seed.anchor && seed.foreignRevision == ForeignTransform.revision
+            growthAnchor == seed.anchor && seed.foreignRevision == ForeignTransform.revision &&
+            origin == seed.origin
         if (screenSame && !measure) return
         placing++
         try {
@@ -522,18 +527,20 @@ abstract class VanillaHud(
             if (wasDefault) {
                 val (dx, dy) = defaultPosition()
                 placeAt(dx, dy)
+            } else if (onDefaultAnchor && seed != null && seed.origin != origin && ForceDefaultPosition.customized(this) == false) {
+                defaultAnchorTarget?.takeIf { it.tree != null }?.let { holdDefaultAnchor(it, w, h) }
             }
-            commitSeed(w, h, renderedW, renderedH)
+            commitSeed(w, h, renderedW, renderedH, origin)
         } catch (_: Throwable) {
-            commitSeed(w, h, -1f, -1f)
+            commitSeed(w, h, -1f, -1f, origin)
             measureOwed = true
         } finally {
             placing--
         }
     }
 
-    private fun commitSeed(w: Int, h: Int, hudW: Float, hudH: Float) {
-        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor, ForeignTransform.revision)
+    private fun commitSeed(w: Int, h: Int, hudW: Float, hudH: Float, origin: Float) {
+        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor, ForeignTransform.revision, origin)
     }
 
     val previewing: Boolean get() = previewing()
