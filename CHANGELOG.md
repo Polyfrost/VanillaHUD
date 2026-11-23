@@ -1,3 +1,8 @@
+## 3.5.15
+- More performance improvements: style settings, HUD positions and font widths are cached across frames, and on 1.21.11 and newer HUD items are drawn by the game's own item renderer
+- Fixed the boss bar drawing over the tab list on 1.8.9
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.5
+
 ## 3.5.14
 - Large performance improvements, most of all on 1.8.9: HUDs are only redrawn when what they show changes, and text, icons and the scoreboard do far less work each frame
 - Fixed the hotbar drawing in a different order than vanilla, which broke mods that draw on top of it
