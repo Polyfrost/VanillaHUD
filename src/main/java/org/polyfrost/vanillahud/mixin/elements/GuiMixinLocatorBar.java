@@ -64,9 +64,14 @@ public class GuiMixinLocatorBar {
             return;
         }
 
+        HudCapture.locatorDrawn = false;
         HudTransform.begin(graphics, hud, 1);
         original.call(bar, graphics, delta);
         HudTransform.end(graphics);
+        //? if >=26.2 {
+        if (bar instanceof LocatorBar && !HudCapture.locatorDrawn) HudCapture.skipped(hud, 1);
+        //?} else
+        //if (bar instanceof LocatorBarRenderer && !HudCapture.locatorDrawn) HudCapture.skipped(hud, 1);
     }
 
     @Unique private ContextualBar vanillahud$locator;

@@ -395,6 +395,16 @@ object HudCapture {
         //modelViewStale = true
     }
 
+    /** set by the game's locator bar whenever it draws, which tells a draw Gnetum skipped from one that had nothing to show */
+    @JvmField
+    var locatorDrawn = false
+
+    /** keeps what [part] of [hud] drew last time, for when the game's element that feeds it didn't run */
+    @JvmStatic
+    fun skipped(hud: VanillaHud, part: Int) {
+        layers[hud.javaClass]?.parts?.get(part)?.ran = false
+    }
+
     /** whether [hud] is being drawn right now, which a nested draw of it must not transform again */
     @JvmStatic
     fun isCapturing(hud: VanillaHud) = open.any { it.layer === layers[hud.javaClass] }
@@ -511,16 +521,27 @@ object HudCapture {
         return true
     }
 
-    /** the nine-sliced sprite being drawn, whose middle the game draws by coordinates in its atlas */
+    /** the nine-sliced sprite being drawn, whose middle the game draws by coordinates in its atlas, or tiles of it */
     @JvmField
     var nineSlice: TextureAtlasSprite? = null
 
     @JvmStatic
     fun texture(g: GuiGraphicsExtractor, id: Identifier, x0: Int, x1: Int, y0: Int, y1: Int, u0: Float, u1: Float, v0: Float, v1: Float, color: Int): Boolean {
         val l = active ?: return false
-        val bitmap = SpriteBitmaps.of(id) ?: return false
+        val slice = nineSlice?.takeIf { it.atlasLocation() == id }
+        val bitmap = (if (slice != null) SpriteBitmaps.of(slice) else SpriteBitmaps.of(id)) ?: return false
         val dy = HudTransform.mirrorShift(y0, y1)
-        l.recording += Quad(pose(g), bitmap, x0.toFloat(), (y0 + dy).toFloat(), x1.toFloat(), (y1 + dy).toFloat(), u0, v0, u1, v1, color)
+        if (slice == null) {
+            l.recording += Quad(pose(g), bitmap, x0.toFloat(), (y0 + dy).toFloat(), x1.toFloat(), (y1 + dy).toFloat(), u0, v0, u1, v1, color)
+            return true
+        }
+        val frame = slice.contents().height().toFloat() / bitmap.height
+        val width = slice.u1 - slice.u0
+        val height = slice.v1 - slice.v0
+        l.recording += Quad(
+            pose(g), bitmap, x0.toFloat(), (y0 + dy).toFloat(), x1.toFloat(), (y1 + dy).toFloat(),
+            (u0 - slice.u0) / width, (v0 - slice.v0) / height * frame, (u1 - slice.u0) / width, (v1 - slice.v0) / height * frame, color,
+        )
         return true
     }
 
