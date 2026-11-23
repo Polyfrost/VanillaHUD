@@ -21,8 +21,10 @@ import net.minecraft.client.gui.contextualbar.LocatorBar;
 import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
 *///?}
 import net.minecraft.client.player.LocalPlayer;
+import org.polyfrost.vanillahud.compat.HudElementCompat;
 import org.polyfrost.vanillahud.hud.ExperienceBarHud;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.polyfrost.vanillahud.render.HudCapture;
 import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -57,10 +59,19 @@ public class GuiMixinLocatorBar {
     private void vanillahud$locatorBar(ContextualBar bar, GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
         ExperienceBarHud hud = Huds.INSTANCE.getExperienceBar();
         if (!hud.shouldDraw()) return;
+        if (HudElementCompat.INSTANCE.getInfoBarForegroundWrapped()) {
+            original.call(bar, graphics, delta);
+            return;
+        }
 
+        HudCapture.locatorDrawn = false;
         HudTransform.begin(graphics, hud, 1);
         original.call(bar, graphics, delta);
         HudTransform.end(graphics);
+        //? if >=26.2 {
+        if (bar instanceof LocatorBar && !HudCapture.locatorDrawn) HudCapture.skipped(hud, 1);
+        //?} else
+        //if (bar instanceof LocatorBarRenderer && !HudCapture.locatorDrawn) HudCapture.skipped(hud, 1);
     }
 
     @Unique private ContextualBar vanillahud$locator;
@@ -69,6 +80,8 @@ public class GuiMixinLocatorBar {
     private void vanillahud$drawLocatorOverlay(ExperienceBarHud hud, GuiGraphicsExtractor graphics, DeltaTracker delta) {
         if (!vanillahud$overlaysLocator(hud)
                 || !Minecraft.getInstance().player.connection.getWaypointManager().hasWaypoints()) return;
+        boolean nested = HudCapture.isCapturing(hud);
+        if (!nested) HudTransform.begin(graphics, hud, 1);
         if (vanillahud$locator == null) {
             //? if >=26.2 {
             vanillahud$locator = new LocatorBar(Minecraft.getInstance());
@@ -79,6 +92,7 @@ public class GuiMixinLocatorBar {
         vanillahud$locator.extractRenderState(graphics, delta);
         //?} else
         //vanillahud$locator.render(graphics, delta);
+        if (!nested) HudTransform.end(graphics);
     }
 
     @Unique

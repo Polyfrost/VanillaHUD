@@ -40,6 +40,7 @@
         "elements.GuiMixinHotbar",
         "elements.GuiMixinHunger",
         "elements.GuiMixinLocatorBar",
+        "elements.LocatorBarMixin",
         "elements.GuiMixinMountHealth",
         "elements.GuiMixinScoreboard",
         "elements.GuiMixinClosedCaptions",

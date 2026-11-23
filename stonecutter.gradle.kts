@@ -39,6 +39,8 @@ stonecutter parameters {
         string(current.parsed >= "26.3") {
             replace("com.mojang.blaze3d.pipeline.RenderPipeline", "com.mojang.renderpearl.api.pipeline.RenderPipeline")
             replace("com/mojang/blaze3d/pipeline/RenderPipeline", "com/mojang/renderpearl/api/pipeline/RenderPipeline")
+            replace("com.mojang.blaze3d.textures", "com.mojang.renderpearl.api.textures")
+            replace("com/mojang/blaze3d/textures", "com/mojang/renderpearl/api/textures")
         }
     }
 }

@@ -4,6 +4,10 @@ package org.polyfrost.vanillahud.mixin;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+//? if >=1.21.10
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+//? if >=1.21.11
+import com.mojang.renderpearl.api.textures.GpuSampler;
 //? if <=1.21.8
 /*import net.minecraft.client.Minecraft;*/
 import net.minecraft.client.gui.Font;
@@ -62,6 +66,35 @@ public abstract class DrawCaptureMixin {
         original.call(pipeline, id, x0, x1, y0, y1, u0, u1, v0, v1, color);
     }
 
+    @WrapMethod(method = "blitNineSlicedSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/client/resources/metadata/gui/GuiSpriteScaling$NineSlice;IIIII)V")
+    private void vanillahud$nineSlice(RenderPipeline pipeline, TextureAtlasSprite sprite, GuiSpriteScaling.NineSlice scaling, int x, int y, int w, int h, int color, Operation<Void> original) {
+        HudCapture.nineSlice = sprite;
+        try {
+            original.call(pipeline, sprite, scaling, x, y, w, h, color);
+        } finally {
+            HudCapture.nineSlice = null;
+        }
+    }
+
+    //? if >=26 {
+    @WrapMethod(method = "innerTiledBlit(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lcom/mojang/renderpearl/api/textures/GpuTextureView;Lcom/mojang/renderpearl/api/textures/GpuSampler;IIIIIIFFFFI)V")
+    private void vanillahud$tiled(RenderPipeline pipeline, GpuTextureView texture, GpuSampler sampler, int tileW, int tileH, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, Operation<Void> original) {
+        if (pipeline == RenderPipelines.GUI_TEXTURED && HudCapture.tiled(vanillahud$self(), tileW, tileH, x0, y0, x1, y1, u0, u1, v0, v1, color)) return;
+        original.call(pipeline, texture, sampler, tileW, tileH, x0, y0, x1, y1, u0, u1, v0, v1, color);
+    }
+    //?} elif >=1.21.11 {
+    /*@WrapMethod(method = "submitTiledBlit(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lcom/mojang/renderpearl/api/textures/GpuTextureView;Lcom/mojang/renderpearl/api/textures/GpuSampler;IIIIIIFFFFI)V")
+    private void vanillahud$tiled(RenderPipeline pipeline, GpuTextureView texture, GpuSampler sampler, int tileW, int tileH, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, Operation<Void> original) {
+        if (pipeline == RenderPipelines.GUI_TEXTURED && HudCapture.tiled(vanillahud$self(), tileW, tileH, x0, y0, x1, y1, u0, u1, v0, v1, color)) return;
+        original.call(pipeline, texture, sampler, tileW, tileH, x0, y0, x1, y1, u0, u1, v0, v1, color);
+    }
+    *///?} elif >=1.21.10 {
+    /*@WrapMethod(method = "submitTiledBlit(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lcom/mojang/renderpearl/api/textures/GpuTextureView;IIIIIIFFFFI)V")
+    private void vanillahud$tiled(RenderPipeline pipeline, GpuTextureView texture, int tileW, int tileH, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, Operation<Void> original) {
+        if (pipeline == RenderPipelines.GUI_TEXTURED && HudCapture.tiled(vanillahud$self(), tileW, tileH, x0, y0, x1, y1, u0, u1, v0, v1, color)) return;
+        original.call(pipeline, texture, tileW, tileH, x0, y0, x1, y1, u0, u1, v0, v1, color);
+    }
+    *///?}
     @WrapMethod(method = "fill(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;IIIII)V")
     private void vanillahud$fill(RenderPipeline pipeline, int x0, int y0, int x1, int y1, int color, Operation<Void> original) {
         if (HeldTooltipBounds.recording) HeldTooltipBounds.fill(vanillahud$self(), x0, y0, x1, y1, color);
