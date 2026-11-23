@@ -26,6 +26,7 @@ import org.polyfrost.vanillahud.compat.SoundFixCaptions
 import org.polyfrost.vanillahud.mixin.compat.soundfix.ISubtitleEntry
 *///?}
 import net.minecraft.world.item.ItemStack
+import org.polyfrost.compose.minecraft.mc.McHeadStyle
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -990,7 +991,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     @Switch(title = "Show Player's Head")
     var showHead: Boolean = true
 
-    @Switch(title = "Better Hat Layer")
+    @Switch(title = "Show 3D Heads", description = "Show the hat layer in 3D.")
     var betterHatLayer: Boolean = true
 
     @Switch(title = "Show Player's Ping")
@@ -1057,6 +1058,12 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         ping >= 75 -> pingLevelTwo
         else -> pingLevelOne
     }.argb
+
+    fun headStyle(hat: Boolean): McHeadStyle = when {
+        !hat -> McHeadStyle.FACE
+        betterHatLayer -> McHeadStyle.LAYERED
+        else -> McHeadStyle.FLAT
+    }
 
     override val naturalWidth get() = 200f
     override val naturalHeight get() = 100f
