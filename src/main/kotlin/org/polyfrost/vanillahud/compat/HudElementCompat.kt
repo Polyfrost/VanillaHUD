@@ -15,6 +15,10 @@ import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.render.TitlePass
 
 object HudElementCompat {
+    /** whether the experience bar's foreground is its own Fabric element, which Gnetum runs only on the passes it draws it */
+    var infoBarForegroundWrapped = false
+        private set
+
     fun init() {
         replaceIcons(VanillaHudElements.AIR_BAR) { Huds.air }
         replaceIcons(VanillaHudElements.ARMOR_BAR) { Huds.armor }
@@ -23,6 +27,12 @@ object HudElementCompat {
         // its own part, since Gnetum can run it on a different pass than the food bar
         replaceIcons(VanillaHudElements.MOUNT_HEALTH, part = 1) { Huds.hunger }
         replace(VanillaHudElements.INFO_BAR) { Huds.experienceBar }
+        //? if >=26 {
+        // older Fabric API has no such element, which leaves the bar's foreground to the mixin
+        infoBarForegroundWrapped = runCatching {
+            wrap(Identifier.withDefaultNamespace("info_bar_foreground"), { Huds.experienceBar }, { ctx, element -> HudTransform.begin(ctx, element, 1) }, HudTransform::end)
+        }.isSuccess
+        //?}
         wrap(VanillaHudElements.EXPERIENCE_LEVEL, { Huds.experienceLevel }, HudTransform::beginText, { ctx -> HudTransform.endText(ctx, Huds.experienceLevel) })
         replace(VanillaHudElements.HELD_ITEM_TOOLTIP) { Huds.heldItemTooltip }
         replace(VanillaHudElements.OVERLAY_MESSAGE) { Huds.actionBar }
