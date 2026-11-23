@@ -1,3 +1,9 @@
+## 3.5.16
+- Fixed the status bars shifting out of place when Noxesium scales the hotbar
+- The experience level colour now follows Polytone resource packs
+- Fixed the locator bar overlay being covered by the experience bar with Gnetum
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.5
+
 ## 3.5.15
 - More performance improvements: style settings, HUD positions and font widths are cached across frames, and on 1.21.11 and newer HUD items are drawn by the game's own item renderer
 - Fixed the boss bar drawing over the tab list on 1.8.9
