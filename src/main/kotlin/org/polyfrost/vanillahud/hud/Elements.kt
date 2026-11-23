@@ -1147,10 +1147,14 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     private fun players(): List<PlayerInfo> = try {
         //? if > 1.8.9 {
-        val real = mc.connection?.listedOnlinePlayers?.toList() ?: emptyList()
-        //?} else
-        //val real = mc.networkHandler?.onlinePlayers?.toList() ?: emptyList()
-        if (previewing) previewPlayers("tabMeasure", real) else real.take(playerLimit)
+        val overlay = tabOverlay()
+        if (mc.player == null || overlay == null) {
+            if (previewing) previewPlayers(emptyList()) else emptyList()
+        } else overlay.invokeGetPlayerInfos()
+        //?} else {
+        /*val real = IPlayerTabOverlay.getPlayerOrdering().sortedCopy(mc.networkHandler?.onlinePlayers ?: emptyList())
+        if (previewing) previewPlayers(real) else real
+        *///?}
     } catch (_: Throwable) {
         emptyList()
     }
@@ -1191,9 +1195,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         return if (previewing) editing(text) else text
     }
 
-    /** each caller gets its own [key] because the mixin's list is sorted and the measured one isn't */
-    fun previewPlayers(key: String, live: List<PlayerInfo>): List<PlayerInfo> =
-        previewValue(key, { live.takeIf { hasLiveData() } }, null)?.take(playerLimit) ?: TabListManager.previewInfo(playerLimit)
+    fun previewPlayers(live: List<PlayerInfo>): List<PlayerInfo> {
+        val limit = minOf(playerLimit, PREVIEW_PLAYER_LIMIT)
+        return previewValue("tabPlayers", { live.takeIf { hasLiveData() } }, null)?.take(limit) ?: TabListManager.previewInfo(limit)
+    }
 
     //? if > 1.8.9 {
     fun previewHeader(live: Component?): Component = previewValue("tabHeader", { live }, null) ?: PREVIEW_HEADER
@@ -1249,12 +1254,12 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var n = 0
         //? if > 1.8.9 {
         for (p in mc.connection?.listedOnlinePlayers ?: emptyList()) {
-            if (n++ >= playerLimit) break
+            n++
             h = mix(mix(h, p), p.tabListDisplayName)
         }
         //?} else {
         /*for (p in mc.networkHandler?.onlinePlayers ?: emptyList()) {
-            if (n++ >= playerLimit) break
+            n++
             h = mix(mix(h, p), p.displayName)
         }
         *///?}
@@ -1278,7 +1283,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var maxName = 0
         for (p in list) maxName = maxOf(maxName, font.width(displayName(p)))
 
-        val count = list.size
+        val count = minOf(list.size, playerLimit)
         var rows = count
         var columns = 1
         while (rows > 20) {
@@ -1317,6 +1322,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 
     private companion object {
+        const val PREVIEW_PLAYER_LIMIT = 20
+
         // Stable instances so the header/footer measure cache also hits while previewing.
         //? if > 1.8.9 {
         val PREVIEW_HEADER: Component = Component.literal("Tab List")

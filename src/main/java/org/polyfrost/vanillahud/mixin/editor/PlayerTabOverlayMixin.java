@@ -20,7 +20,7 @@ public abstract class PlayerTabOverlayMixin {
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (!hud.getPreviewing()) return original;
-        return hud.previewPlayers("tabPlayers", original);
+        return hud.previewPlayers(original);
     }
 
     @ModifyExpressionValue(
@@ -77,7 +77,7 @@ public abstract class PlayerTabOverlayMixin {
     private List<PlayerInfo> vanillahud$demoPlayers(List<PlayerInfo> original) {
         TabListHud hud = Huds.INSTANCE.getTabList();
         if (!hud.getPreviewing()) return original;
-        return hud.previewPlayers("tabPlayers", original);
+        return hud.previewPlayers(original);
     }
 }
 *///?}
