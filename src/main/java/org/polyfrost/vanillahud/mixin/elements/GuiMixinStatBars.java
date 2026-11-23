@@ -3,9 +3,13 @@ package org.polyfrost.vanillahud.mixin.elements;
 import org.spongepowered.asm.mixin.Mixin;
 
 //? if > 1.8.9 {
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.Minecraft;
+import org.polyfrost.vanillahud.mixin.access.IWindow;
+import org.polyfrost.vanillahud.render.HudTransform;
 import org.polyfrost.vanillahud.hud.StatBarHud;
 import org.polyfrost.vanillahud.hud.Huds;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -39,6 +43,17 @@ public class GuiMixinStatBars {
     private static final int X = 1;
     *///?}
 
+    @Unique
+    private static final String VANILLAHUD$GRAPHICS =
+            //? if >=26 {
+            "Lnet/minecraft/client/gui/GuiGraphicsExtractor;";
+            //?} else
+            /*"Lnet/minecraft/client/gui/GuiGraphics;";*/
+    @Unique
+    private static final String VANILLAHUD$GUI_WIDTH = VANILLAHUD$GRAPHICS + "guiWidth()I";
+    @Unique
+    private static final String VANILLAHUD$GUI_HEIGHT = VANILLAHUD$GRAPHICS + "guiHeight()I";
+
     private static int vanillahud$centre() {
         return Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2;
     }
@@ -52,6 +67,34 @@ public class GuiMixinStatBars {
         if (hud.isDrawnAsVanilla() || hud.getFillSide() == StatBarHud.ALIGN_RIGHT) return x;
         return 2 * (vanillahud$centre() + 91) - 90 - x;
     }
+
+    //? if >=1.21.8 {
+    @ModifyExpressionValue(
+            method = {
+                    //? if >=26 {
+                    "extractPlayerHealth", "extractVehicleHealth"
+                    //?} else
+                    /*"renderPlayerHealth", "renderVehicleHealth"*/
+            },
+            at = @At(value = "INVOKE", target = VANILLAHUD$GUI_WIDTH)
+    )
+    private int vanillahud$barsWidth(int original) {
+        return HudTransform.placesStatBars() ? ((IWindow) (Object) Minecraft.getInstance().getWindow()).realWidth() : original;
+    }
+
+    @ModifyExpressionValue(
+            method = {
+                    //? if >=26 {
+                    "extractPlayerHealth", "extractVehicleHealth"
+                    //?} else
+                    /*"renderPlayerHealth", "renderVehicleHealth"*/
+            },
+            at = @At(value = "INVOKE", target = VANILLAHUD$GUI_HEIGHT)
+    )
+    private int vanillahud$barsHeight(int original) {
+        return HudTransform.placesStatBars() ? ((IWindow) (Object) Minecraft.getInstance().getWindow()).realHeight() : original;
+    }
+    //?}
 
     @ModifyVariable(
             //? if >=26 {
