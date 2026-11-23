@@ -395,6 +395,8 @@ abstract class StatBarHud(
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
         screenHeight - (if (aboveFirstRow) 49f else 39f) - rise()
 
+    override fun seedOrigin(screenWidth: Int, screenHeight: Int) = vanillaOriginY(screenWidth, screenHeight)
+
     override val homeAnchorX get() = if (rightSide) 1f else 0f
     override val homeAnchorY get() = 1f
 
@@ -439,11 +441,20 @@ class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_L
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HealthHud>()
 }
 
+/** Whether Hunger's slot is drawn: its food, or the mount's hearts that take its place. */
+internal fun hungerShown(statusBarsShown: Boolean, riding: Boolean, ridingLiving: Boolean, mountHeartRows: Int): Boolean =
+    //? if > 1.8.9 {
+    mountHeartRows > 0 || (statusBarsShown && !ridingLiving)
+    //?} else
+    //statusBarsShown && (!riding || mountHeartRows > 0)
+
 class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false) {
     @Switch(title = "Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
 
-    override fun hasLiveData() = statusBarsShown() && mc.player?.let { it.vehicle !is LivingEntity } == true
+    override fun hasLiveData() = mc.player?.let {
+        hungerShown(statusBarsShown(), it.vehicle != null, it.vehicle is LivingEntity, StatRows.mountRows())
+    } == true
 
     // a mount's hearts take this bar's place and stack above it, so the topmost row is where the content starts
     override fun rise() = StatRows.mountRise()
@@ -459,8 +470,11 @@ class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, 
     //?} else
     //override fun hasLiveData() = statusBarsShown() && mc.player?.isSubmergedIn(Material.WATER) == true
 
-    // the bubbles sit above the mount's hearts, which Hunger's box already holds
+    // 1.8.9 draws the bubbles on the armor row, so they follow the hearts instead of the mount
+    //? if > 1.8.9 {
     override fun rise() = StatRows.mountRise()
+    //?} else
+    //override fun rise() = StatRows.healthRise(previewing)
     override fun stack() = 0f
 
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HungerHud>()
