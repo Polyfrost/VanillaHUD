@@ -38,6 +38,7 @@ import org.polyfrost.compose.minecraft.mc.McItemIconHandle
 import org.polyfrost.compose.minecraft.mc.McHeadStyle
 import org.polyfrost.compose.minecraft.mc.McPlayerFaces
 import org.polyfrost.compose.minecraft.mc.McSkinLayers
+import org.polyfrost.compose.minecraft.mc.McSkinLayersResult
 import org.polyfrost.compose.minecraft.platform.McWindow
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -47,6 +48,7 @@ import org.polyfrost.vanillahud.hud.HudStyle
 import org.polyfrost.vanillahud.hud.VanillaHud
 import java.util.TreeMap
 import java.util.UUID
+import java.util.WeakHashMap
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -584,9 +586,9 @@ object HudCapture {
     }
 
     @JvmStatic
-    fun head(g: GuiGraphicsExtractor, id: UUID, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean, color: Int): Boolean {
+    fun head(g: GuiGraphicsExtractor, id: UUID, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean, color: Int): Boolean {
         val l = active ?: return false
-        val layers = McPlayerFaces.layers(id) ?: return false
+        val layers = headLayers(id, texture) ?: return false
         val dy = HudTransform.mirrorShift(y, y + size)
         addHead(l, pose(g), layers, x.toFloat(), (y + dy).toFloat(), size.toFloat(), style, flip, color)
         return true
@@ -634,13 +636,21 @@ object HudCapture {
     }
 
     @JvmStatic
-    fun head(g: GuiGraphicsExtractor, id: UUID, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean): Boolean {
+    fun head(g: GuiGraphicsExtractor, id: UUID, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean): Boolean {
         val l = active ?: return false
-        val layers = McPlayerFaces.layers(id) ?: return false
+        val layers = headLayers(id, texture) ?: return false
         addHead(l, iconPose(g, x, y, size, size), layers, x.toFloat(), y.toFloat(), size.toFloat(), style, flip, tint)
         return true
     }
     *///?}
+
+    private val textureKeys = WeakHashMap<Identifier, String>()
+
+    private fun headLayers(id: UUID, texture: Identifier): McSkinLayers? {
+        val key = textureKeys.getOrPut(texture) { texture.toString() }
+        McPlayerFaces.layers(id)?.takeIf { it.texture == key }?.let { return it }
+        return (McPlayerFaces.layers(key) as? McSkinLayersResult.Loaded)?.layers
+    }
 
     private fun addHead(l: Layer, m: Pose, layers: McSkinLayers, x: Float, y: Float, size: Float, style: McHeadStyle, flip: Boolean, color: Int) {
         val old = l.previous.getOrNull(l.recording.size) as? Head

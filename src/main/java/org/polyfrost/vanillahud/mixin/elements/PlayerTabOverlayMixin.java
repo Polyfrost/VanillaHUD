@@ -421,7 +421,7 @@ public abstract class PlayerTabOverlayMixin {
         TabListHud hud = Huds.INSTANCE.getTabList();
         //~ if <1.21.10 'getProfile().id()' -> 'getProfile().getId()'
         UUID id = info.getProfile().id();
-        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, id, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/);
+        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, id, texture, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/);
     }
 }
 //?} else {
@@ -642,7 +642,7 @@ public abstract class PlayerTabOverlayMixin {
         TabListHud hud = Huds.INSTANCE.getTabList();
         boolean hat = player != null && player.isModelPartVisible(PlayerModelPart.HAT);
         this.vanillahud$headCaptured = !hud.isDrawnAsVanilla() &&
-                HudCapture.head(LegacyDrawContext.INSTANCE, info.getProfile().getId(), x, y, width, hud.headStyle(hat), regionHeight < 0);
+                HudCapture.head(LegacyDrawContext.INSTANCE, info.getProfile().getId(), info.getSkinTexture(), x, y, width, hud.headStyle(hat), regionHeight < 0);
         return !this.vanillahud$headCaptured;
     }
 
