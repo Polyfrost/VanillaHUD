@@ -1,3 +1,8 @@
+## 3.5.17
+- Fixed the tab list being sized for more players than it shows
+- Fixed the air bubbles and mount hearts not moving with their HUDs on 1.8.9
+- Fixed the locator bar's markers flickering or disappearing with Gnetum
+
 ## 3.5.16
 - Fixed the status bars shifting out of place when Noxesium scales the hotbar
 - The experience level colour now follows Polytone resource packs
