@@ -32,6 +32,7 @@ import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
+import org.polyfrost.compose.minecraft.mc.GuiItemRenderer
 import org.polyfrost.compose.minecraft.mc.McItemIcons
 import org.polyfrost.compose.minecraft.mc.McItemIconHandle
 import org.polyfrost.compose.minecraft.platform.McWindow
@@ -1199,17 +1200,19 @@ object HudCapture {
         val size = restSize(hud, op, scale)
         val x = op.x + (op.width - size) / 2f
         val y = op.y + (op.height - size) * 0.75f
-        if (op.width == size && op.height == size) icon.draw(this, x, y, size, size)
-        else {
-            // the game stretches an item that was just picked up about the point 3/4 down it
-            val px = op.x + op.width / 2f
-            val py = op.y + op.height * 0.75f
-            save()
-            translate(px, py)
-            scale(op.width / size, op.height / size)
-            translate(-px, -py)
-            icon.draw(this, x, y, size, size)
-            restore()
+        if ((renderer as? GuiItemRenderer)?.guiItem(op.stack, op.x, op.y, op.width, op.height) != true) {
+            if (op.width == size && op.height == size) icon.draw(this, x, y, size, size)
+            else {
+                // the game stretches an item that was just picked up about the point 3/4 down it
+                val px = op.x + op.width / 2f
+                val py = op.y + op.height * 0.75f
+                save()
+                translate(px, py)
+                scale(op.width / size, op.height / size)
+                translate(-px, -py)
+                icon.draw(this, x, y, size, size)
+                restore()
+            }
         }
         // vanilla draws the count and durability bar after popping the stretch
         if (op.decorated) icon.drawDecorations(this, x, y, size)
