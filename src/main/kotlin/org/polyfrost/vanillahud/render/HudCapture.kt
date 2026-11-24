@@ -22,6 +22,7 @@ import net.minecraft.client.gui.Font as McFont
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.composables.NodeBox
+import org.polyfrost.compose.mc.McFontQueue
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.size
@@ -1044,7 +1045,7 @@ object HudCapture {
     private fun widthOf(hud: VanillaHud, s: HudStyle, text: String): Float {
         if (s.font == Font.Poppins) return poppins(hud).measureTextWidth(stripFormat(text))
         //? if = 1.8.9 {
-        /*return cachedRawWidth(Minecraft.getInstance().font, text).toFloat()
+        /*return McFontQueue.measureTextWidth(text, 1f)
         *///?} else
         return measureRaw(Minecraft.getInstance().font, text).toFloat()
     }
