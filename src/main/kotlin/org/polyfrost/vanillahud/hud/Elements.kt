@@ -766,15 +766,7 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     fun refreshSidebar(objective: Objective) {
     //?} else
     //fun refreshSidebar(objective: ScoreboardObjective) {
-        val revision = HudInternals.scoreboardRevision
-        val epoch = clock() shr 10
-        if (sidebarValid && objective === sidebarObjective && revision == sidebarRevision && epoch == sidebarEpoch &&
-            scoreboardPoints == sidebarPointsMode && hideRepeatingScores == sidebarHideRepeating
-        ) return
-        //? if > 1.8.9 {
-        val scores = objective.scoreboard.listPlayerScores(objective)
-        sidebarHasRows = scores.any { !it.isHidden }
-        //?} else {
+        //? if <= 1.8.9 {
         /*val scores = objective.scoreboard.getScores(objective)
         var rows = 0
         for (score in scores) {
@@ -783,6 +775,15 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         }
         sidebarRows = minOf(rows, 15)
         *///?}
+        val revision = HudInternals.scoreboardRevision
+        val epoch = clock() shr 10
+        if (sidebarValid && objective === sidebarObjective && revision == sidebarRevision && epoch == sidebarEpoch &&
+            scoreboardPoints == sidebarPointsMode && hideRepeatingScores == sidebarHideRepeating
+        ) return
+        //? if > 1.8.9 {
+        val scores = objective.scoreboard.listPlayerScores(objective)
+        sidebarHasRows = scores.any { !it.isHidden }
+        //?}
         sidebarShowsPoints = showScorePoints(scores)
         sidebarObjective = objective
         sidebarRevision = revision
