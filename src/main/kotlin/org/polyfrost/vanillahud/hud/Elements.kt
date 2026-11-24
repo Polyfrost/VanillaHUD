@@ -766,15 +766,6 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
     fun refreshSidebar(objective: Objective) {
     //?} else
     //fun refreshSidebar(objective: ScoreboardObjective) {
-        //? if <= 1.8.9 {
-        /*val scores = objective.scoreboard.getScores(objective)
-        var rows = 0
-        for (score in scores) {
-            val owner = score.owner
-            if (owner != null && !owner.startsWith("#")) rows++
-        }
-        sidebarRows = minOf(rows, 15)
-        *///?}
         val revision = HudInternals.scoreboardRevision
         val epoch = clock() shr 10
         if (sidebarValid && objective === sidebarObjective && revision == sidebarRevision && epoch == sidebarEpoch &&
@@ -783,7 +774,15 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
         //? if > 1.8.9 {
         val scores = objective.scoreboard.listPlayerScores(objective)
         sidebarHasRows = scores.any { !it.isHidden }
-        //?}
+        //?} else {
+        /*val scores = objective.scoreboard.getScores(objective)
+        var rows = 0
+        for (score in scores) {
+            val owner = score.owner
+            if (owner != null && !owner.startsWith("#")) rows++
+        }
+        sidebarRows = minOf(rows, 15)
+        *///?}
         sidebarShowsPoints = showScorePoints(scores)
         sidebarObjective = objective
         sidebarRevision = revision
