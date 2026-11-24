@@ -43,6 +43,9 @@ import org.joml.Matrix3x2fStack;
 //? if <1.21.6 {
 /*import com.mojang.blaze3d.vertex.PoseStack;
 *///?}
+//? if <1.21.4 {
+/*import com.mojang.blaze3d.systems.RenderSystem;
+*///?}
 
 @Mixin(value = PlayerTabOverlay.class, priority = 1100)
 public abstract class PlayerTabOverlayMixin {
@@ -418,8 +421,16 @@ public abstract class PlayerTabOverlayMixin {
     )
     private boolean vanillahud$head(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip /*? if >= 1.21.4 {*/, int color /*?}*/) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, texture, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/);
+        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, texture, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*vanillahud$shaderTint() *//*?}*/);
     }
+
+    //? if <1.21.4 {
+    /*@Unique
+    private static int vanillahud$shaderTint() {
+        float[] c = RenderSystem.getShaderColor();
+        return ((int) (c[3] * 255f) << 24) | ((int) (c[0] * 255f) << 16) | ((int) (c[1] * 255f) << 8) | (int) (c[2] * 255f);
+    }
+    *///?}
 }
 //?} else {
 /*
