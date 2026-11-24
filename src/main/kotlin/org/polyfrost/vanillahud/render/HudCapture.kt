@@ -1196,15 +1196,15 @@ object HudCapture {
             when (val op = ops[i]) {
                 is Item -> if (item != null) item(op, items++)
                 is Quad -> withPose(op.m) {
+                    val t = deviceTransform()
+                    val x0 = if (t == null) op.x0 else snap(op.x0, t[0], t[2])
+                    val y0 = if (t == null) op.y0 else snap(op.y0, t[1], t[3])
+                    val x1 = if (t == null) op.x1 else snapFar(op.x0, op.x1, t[0], t[2])
+                    val y1 = if (t == null) op.y1 else snapFar(op.y0, op.y1, t[1], t[3])
                     if (op.bitmap == null) {
                         val argb = tinted(op.color, op.tint)
-                        if (argb ushr 24 != 0) renderer.rect(op.x0, op.y0, op.x1 - op.x0, op.y1 - op.y0, argb, 0f)
+                        if (argb ushr 24 != 0) renderer.rect(x0, y0, x1 - x0, y1 - y0, argb, 0f)
                     } else {
-                        val t = deviceTransform()
-                        val x0 = if (t == null) op.x0 else snap(op.x0, t[0], t[2])
-                        val y0 = if (t == null) op.y0 else snap(op.y0, t[1], t[3])
-                        val x1 = if (t == null) op.x1 else snap(op.x1, t[0], t[2])
-                        val y1 = if (t == null) op.y1 else snap(op.y1, t[1], t[3])
                         renderer.image(op.bitmap, x0, y0, x1 - x0, y1 - y0, op.u0, op.v0, op.u1, op.v1, op.color, FilterQuality.None)
                     }
                 }
@@ -1245,6 +1245,12 @@ object HudCapture {
     }
 
     private fun snap(v: Float, scale: Float, offset: Float) = (round(v * scale + offset) - offset) / scale
+
+    internal fun snapFar(near: Float, far: Float, scale: Float, offset: Float): Float {
+        val n = snap(near, scale, offset)
+        val f = snap(far, scale, offset)
+        return if (f == n && far != near) n + 1f / scale else f
+    }
 
     private inline fun RenderContext.withPose(m: Pose, draw: RenderContext.() -> Unit) {
         save()

@@ -160,6 +160,14 @@ abstract class VanillaHud(
         super.addCallbacks(tree)
         tree.addDependencies()
         tree.addForeignControls()
+        try {
+            syncRenderedSize()
+        } catch (_: Throwable) {
+            measureOwed = true
+        }
+        widthFrame = -1L
+        heightFrame = -1L
+        measuredFrame = -1L
     }
 
     // here and not in addDependencies, which some HUDs override without calling up
