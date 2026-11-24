@@ -16,7 +16,6 @@
         "CaptureTextureMixin",
         "CaptureColorMixin",
         "UprightIconMixin",
-        "PlayerFaceRendererMixin",
         "ScoreboardRevisionMixin",
         "WindowScaleMixin",
         "access.IBossHealthOverlay",

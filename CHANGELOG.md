@@ -1,3 +1,8 @@
+## Unreleased
+- Tab list heads are faster to draw. Each player's head is one cached image, so an open tab list no longer redoes skin work every frame
+- "Better Hat Layer" is renamed to "Show 3D Heads" to match Chatting
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.7
+
 ## 3.5.17
 - Fixed the tab list being sized for more players than it shows
 - Fixed the air bubbles and mount hearts not moving with their HUDs on 1.8.9

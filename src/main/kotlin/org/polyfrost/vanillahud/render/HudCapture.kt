@@ -35,6 +35,10 @@ import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.compose.minecraft.mc.GuiItemRenderer
 import org.polyfrost.compose.minecraft.mc.McItemIcons
 import org.polyfrost.compose.minecraft.mc.McItemIconHandle
+import org.polyfrost.compose.minecraft.mc.McHeadStyle
+import org.polyfrost.compose.minecraft.mc.McPlayerFaces
+import org.polyfrost.compose.minecraft.mc.McSkinLayers
+import org.polyfrost.compose.minecraft.mc.McSkinLayersResult
 import org.polyfrost.compose.minecraft.platform.McWindow
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -43,6 +47,7 @@ import org.polyfrost.vanillahud.hud.ExperienceLevelHud
 import org.polyfrost.vanillahud.hud.HudStyle
 import org.polyfrost.vanillahud.hud.VanillaHud
 import java.util.TreeMap
+import java.util.WeakHashMap
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -111,6 +116,12 @@ object HudCapture {
         fun same(m: Pose, text: String, x: Float, y: Float, color: Int, shadow: Boolean, hud: VanillaHud, chroma: Boolean, tint: Tint?) =
             this.x.toRawBits() == x.toRawBits() && this.y.toRawBits() == y.toRawBits() && this.color == color && this.shadow == shadow &&
                 this.chroma == chroma && this.hud === hud && this.tint == tint && this.m == m && this.text == text
+    }
+
+    private data class Head(val m: Pose, val layers: McSkinLayers, val x: Float, val y: Float, val size: Float, val style: McHeadStyle, val flip: Boolean, val color: Int) {
+        fun same(m: Pose, layers: McSkinLayers, x: Float, y: Float, size: Float, style: McHeadStyle, flip: Boolean, color: Int) =
+            this.layers === layers && this.x.toRawBits() == x.toRawBits() && this.y.toRawBits() == y.toRawBits() &&
+                this.size.toRawBits() == size.toRawBits() && this.style == style && this.flip == flip && this.color == color && this.m == m
     }
 
     private class TextKey(val src: String, val style: Int, val font: Int, val runs: List<Run0>, val texts: Array<String>)
@@ -572,6 +583,15 @@ object HudCapture {
         }
         return true
     }
+
+    @JvmStatic
+    fun head(g: GuiGraphicsExtractor, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean, color: Int): Boolean {
+        val l = active ?: return false
+        val layers = headLayers(texture) ?: return false
+        val dy = HudTransform.mirrorShift(y, y + size)
+        addHead(l, pose(g), layers, x.toFloat(), (y + dy).toFloat(), size.toFloat(), style, flip, color)
+        return true
+    }
     //?} else {
     /*private var bound: Identifier? = null
     private var tintR = 1f
@@ -613,7 +633,27 @@ object HudCapture {
         l.recording += Quad(iconPose(g, x, y, w, h), bitmap, x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), u0, v0, u1, v1, tint)
         return true
     }
+
+    @JvmStatic
+    fun head(g: GuiGraphicsExtractor, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean): Boolean {
+        val l = active ?: return false
+        val layers = headLayers(texture) ?: return false
+        addHead(l, iconPose(g, x, y, size, size), layers, x.toFloat(), y.toFloat(), size.toFloat(), style, flip, tint)
+        return true
+    }
     *///?}
+
+    private val textureKeys = WeakHashMap<Identifier, String>()
+
+    private fun headLayers(texture: Identifier): McSkinLayers? {
+        val key = textureKeys.getOrPut(texture) { texture.toString() }
+        return (McPlayerFaces.layers(key) as? McSkinLayersResult.Loaded)?.layers
+    }
+
+    private fun addHead(l: Layer, m: Pose, layers: McSkinLayers, x: Float, y: Float, size: Float, style: McHeadStyle, flip: Boolean, color: Int) {
+        val old = l.previous.getOrNull(l.recording.size) as? Head
+        l.recording += if (old != null && old.same(m, layers, x, y, size, style, flip, color)) old else Head(m, layers, x, y, size, style, flip, color)
+    }
 
     private var corners: Corners? = null
 
@@ -1166,6 +1206,14 @@ object HudCapture {
                         val y1 = if (t == null) op.y1 else snap(op.y1, t[1], t[3])
                         renderer.image(op.bitmap, x0, y0, x1 - x0, y1 - y0, op.u0, op.v0, op.u1, op.v1, op.color, FilterQuality.None)
                     }
+                }
+                is Head -> withPose(op.m) {
+                    val t = deviceTransform()
+                    val x0 = if (t == null) op.x else snap(op.x, t[0], t[2])
+                    val y0 = if (t == null) op.y else snap(op.y, t[1], t[3])
+                    val x1 = if (t == null) op.x + op.size else snap(op.x + op.size, t[0], t[2])
+                    val y1 = if (t == null) op.y + op.size else snap(op.y + op.size, t[1], t[3])
+                    McPlayerFaces.drawHead(this, op.layers, x0, y0, minOf(x1 - x0, y1 - y0), op.style, op.flip, op.color)
                 }
                 is Run -> withPose(op.m) { drawRun(op) }
                 is Rounded -> withPose(op.m) {
