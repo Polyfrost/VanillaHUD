@@ -1214,7 +1214,8 @@ object HudCapture {
                     val x0 = if (t == null) op.x else snap(op.x, t[0], t[2])
                     val y0 = if (t == null) op.y else snap(op.y, t[1], t[3])
                     val x1 = if (t == null) op.x + op.size else snap(op.x + op.size, t[0], t[2])
-                    McPlayerFaces.drawHead(this, op.layers, x0, y0, x1 - x0, op.style, op.flip, op.color)
+                    val y1 = if (t == null) op.y + op.size else snap(op.y + op.size, t[1], t[3])
+                    McPlayerFaces.drawHead(this, op.layers, x0, y0, minOf(x1 - x0, y1 - y0), op.style, op.flip, op.color)
                 }
                 is Run -> withPose(op.m) { drawRun(op) }
                 is Rounded -> withPose(op.m) {
