@@ -360,7 +360,7 @@ public class GuiMixinScoreboard {
         if (vanillahud$solidHidden(hud)) return;
         boolean bottom = this.vanillahud$firstRow;
         this.vanillahud$firstRow = false;
-        boolean top = --this.vanillahud$rowsLeft <= 0;
+        boolean top = --this.vanillahud$rowsLeft == 0;
         boolean shown = hud.getBackgroundStyle().showBackground;
         boolean titled = hud.getScoreboardTitle() && shown && (hud.getTitleColor().getArgb() >>> 24) != 0;
         // with no title, the top row also covers the 1px gap so its corners round cleanly

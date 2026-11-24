@@ -6,6 +6,8 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 //?} else {
 /*import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.ScoreboardObjective;
+import net.minecraft.scoreboard.ScoreboardScore;
 import net.minecraft.server.scoreboard.ServerScoreboard;
 *///?}
 import org.polyfrost.vanillahud.hud.HudInternals;
@@ -79,6 +81,12 @@ public class ScoreboardRevisionMixin {
 
     @Inject(method = "addMemberToTeam", at = @At("HEAD"), require = 1)
     private void vanillahud$bumpMembership(String player, String team, CallbackInfoReturnable<Boolean> cir) {
+        bump();
+    }
+
+    @Inject(method = "getScore", at = @At(value = "INVOKE",
+            target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", ordinal = 1), require = 1)
+    private void vanillahud$bumpCreated(String owner, ScoreboardObjective objective, CallbackInfoReturnable<ScoreboardScore> cir) {
         bump();
     }
 
