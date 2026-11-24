@@ -1,6 +1,10 @@
-## Unreleased
+## 3.5.18
 - Tab list heads are faster to draw. Each player's head is one cached image, so an open tab list no longer redoes skin work every frame
 - "Better Hat Layer" is renamed to "Show 3D Heads" to match Chatting
+- Fixed thin lines between scoreboard rows on 1.8.9
+- Fixed newly added HUDs being placed as if they were a default-sized box
+- Fixed HUD backgrounds getting soft edges or light seams at fractional GUI scales
+- Text widths on 1.8.9 now match the font PolyCompose draws with
 - Needs OneConfig 1.9.3 and PolyCompose 3.0.7
 
 ## 3.5.17
