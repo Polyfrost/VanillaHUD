@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.oneconfig.internal.ui.hud.resetAllHudProperties
 import org.polyfrost.oneconfig.internal.ui.hud.resetHudPosition
 import org.polyfrost.vanillahud.hud.AirHud
@@ -23,8 +24,10 @@ import org.polyfrost.vanillahud.hud.HeldItemTooltipHud
 import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.HungerHud
 import org.polyfrost.vanillahud.hud.StatRows
+import org.polyfrost.vanillahud.hud.TitleHud
 import org.polyfrost.vanillahud.hud.hungerShown
 import org.polyfrost.vanillahud.hud.VanillaHud
+import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import java.nio.file.Files
@@ -315,6 +318,40 @@ class HudResizeTest {
         ForceDefaultPosition.tick()
         assertEquals(null, health.anchorParent)
         assertEquals(12f, health.x, 0.5f)
+    }
+
+    @Test
+    fun `a status bar added before its first frame lands on its own size, not a stand-in`() {
+        screen(640, 360)
+        val health = fresh(HealthHud())
+        health.setAbsolutePosition(320f - 91f, 360f - 39f)
+        health.reseedDefaultForScreen()
+        assertEquals(320f - 91f, health.x, 0.5f)
+        assertEquals(360f - 39f, health.y, 0.5f)
+    }
+
+    @Test
+    fun `a status bar added before its first frame picks its section from its own size`() {
+        screen(640, 360)
+        val hunger = fresh(HungerHud())
+        hunger.setAbsolutePosition(330f, 360f - 39f)
+        assertEquals(Section.BottomCenter, hunger.section)
+    }
+
+    @Test
+    fun `fill edges snap independently of their quad and a sub-pixel fill keeps one device pixel`() {
+        assertEquals(4f / 3f, HudCapture.snapFar(0f, 1.3f, 1.5f, 0f), 1e-4f)
+        assertEquals(4f / 3f, HudCapture.snapFar(-1f, 1.3f, 1.5f, 0f), 1e-4f)
+        assertEquals(2.5f, HudCapture.snapFar(0f, 1f, 0.4f, 0f), 1e-4f)
+        assertEquals(0f, HudCapture.snapFar(0f, 0f, 0.4f, 0f), 1e-4f)
+    }
+
+    @Test
+    fun `a size measured while the hud is made gives way to the settings loaded after it`() {
+        screen(640, 360)
+        val hud = fresh(TitleHud())
+        hud.textScale = 2f
+        assertEquals(14f, hud.height, 0.01f)
     }
 
     @Test
