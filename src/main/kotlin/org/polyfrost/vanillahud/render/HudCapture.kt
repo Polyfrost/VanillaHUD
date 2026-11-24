@@ -47,7 +47,6 @@ import org.polyfrost.vanillahud.hud.ExperienceLevelHud
 import org.polyfrost.vanillahud.hud.HudStyle
 import org.polyfrost.vanillahud.hud.VanillaHud
 import java.util.TreeMap
-import java.util.UUID
 import java.util.WeakHashMap
 import kotlin.math.PI
 import kotlin.math.abs
@@ -586,9 +585,9 @@ object HudCapture {
     }
 
     @JvmStatic
-    fun head(g: GuiGraphicsExtractor, id: UUID, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean, color: Int): Boolean {
+    fun head(g: GuiGraphicsExtractor, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean, color: Int): Boolean {
         val l = active ?: return false
-        val layers = headLayers(id, texture) ?: return false
+        val layers = headLayers(texture) ?: return false
         val dy = HudTransform.mirrorShift(y, y + size)
         addHead(l, pose(g), layers, x.toFloat(), (y + dy).toFloat(), size.toFloat(), style, flip, color)
         return true
@@ -636,9 +635,9 @@ object HudCapture {
     }
 
     @JvmStatic
-    fun head(g: GuiGraphicsExtractor, id: UUID, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean): Boolean {
+    fun head(g: GuiGraphicsExtractor, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean): Boolean {
         val l = active ?: return false
-        val layers = headLayers(id, texture) ?: return false
+        val layers = headLayers(texture) ?: return false
         addHead(l, iconPose(g, x, y, size, size), layers, x.toFloat(), y.toFloat(), size.toFloat(), style, flip, tint)
         return true
     }
@@ -646,9 +645,8 @@ object HudCapture {
 
     private val textureKeys = WeakHashMap<Identifier, String>()
 
-    private fun headLayers(id: UUID, texture: Identifier): McSkinLayers? {
+    private fun headLayers(texture: Identifier): McSkinLayers? {
         val key = textureKeys.getOrPut(texture) { texture.toString() }
-        McPlayerFaces.layers(id)?.takeIf { it.texture == key }?.let { return it }
         return (McPlayerFaces.layers(key) as? McSkinLayersResult.Loaded)?.layers
     }
 

@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.client.Minecraft;
@@ -417,11 +416,9 @@ public abstract class PlayerTabOverlayMixin {
                     *///?}
             )
     )
-    private boolean vanillahud$head(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ @Local/*? if >=26.1 {*/(name = "info")/*?}*/ PlayerInfo info) {
+    private boolean vanillahud$head(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip /*? if >= 1.21.4 {*/, int color /*?}*/) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        //~ if <1.21.10 'getProfile().id()' -> 'getProfile().getId()'
-        UUID id = info.getProfile().id();
-        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, id, texture, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/);
+        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, texture, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/);
     }
 }
 //?} else {
@@ -642,7 +639,7 @@ public abstract class PlayerTabOverlayMixin {
         TabListHud hud = Huds.INSTANCE.getTabList();
         boolean hat = player != null && player.isModelPartVisible(PlayerModelPart.HAT);
         this.vanillahud$headCaptured = !hud.isDrawnAsVanilla() &&
-                HudCapture.head(LegacyDrawContext.INSTANCE, info.getProfile().getId(), info.getSkinTexture(), x, y, width, hud.headStyle(hat), regionHeight < 0);
+                HudCapture.head(LegacyDrawContext.INSTANCE, info.getSkinTexture(), x, y, width, hud.headStyle(hat), regionHeight < 0);
         return !this.vanillahud$headCaptured;
     }
 
