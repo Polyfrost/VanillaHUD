@@ -50,6 +50,8 @@ import org.polyfrost.vanillahud.util.TabListManager
 import kotlin.math.roundToInt
 
 class ActionBarHud : BackdropHud("vanillahud-actionbar.json", "Action Bar", Category.INFO) {
+    override val previewsBehindMenu: Boolean get() = false
+
     @Switch(
         title = "Use Jukebox Rainbow Timer Color",
         description = "Use the rainbow timer color when a jukebox begins playing."
@@ -543,6 +545,8 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
 }
 
 class HeldItemTooltipHud : BackdropHud("vanillahud-itemtooltip.json", "Held Item Tooltip", Category.INFO) {
+    override val previewsBehindMenu: Boolean get() = false
+
     @Switch(title = "Fade Out")
     var fadeOut: Boolean = true
 
@@ -945,6 +949,8 @@ class ScoreboardHud : VanillaHud("vanillahud-scoreboard.json", "Scoreboard", Cat
 }
 
 class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) {
+    override val previewsBehindMenu: Boolean get() = false
+
     init {
         showBackground = true
         showShadow = true
@@ -1119,11 +1125,11 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     // the open state only updates partway through vanilla's render, after the transform has already measured,
     // so the held key covers the frame the list opens on
     //? if > 1.8.9 {
-    override fun shouldShow() = previewing() || isRendering() || mc.options.keyPlayerList.isDown
+    override fun shouldShow() = previewing || isRendering() || mc.options.keyPlayerList.isDown
 
     override fun hasLiveData() = mc.connection?.listedOnlinePlayers?.let { it.size > 1 || it.isNotEmpty() && !mc.isLocalServer } == true
     //?} else {
-    /*override fun shouldShow() = previewing() || isRendering() || mc.options.playerListKey.isPressed
+    /*override fun shouldShow() = previewing || isRendering() || mc.options.playerListKey.isPressed
 
     override fun hasLiveData() = mc.networkHandler?.onlinePlayers?.let { it.size > 1 || it.isNotEmpty() && !mc.isIntegratedServerRunning } == true
     *///?}
@@ -1343,6 +1349,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 }
 
 abstract class TitleLineHud(hudId: String, title: String) : BackdropHud(hudId, title, Category.INFO) {
+    override val previewsBehindMenu: Boolean get() = false
+
     override val ownScale get() = 1f
 
     override val innerScale get() = scale.coerceAtLeast(0.001f)
@@ -1567,6 +1575,8 @@ class StatusEffectsHud : VanillaHud("vanillahud-statuseffects.json", "Status Eff
 //?}
 
 class ClosedCaptionsHud : VanillaHud("vanillahud-closedcaptions.json", "Closed Captioning", Category.INFO) {
+    override val previewsBehindMenu: Boolean get() = false
+
     init {
         showBackground = true
         showShadow = true

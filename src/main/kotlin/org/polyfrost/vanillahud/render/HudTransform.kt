@@ -146,7 +146,7 @@ object HudTransform {
     @JvmStatic
     @JvmOverloads
     fun begin(graphics: GuiGraphicsExtractor, provider: VanillaHud, part: Int = 0) {
-        val editing = HudManager.isEditing
+        val editing = HudManager.isPreviewing(provider)
         val resolvedHud = resolveCached(provider)
         val src = resolvedHud ?: provider
         if (HudManager.isSamplingVanilla || src.isDrawnAsVanilla || !editing && !src.hasContent()) {

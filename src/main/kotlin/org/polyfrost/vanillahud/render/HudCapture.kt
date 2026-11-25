@@ -386,7 +386,7 @@ object HudCapture {
 
     private var wasPreviewing = false
 
-    private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isEditing || hud.hasContent())
+    private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isPreviewing(hud) || hud.hasContent())
 
     /** [part] tells apart the game's HUD elements that draw into the same [hud] */
     fun begin(hud: VanillaHud, part: Int = 0) {

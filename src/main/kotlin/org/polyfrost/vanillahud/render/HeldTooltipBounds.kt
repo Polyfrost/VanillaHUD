@@ -59,8 +59,8 @@ object HeldTooltipBounds {
 
     @JvmStatic
     fun liftClear(graphics: GuiGraphicsExtractor, laidOut: Matrix3x2f, hud: BackdropHud, x: Int, y: Int, width: Int) {
-        if (!drawn || HudManager.isEditing) return
         val tooltip = Huds.heldItemTooltip
+        if (!drawn || HudManager.isPreviewing(tooltip)) return
         if (tooltip.isDrawnAsVanilla || !tooltip.shouldDraw() || !tooltip.hasContent()) return
         val pose = graphics.pose()
         if (!dropLift(laidOut, pose)) return
