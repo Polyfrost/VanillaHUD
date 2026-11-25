@@ -41,6 +41,7 @@ class HudPositionTest {
     fun releaseScreen() {
         HudManager.guiScreenWidth = hadScreenW
         HudManager.guiScreenHeight = hadScreenH
+        editorOpen = false
         HudManager.isConfigUiOpen = false
         VanillaHud.clock = System::currentTimeMillis
     }
@@ -141,7 +142,7 @@ class HudPositionTest {
 
         hud.next = 2f
         hud.movedByUser = true
-        HudManager.isConfigUiOpen = true
+        editorOpen = true
         assertEquals(2f, hud.unrotatedWidth, 0f)
         assertEquals(2, hud.measures, "a measure taken outside a preview is not the answer inside one")
     }
@@ -152,13 +153,13 @@ class HudPositionTest {
         HudManager.guiScreenWidth = 100f
         HudManager.guiScreenHeight = MEASURE_SCREEN_H
         hud.movedByUser = true
-        HudManager.isConfigUiOpen = true
+        editorOpen = true
 
         VanillaHud.refreshAll()
         assertEquals(1f, hud.unrotatedWidth, 0f)
 
         hud.next = 2f
-        HudManager.isConfigUiOpen = false
+        editorOpen = false
         HudManager.guiScreenWidth = 100f + 31f
         assertEquals(2f, hud.unrotatedWidth, 0f, "a demo measure is not the answer for what the game is showing")
         assertEquals(2, hud.measures)
@@ -168,7 +169,7 @@ class HudPositionTest {
     fun `a frame drawn while the editor is up does not restate the screen it is drawn on`() {
         HudManager.guiScreenWidth = MEASURE_SCREEN_W
         HudManager.guiScreenHeight = MEASURE_SCREEN_H
-        HudManager.isConfigUiOpen = true
+        editorOpen = true
 
         VanillaHud.beginFrame(uninitialisedGraphics())
 
@@ -226,3 +227,9 @@ internal fun uninitialisedGraphics(): GuiGraphicsExtractor {
 /*// the 1.8.9 draw context is a singleton shim over the GL matrix stack, nothing to fake
 internal fun uninitialisedGraphics(): GuiGraphicsExtractor = LegacyDrawContext
 *///?}
+
+internal var editorOpen: Boolean
+    get() = HudManager.isEditorOpen
+    set(value) {
+        HudManager::class.java.getDeclaredField("isEditorOpen").apply { isAccessible = true }.setBoolean(null, value)
+    }

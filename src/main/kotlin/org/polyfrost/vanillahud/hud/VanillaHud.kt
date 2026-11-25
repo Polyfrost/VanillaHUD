@@ -976,11 +976,9 @@ abstract class VanillaHud(
 
         /**
          * Whether HUDs should be drawing demo content instead of whatever the game has.
-         *
-         * The editor and the settings page both want it.
          */
         @JvmStatic
-        fun previewing(): Boolean = (HudManager.isEditorOpen || HudManager.isConfigUiOpen) && !HudManager.isSamplingVanilla
+        fun previewing(): Boolean = HudManager.isEditorOpen && !HudManager.isSamplingVanilla
     }
 }
 

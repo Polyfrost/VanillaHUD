@@ -2167,11 +2167,11 @@ class TitlePositionTest {
         hud.hidden = true
         assertFalse(hud.shouldDraw(), "an element the user hid is not drawn in game")
 
-        HudManager.isConfigUiOpen = true
+        editorOpen = true
         try {
             assertTrue(hud.shouldDraw(), "and the editor is where they take it back")
         } finally {
-            HudManager.isConfigUiOpen = false
+            editorOpen = false
         }
     }
 
@@ -2198,13 +2198,20 @@ class TitlePositionTest {
     }
 
     @Test
-    fun `a hud measures its demo content while the config ui is up`() {
+    fun `a hud measures its demo content while the editor is up`() {
         val hud = VisibilityHud()
         assertFalse(hud.previewing, "a hud in game has nothing to preview")
 
         HudManager.isConfigUiOpen = true
         try {
-            assertTrue(hud.previewing, "and previews once the config ui is up")
+            assertFalse(hud.previewing, "the config menu alone shows live huds")
+        } finally {
+            HudManager.isConfigUiOpen = false
+        }
+
+        editorOpen = true
+        try {
+            assertTrue(hud.previewing, "and previews once the editor is up")
             hud.locked = true
             assertTrue(
                 hud.previewing,
@@ -2212,7 +2219,7 @@ class TitlePositionTest {
                     "true for every element until someone drags that one, so gating on it meant no previews at all",
             )
         } finally {
-            HudManager.isConfigUiOpen = false
+            editorOpen = false
         }
     }
 
@@ -2702,12 +2709,12 @@ class TitlePositionTest {
         VanillaHud.refreshAll()
         assertEquals(LAPTOP_W / 3f, hud.x, 0.5f)
 
-        HudManager.isConfigUiOpen = true
+        editorOpen = true
         try {
             screen(MONITOR_W, MONITOR_H)
             VanillaHud.beginFrame(uninitialisedGraphics())
         } finally {
-            HudManager.isConfigUiOpen = false
+            editorOpen = false
         }
 
         assertEquals(
