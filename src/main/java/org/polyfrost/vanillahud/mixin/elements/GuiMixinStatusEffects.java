@@ -13,12 +13,10 @@ import org.polyfrost.vanillahud.render.HudTransform;
 import org.spongepowered.asm.mixin.injection.At;
 *///?}
 //? if >=26 {
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.resources.Identifier;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.StatusEffectsHud;
 import org.spongepowered.asm.mixin.injection.At;
@@ -69,32 +67,18 @@ public class GuiMixinStatusEffects {
         HudTransform.end(graphics);
     }
     *///?} else {
-    @WrapOperation(
+    @Inject(
             method = "extractEffects",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;isAmbient()Z")
     )
-    private void vanillahud$shiftEffectBackground(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height, Operation<Void> original) {
+    private void vanillahud$shiftEffectRow(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci,
+                                           @Local(name = "x") LocalIntRef x, @Local(name = "y") LocalIntRef y) {
         StatusEffectsHud hud = Huds.INSTANCE.getStatusEffects();
-        if (hud.isDrawnAsVanilla() || !hud.shouldDraw()) {
-            original.call(graphics, pipeline, sprite, x, y, width, height);
-            return;
-        }
+        if (hud.isDrawnAsVanilla() || !hud.shouldDraw()) return;
 
-        original.call(graphics, pipeline, sprite, x + hud.rowShiftX(y), y + hud.rowShiftY(y), width, height);
-    }
-
-    @WrapOperation(
-            method = "extractEffects",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIII)V")
-    )
-    private void vanillahud$shiftEffectIcon(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height, int color, Operation<Void> original) {
-        StatusEffectsHud hud = Huds.INSTANCE.getStatusEffects();
-        if (hud.isDrawnAsVanilla() || !hud.shouldDraw()) {
-            original.call(graphics, pipeline, sprite, x, y, width, height, color);
-            return;
-        }
-
-        original.call(graphics, pipeline, sprite, x + hud.rowShiftX(y), y + hud.rowShiftY(y), width, height, color);
+        int rowY = y.get();
+        x.set(x.get() + hud.rowShiftX(rowY));
+        y.set(rowY + hud.rowShiftY(rowY));
     }
     //?}
 }
