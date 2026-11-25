@@ -1,3 +1,7 @@
+## 3.5.20
+- Fixed status effect timer mods (Effect Timer Plus, Status Effect Bars) drawing at the old debuff row spot. They now follow the moved row
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.7
+
 ## 3.5.19
 - Fixed health, armor, hunger, air and experience bars stuck in the wrong spot. Bars not anchored to another HUD go back to their default position once
 - Needs OneConfig 1.9.3 and PolyCompose 3.0.7
