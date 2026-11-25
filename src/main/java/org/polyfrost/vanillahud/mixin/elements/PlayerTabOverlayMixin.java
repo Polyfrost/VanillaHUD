@@ -165,6 +165,7 @@ public abstract class PlayerTabOverlayMixin {
         }
         boolean header = this.vanillahud$headerDrawn;
         this.vanillahud$headerDrawn = false;
+        hud.setRenderedWidth(x1 - x0);
         boolean footer = vanillahud$footerPending(hud);
         vanillahud$markShape(x0, y0, x1, y1, header, footer);
         vanillahud$fill(original, graphics, hud, x0, y0, x1, y1, hud.getBodyBgArgb(), !header, !footer);
@@ -549,6 +550,7 @@ public abstract class PlayerTabOverlayMixin {
         }
         boolean header = this.vanillahud$headerDrawn;
         this.vanillahud$headerDrawn = false;
+        hud.setRenderedWidth(x1 - x0);
         vanillahud$markShape(x0, y0, x1, y1, header, this.vanillahud$hasFooter);
         vanillahud$fill(original, hud, x0, y0, x1, y1, hud.getBodyBgArgb(), !header, !this.vanillahud$hasFooter);
     }

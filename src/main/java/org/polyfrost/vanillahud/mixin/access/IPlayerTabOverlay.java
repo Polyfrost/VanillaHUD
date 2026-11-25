@@ -26,6 +26,9 @@ public interface IPlayerTabOverlay {
 
     @Invoker("getPlayerInfos")
     List<PlayerInfo> invokeGetPlayerInfos();
+
+    @Invoker("getNameForDisplay")
+    Component invokeGetNameForDisplay(PlayerInfo info);
     //?} else {
     /*@Accessor("header")
     Text getHeader();
