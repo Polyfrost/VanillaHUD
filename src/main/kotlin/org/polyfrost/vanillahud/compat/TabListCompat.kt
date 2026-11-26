@@ -1,7 +1,7 @@
 package org.polyfrost.vanillahud.compat
 
-//? if > 1.8.9 {
 import net.fabricmc.loader.api.FabricLoader
+//~ if = 1.8.9 'network.chat.Component' -> 'text.Text as Component'
 import net.minecraft.network.chat.Component
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -12,8 +12,10 @@ object TabListCompat {
     private val providers: List<Provider> by lazy(LazyThreadSafetyMode.NONE) {
         buildList {
             // SkyHanni cancels the whole tab list layer so it wins over SkyCubed when both are on
+            //? if skyblock {
             if (isLoaded("skyhanni")) add(SkyHanni)
             if (isLoaded("skycubed")) add(SkyCubed)
+            //?}
         }
     }
 
@@ -42,6 +44,7 @@ object TabListCompat {
         null
     }
 
+    //? if skyblock {
     private object SkyCubed : Provider {
         private const val DRAW_Y = 3f
 
@@ -159,15 +162,5 @@ object TabListCompat {
             return text.split("\n").count { it.contains(marker) }
         }
     }
+    //?}
 }
-//?} else {
-/*import net.minecraft.text.Text
-
-object TabListCompat {
-    class Bounds(val top: Float, val height: Float)
-
-    // SkyHanni and SkyCubed are the only mods that reshape the tab list and neither exists on
-    // 1.8.9, so there is nothing to measure against here
-    fun bounds(header: Text?, footer: Text?): Bounds? = null
-}
-*///?}
