@@ -392,7 +392,10 @@ object HudCapture {
     fun begin(hud: VanillaHud, part: Int = 0) {
         if (open.isEmpty()) tintCount = 0
         val l = layer(hud.javaClass)
-        l.hud = hud
+        if (l.hud !== hud) {
+            l.hud = hud
+            hud.capturedDrawsChanged()
+        }
         val p = l.parts[part] ?: Part(l).also {
             l.parts[part] = it
             l.partList.clear()
