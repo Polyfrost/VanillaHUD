@@ -316,6 +316,38 @@ class HotbarHud : RotatableHud("vanillahud-hotbar.json", "Hotbar") {
     )
     var animation = false
 
+    @Switch(
+        title = "Show Keybinds",
+        subcategory = "Keybinds",
+        description = "Show each hotbar slot's keybind inside the slot."
+    )
+    var showKeybinds = false
+
+    @Dropdown(
+        title = "Keybind Position",
+        subcategory = "Keybinds",
+        description = "Which corner of each slot the keybind sits in.",
+        options = ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+    )
+    var keybindPosition = 0
+
+    @Slider(
+        title = "Keybind Scale",
+        subcategory = "Keybinds",
+        description = "Size of the keybind label relative to the slot.",
+        min = 0.4f,
+        max = 1f,
+        step = 0.05f
+    )
+    var keybindScale = 0.8f
+
+    @Color(title = "Keybind Color", subcategory = "Keybinds")
+    var keybindColor = PolyColor(0xCCFFFFFF.toInt())
+
+    override fun Tree.addDependencies() {
+        showWhen("showKeybinds", "keybindPosition", "keybindScale", "keybindColor")
+    }
+
     override val naturalWidth get() = 182f
 
     override val naturalHeight get() = 22f

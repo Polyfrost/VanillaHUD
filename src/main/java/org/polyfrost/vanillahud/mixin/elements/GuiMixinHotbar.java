@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import org.polyfrost.vanillahud.hud.HotbarHud;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hook.TextShadowHook;
+import org.polyfrost.vanillahud.render.HotbarKeybinds;
 import org.polyfrost.vanillahud.render.HudTransform;
 //? if > 1.8.9
 import org.polyfrost.vanillahud.util.DemoData;
@@ -179,6 +180,7 @@ public abstract class GuiMixinHotbar {
         TextShadowHook.push(hud.getShowShadow());
         try {
             original.call(self, graphics, x, y, deltaTracker, player, hud.showsDemo() ? DemoData.demoHotbarItem(seed - 1) : stack, seed);
+            if (hud.getShowKeybinds()) HotbarKeybinds.draw(graphics, hud, seed - 1, x, y);
         } finally {
             TextShadowHook.pop();
         }
@@ -264,6 +266,7 @@ public abstract class GuiMixinHotbar {
         TextShadowHook.push(hud.getShowShadow());
         try {
             original.call(self, slot, x, y, tickDelta, player);
+            if (hud.getShowKeybinds()) HotbarKeybinds.draw(LegacyDrawContext.INSTANCE, hud, slot, x, y);
         } finally {
             TextShadowHook.pop();
         }
