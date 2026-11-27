@@ -199,7 +199,9 @@ public abstract class PlayerTabOverlayMixin {
             at = @At("HEAD")
     )
     private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, int width, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
-        ForeignTransform.probe(graphics);
+        if (ForeignTransform.probe(graphics)) {
+            graphics.pose().translate(ForeignTransform.realGuiWidth(graphics) / 2 - width / 2, 0f);
+        }
     }
     //?}
 
