@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.client.Minecraft;
@@ -198,8 +199,10 @@ public abstract class PlayerTabOverlayMixin {
             //?}
             at = @At("HEAD")
     )
-    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, int width, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
+    private void vanillahud$foreignProbe(GuiGraphicsExtractor graphics, int width, Scoreboard scoreboard, Objective objective, CallbackInfo ci,
+                                         @Local(argsOnly = true) LocalIntRef widthRef) {
         ForeignTransform.probe(graphics);
+        if (ForeignTransform.realWindow) widthRef.set(ForeignTransform.realGuiWidth(graphics));
     }
     //?}
 
