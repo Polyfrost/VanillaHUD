@@ -13,6 +13,7 @@ import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.Objective
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
+import net.fabricmc.loader.api.FabricLoader
 //?} else {
 /*import net.minecraft.block.material.Material
 import net.minecraft.client.gui.BossBar
@@ -360,6 +361,8 @@ private inline fun <reified T : RotatableHud> RotatableHud.dockedTo(): T? {
 //? if > 1.8.9 {
 private fun statusBarsShown() = mc.gameMode?.canHurtPlayer() == true
 private fun experienceShown() = mc.gameMode?.hasExperience() == true
+
+private val detailArmorBarLoaded = FabricLoader.getInstance().let { it.isModLoaded("detailab") || it.isModLoaded("detailabreconst") }
 //?} else {
 /*private fun statusBarsShown() = mc.interactionManager?.hasStatusBars() == true
 private fun experienceShown() = mc.interactionManager?.hasXpBar() == true
@@ -431,7 +434,7 @@ class HealthHud : StatBarHud("vanillahud-health.json", "Health", StatBarHud.ALIG
 
 class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_LEFT, rightSide = false, aboveFirstRow = true) {
     //? if > 1.8.9 {
-    override fun hasLiveData() = statusBarsShown() && (mc.player?.armorValue ?: 0) > 0
+    override fun hasLiveData() = statusBarsShown() && (detailArmorBarLoaded || (mc.player?.armorValue ?: 0) > 0)
     //?} else
     //override fun hasLiveData() = statusBarsShown() && (mc.player?.armorProtection ?: 0) > 0
 
