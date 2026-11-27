@@ -26,6 +26,7 @@ import org.polyfrost.vanillahud.compat.SoundFixCaptions
 import org.polyfrost.vanillahud.mixin.compat.soundfix.ISubtitleEntry
 *///?}
 import net.minecraft.world.item.ItemStack
+import org.polyfrost.compose.minecraft.mc.McHeadStyle
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
@@ -36,6 +37,7 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.previewValue
 import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.vanillahud.compat.PolytoneXpColor
 import org.polyfrost.vanillahud.compat.TabListCompat
 import org.polyfrost.vanillahud.mixin.access.IBossHealthOverlay
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay
@@ -426,6 +428,8 @@ abstract class StatBarHud(
     override fun vanillaOriginY(screenWidth: Int, screenHeight: Int) =
         screenHeight - (if (aboveFirstRow) 49f else 39f) - rise()
 
+    override fun seedOrigin(screenWidth: Int, screenHeight: Int) = vanillaOriginY(screenWidth, screenHeight)
+
     override val homeAnchorX get() = if (rightSide) 1f else 0f
     override val homeAnchorY get() = 1f
 
@@ -470,11 +474,20 @@ class ArmorHud : StatBarHud("vanillahud-armor.json", "Armor", StatBarHud.ALIGN_L
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HealthHud>()
 }
 
+/** Whether Hunger's slot is drawn: its food, or the mount's hearts that take its place. */
+internal fun hungerShown(statusBarsShown: Boolean, riding: Boolean, ridingLiving: Boolean, mountHeartRows: Int): Boolean =
+    //? if > 1.8.9 {
+    mountHeartRows > 0 || (statusBarsShown && !ridingLiving)
+    //?} else
+    //statusBarsShown && (!riding || mountHeartRows > 0)
+
 class HungerHud : StatBarHud("vanillahud-hunger.json", "Hunger", StatBarHud.ALIGN_RIGHT, rightSide = true, aboveFirstRow = false) {
     @Switch(title = "Animation", description = "Animate the hunger bar when it shakes.")
     var animation = true
 
-    override fun hasLiveData() = statusBarsShown() && mc.player?.let { it.vehicle !is LivingEntity } == true
+    override fun hasLiveData() = mc.player?.let {
+        hungerShown(statusBarsShown(), it.vehicle != null, it.vehicle is LivingEntity, StatRows.mountRows())
+    } == true
 
     // a mount's hearts take this bar's place and stack above it, so the topmost row is where the content starts
     override fun rise() = StatRows.mountRise()
@@ -490,8 +503,11 @@ class AirHud : StatBarHud("vanillahud-air.json", "Air", StatBarHud.ALIGN_RIGHT, 
     //?} else
     //override fun hasLiveData() = statusBarsShown() && mc.player?.isSubmergedIn(Material.WATER) == true
 
-    // the bubbles sit above the mount's hearts, which Hunger's box already holds
+    // 1.8.9 draws the bubbles on the armor row, so they follow the hearts instead of the mount
+    //? if > 1.8.9 {
     override fun rise() = StatRows.mountRise()
+    //?} else
+    //override fun rise() = StatRows.healthRise(previewing)
     override fun stack() = 0f
 
     override val defaultAnchorTarget: VanillaHud? get() = dockedTo<HungerHud>()
@@ -536,6 +552,8 @@ class ExperienceLevelHud : RotatableHud("vanillahud-experience-level.json", "Exp
         textColor = 0xFF80FF20.toInt()
         shadowColor = 0xFF000000.toInt()
     }
+
+    override val managesTextColor get() = PolytoneXpColor.packSetsColor
 
     override val naturalWidth get() = 18f
     override val naturalHeight get() = 9f
@@ -1005,7 +1023,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     @Switch(title = "Show Player's Head")
     var showHead: Boolean = true
 
-    @Switch(title = "Better Hat Layer")
+    @Switch(title = "Show 3D Heads", description = "Show the hat layer in 3D.")
     var betterHatLayer: Boolean = true
 
     @Switch(title = "Show Player's Ping")
@@ -1072,6 +1090,12 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         ping >= 75 -> pingLevelTwo
         else -> pingLevelOne
     }.argb
+
+    fun headStyle(hat: Boolean): McHeadStyle = when {
+        !hat -> McHeadStyle.FACE
+        betterHatLayer -> McHeadStyle.LAYERED
+        else -> McHeadStyle.FLAT
+    }
 
     override val naturalWidth get() = 200f
     override val naturalHeight get() = 100f
@@ -1162,10 +1186,14 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     private fun players(): List<PlayerInfo> = try {
         //? if > 1.8.9 {
-        val real = mc.connection?.listedOnlinePlayers?.toList() ?: emptyList()
-        //?} else
-        //val real = mc.networkHandler?.onlinePlayers?.toList() ?: emptyList()
-        if (previewing) previewPlayers("tabMeasure", real) else real.take(playerLimit)
+        val overlay = tabOverlay()
+        if (mc.player == null || overlay == null) {
+            if (previewing) previewPlayers(emptyList()) else emptyList()
+        } else overlay.invokeGetPlayerInfos()
+        //?} else {
+        /*val real = IPlayerTabOverlay.getPlayerOrdering().sortedCopy(mc.networkHandler?.onlinePlayers ?: emptyList())
+        if (previewing) previewPlayers(real) else real
+        *///?}
     } catch (_: Throwable) {
         emptyList()
     }
@@ -1206,9 +1234,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         return if (previewing) editing(text) else text
     }
 
-    /** each caller gets its own [key] because the mixin's list is sorted and the measured one isn't */
-    fun previewPlayers(key: String, live: List<PlayerInfo>): List<PlayerInfo> =
-        previewValue(key, { live.takeIf { hasLiveData() } }, null)?.take(playerLimit) ?: TabListManager.previewInfo(playerLimit)
+    fun previewPlayers(live: List<PlayerInfo>): List<PlayerInfo> {
+        val limit = minOf(playerLimit, PREVIEW_PLAYER_LIMIT)
+        return previewValue("tabPlayers", { live.takeIf { hasLiveData() } }, null)?.take(limit) ?: TabListManager.previewInfo(limit)
+    }
 
     //? if > 1.8.9 {
     fun previewHeader(live: Component?): Component = previewValue("tabHeader", { live }, null) ?: PREVIEW_HEADER
@@ -1264,12 +1293,12 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var n = 0
         //? if > 1.8.9 {
         for (p in mc.connection?.listedOnlinePlayers ?: emptyList()) {
-            if (n++ >= playerLimit) break
+            n++
             h = mix(mix(h, p), p.tabListDisplayName)
         }
         //?} else {
         /*for (p in mc.networkHandler?.onlinePlayers ?: emptyList()) {
-            if (n++ >= playerLimit) break
+            n++
             h = mix(mix(h, p), p.displayName)
         }
         *///?}
@@ -1293,7 +1322,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         var maxName = 0
         for (p in list) maxName = maxOf(maxName, font.width(displayName(p)))
 
-        val count = list.size
+        val count = minOf(list.size, playerLimit)
         var rows = count
         var columns = 1
         while (rows > 20) {
@@ -1332,6 +1361,8 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 
     private companion object {
+        const val PREVIEW_PLAYER_LIMIT = 20
+
         // Stable instances so the header/footer measure cache also hits while previewing.
         //? if > 1.8.9 {
         val PREVIEW_HEADER: Component = Component.literal("Tab List")

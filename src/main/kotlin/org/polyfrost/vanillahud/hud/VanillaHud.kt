@@ -75,6 +75,8 @@ abstract class VanillaHud(
     internal var foreignInner: ForeignPlacement? = null
     internal var foreignLogicalX = 0f
     internal var foreignLogicalY = 0f
+    internal var resolvedGen = -1
+    internal var resolved: VanillaHud? = null
 
     /** what other mods do to this HUD, null while nothing does */
     var foreign: ForeignPlacement? = null
@@ -158,6 +160,14 @@ abstract class VanillaHud(
         super.addCallbacks(tree)
         tree.addDependencies()
         tree.addForeignControls()
+        try {
+            syncRenderedSize()
+        } catch (_: Throwable) {
+            measureOwed = true
+        }
+        widthFrame = -1L
+        heightFrame = -1L
+        measuredFrame = -1L
     }
 
     // here and not in addDependencies, which some HUDs override without calling up
@@ -190,6 +200,9 @@ abstract class VanillaHud(
     /** top left of the unrotated content in the coordinates vanilla actually draws it at */
     abstract fun vanillaOriginX(screenWidth: Int, screenHeight: Int): Float
     abstract fun vanillaOriginY(screenWidth: Int, screenHeight: Int): Float
+
+    /** an origin that moves without the size changing, which makes the defaults stale */
+    protected open fun seedOrigin(screenWidth: Int, screenHeight: Int): Float = 0f
 
     /** top left of the rotated bounding box at rest which differs from the vanilla origin only when [quarterTurns] is set */
     open fun defaultOriginX(screenWidth: Int, screenHeight: Int): Float = vanillaOriginX(screenWidth, screenHeight)
@@ -350,7 +363,7 @@ abstract class VanillaHud(
     override fun deletable() = false
     override fun showByDefault() = true
 
-    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?, val foreignRevision: Int)
+    private data class Seed(val w: Int, val h: Int, val hudW: Float, val hudH: Float, val turns: Int, val anchor: HudAnchor?, val foreignRevision: Int, val origin: Float)
 
     private var seed: Seed? = null
     private var forcePending = false
@@ -501,8 +514,10 @@ abstract class VanillaHud(
         val h = HudManager.guiScreenHeight.toInt()
         if (w <= 0 || h <= 0) return
         val seed = seed
+        val origin = seedOrigin(w, h)
         val screenSame = seed != null && w == seed.w && h == seed.h && quarterTurns == seed.turns &&
-            growthAnchor == seed.anchor && seed.foreignRevision == ForeignTransform.revision
+            growthAnchor == seed.anchor && seed.foreignRevision == ForeignTransform.revision &&
+            origin == seed.origin
         if (screenSame && !measure) return
         placing++
         try {
@@ -520,18 +535,20 @@ abstract class VanillaHud(
             if (wasDefault) {
                 val (dx, dy) = defaultPosition()
                 placeAt(dx, dy)
+            } else if (onDefaultAnchor && seed != null && seed.origin != origin && ForceDefaultPosition.customized(this) == false) {
+                defaultAnchorTarget?.takeIf { it.tree != null }?.let { holdDefaultAnchor(it, w, h) }
             }
-            commitSeed(w, h, renderedW, renderedH)
+            commitSeed(w, h, renderedW, renderedH, origin)
         } catch (_: Throwable) {
-            commitSeed(w, h, -1f, -1f)
+            commitSeed(w, h, -1f, -1f, origin)
             measureOwed = true
         } finally {
             placing--
         }
     }
 
-    private fun commitSeed(w: Int, h: Int, hudW: Float, hudH: Float) {
-        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor, ForeignTransform.revision)
+    private fun commitSeed(w: Int, h: Int, hudW: Float, hudH: Float, origin: Float) {
+        seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor, ForeignTransform.revision, origin)
     }
 
     val previewing: Boolean get() = previewing()
@@ -541,7 +558,7 @@ abstract class VanillaHud(
     fun shouldDraw(): Boolean {
         val editing = HudManager.isEditing
         if (!editing && VanillaHudApi.isDrawnAsVanilla(hudId)) return true
-        if (!editing && hidden) return false
+        if (!editing && layoutStyle.hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
         if (HudManager.isTabListVisible && !showInTab) return false
         if (!HudManager.overrideShowInScreens && !editing) {
@@ -599,20 +616,17 @@ abstract class VanillaHud(
     private var cachedHeight = 0f
 
     private val mirror = HudStyle()
-    private var layoutFrame = -1L
-    private var textFrame = -1L
-    private var backgroundFrame = -1L
     private var layoutWrites = -1L
     private var textWrites = -1L
     private var backgroundWrites = -1L
 
-    private fun styleStale(stamp: Long, writes: Long): Boolean =
-        stamp != frame || writes != StyleWrites.count || placing > 0 || HudManager.isEditing
+    private fun styleStale(writes: Long): Boolean =
+        writes != StyleWrites.count || placing > 0 || HudManager.isEditing
 
     val layoutStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(layoutFrame, layoutWrites)) {
+            if (styleStale(layoutWrites)) {
                 s.textScale = textScale
                 s.padLeft = padLeft
                 s.padRight = padRight
@@ -623,7 +637,7 @@ abstract class VanillaHud(
                 s.staticH = staticH
                 s.alignment = alignment
                 s.bgRadius = bgRadius
-                layoutFrame = frame
+                s.hidden = hidden
                 layoutWrites = StyleWrites.count
             }
             return s
@@ -632,7 +646,7 @@ abstract class VanillaHud(
     val textStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(textFrame, textWrites)) {
+            if (styleStale(textWrites)) {
                 s.caseType = caseType
                 s.textBold = textBold
                 s.textItalic = textItalic
@@ -648,7 +662,7 @@ abstract class VanillaHud(
                 s.shadowChromaSpeed = shadowChromaSpeed
                 s.shadowOffsetX = shadowOffsetX
                 s.shadowOffsetY = shadowOffsetY
-                textFrame = frame
+                s.prefix = (if (s.textBold) "§l" else "") + (if (s.textItalic) "§o" else "") + (if (s.textUnderline) "§n" else "")
                 textWrites = StyleWrites.count
             }
             return s
@@ -657,7 +671,7 @@ abstract class VanillaHud(
     val backgroundStyle: HudStyle
         get() {
             val s = mirror
-            if (styleStale(backgroundFrame, backgroundWrites)) {
+            if (styleStale(backgroundWrites)) {
                 s.showBackground = showBackground
                 s.bgColor = bgColor
                 s.bgChroma = bgChroma
@@ -666,7 +680,6 @@ abstract class VanillaHud(
                 s.borderColor = borderColor
                 s.borderChroma = borderChroma
                 s.borderChromaSpeed = borderChromaSpeed
-                backgroundFrame = frame
                 backgroundWrites = StyleWrites.count
             }
             return s
@@ -941,12 +954,17 @@ abstract class VanillaHud(
         }
 
         /** the level overlaps the bar, and OneConfig paints HUDs in list order with no z setting to ask for */
-        fun keepLevelAboveBar() {
+        fun keepOverlapsOrdered() {
+            keepAbove<ExperienceLevelHud, ExperienceBarHud>()
+            keepAbove<TabListHud, BossBarHud>()
+        }
+
+        private inline fun <reified Top, reified Below> keepAbove() {
             val huds = HudManager.activeInstances
-            val bar = huds.indexOfFirst { it is ExperienceBarHud }
-            val level = huds.indexOfFirst { it is ExperienceLevelHud }
-            if (bar < 0 || level < 0 || level > bar) return
-            huds.add(huds.removeAt(level))
+            val below = huds.indexOfFirst { it is Below }
+            val top = huds.indexOfFirst { it is Top }
+            if (below < 0 || top < 0 || top > below) return
+            huds.add(huds.removeAt(top))
         }
 
         fun forgetProfileStateAll() {
@@ -988,6 +1006,7 @@ class HudStyle internal constructor() {
     @JvmField var staticH = 0f
     @JvmField var alignment = PolyAlign.Center
     @JvmField var bgRadius = 0f
+    @JvmField var hidden = false
 
     @JvmField var caseType = 0
     @JvmField var textBold = false
@@ -1004,6 +1023,7 @@ class HudStyle internal constructor() {
     @JvmField var shadowChromaSpeed = 1f
     @JvmField var shadowOffsetX = 0f
     @JvmField var shadowOffsetY = 0f
+    @JvmField var prefix = ""
 
     @JvmField var showBackground = false
     @JvmField var bgColor = 0

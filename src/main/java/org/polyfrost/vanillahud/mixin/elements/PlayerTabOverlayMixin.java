@@ -2,23 +2,23 @@ package org.polyfrost.vanillahud.mixin.elements;
 
 //? if > 1.8.9 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-//? if > 1.8.9
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import org.polyfrost.vanillahud.hook.HeadHook;
 import org.polyfrost.vanillahud.hook.TextShadowHook;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
 import org.polyfrost.vanillahud.mixin.access.IPlayerTabOverlay;
+import org.polyfrost.vanillahud.render.HudCapture;
 import org.polyfrost.vanillahud.render.TextBackdrop;
 //? if >=1.21.8 {
 import net.minecraft.world.scores.Objective;
@@ -42,6 +42,9 @@ import org.joml.Matrix3x2fStack;
 //?}
 //? if <1.21.6 {
 /*import com.mojang.blaze3d.vertex.PoseStack;
+*///?}
+//? if <1.21.4 {
+/*import com.mojang.blaze3d.systems.RenderSystem;
 *///?}
 
 @Mixin(value = PlayerTabOverlay.class, priority = 1100)
@@ -397,7 +400,7 @@ public abstract class PlayerTabOverlayMixin {
         }
     }
 
-    @WrapOperation(
+    @WrapWithCondition(
             //? if <26 {
             /*method = "render",
             *///?} else {
@@ -416,18 +419,23 @@ public abstract class PlayerTabOverlayMixin {
                     *///?}
             )
     )
-    private void vanilla$betterHatLayer(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip, /*? if >= 1.21.4 {*/ int color, /*?}*/ Operation<Void> original) {
+    private boolean vanillahud$head(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int size, boolean hat, boolean flip /*? if >= 1.21.4 {*/, int color /*?}*/) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (!hud.isDrawnAsVanilla() && hud.getBetterHatLayer()) {
-            HeadHook.INSTANCE.vanillahud$draw(graphics, texture, x, y, size, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*-1 *//*?}*/, hat, flip);
-        } else {
-            original.call(graphics, texture, x, y, size, hat, flip /*? if >= 1.21.4 {*/, color /*?}*/);
-        }
+        return hud.isDrawnAsVanilla() || !HudCapture.head(graphics, texture, x, y, size, hud.headStyle(hat), flip, /*? if >= 1.21.4 {*/ color /*?} else {*/ /*vanillahud$shaderTint() *//*?}*/);
     }
+
+    //? if <1.21.4 {
+    /*@Unique
+    private static int vanillahud$shaderTint() {
+        float[] c = RenderSystem.getShaderColor();
+        return ((int) (c[3] * 255f) << 24) | ((int) (c[0] * 255f) << 16) | ((int) (c[1] * 255f) << 8) | (int) (c[2] * 255f);
+    }
+    *///?}
 }
 //?} else {
 /*
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -436,17 +444,18 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.gui.overlay.PlayerTabOverlay;
 import net.minecraft.client.network.PlayerInfo;
-import net.minecraft.client.render.platform.GlStateManager;
+import net.minecraft.client.render.model.PlayerModelPart;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.text.Text;
+import net.minecraft.world.entity.player.Player;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.vanillahud.compat.LegacyDrawContext;
 import org.polyfrost.vanillahud.hud.Huds;
 import org.polyfrost.vanillahud.hud.TabListHud;
+import org.polyfrost.vanillahud.render.HudCapture;
 import org.polyfrost.vanillahud.render.TextBackdrop;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -634,24 +643,24 @@ public abstract class PlayerTabOverlayMixin {
     private final List<Runnable> vanillahud$smallPings = new ArrayList<>();
 
     @Unique
-    private final List<Runnable> vanillahud$hats = new ArrayList<>();
+    private boolean vanillahud$headCaptured;
 
-    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
-    private void vanillahud$hatLayer(int x, int y, float u, float v, int regionWidth, int regionHeight, int width, int height, float texWidth, float texHeight, Operation<Void> original, @Local PlayerInfo info) {
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 0))
+    private boolean vanillahud$head(int x, int y, float u, float v, int regionWidth, int regionHeight, int width, int height, float texWidth, float texHeight, @Local PlayerInfo info, @Local Player player) {
         TabListHud hud = Huds.INSTANCE.getTabList();
-        if (hud.isDrawnAsVanilla() || !hud.getBetterHatLayer()) {
-            original.call(x, y, u, v, regionWidth, regionHeight, width, height, texWidth, texHeight);
-            return;
-        }
-        this.vanillahud$hats.add(() -> {
-            Minecraft.getInstance().getTextureManager().bind(info.getSkinTexture());
-            GuiElement.drawTexture(x, y, u, v, regionWidth, regionHeight, 9, 9, texWidth, texHeight);
-        });
+        boolean hat = player != null && player.isModelPartVisible(PlayerModelPart.HAT);
+        this.vanillahud$headCaptured = !hud.isDrawnAsVanilla() &&
+                HudCapture.head(LegacyDrawContext.INSTANCE, info.getSkinTexture(), x, y, width, hud.headStyle(hat), regionHeight < 0);
+        return !this.vanillahud$headCaptured;
+    }
+
+    @WrapWithCondition(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiElement;drawTexture(IIFFIIIIFF)V", ordinal = 1))
+    private boolean vanillahud$hat(int x, int y, float u, float v, int regionWidth, int regionHeight, int width, int height, float texWidth, float texHeight) {
+        return !this.vanillahud$headCaptured;
     }
 
     @WrapMethod(method = "render", order = 2000)
-    private void vanillahud$drawHats(int width, Scoreboard scoreboard, ScoreboardObjective objective, Operation<Void> original) {
-        this.vanillahud$hats.clear();
+    private void vanillahud$drawSmallPings(int width, Scoreboard scoreboard, ScoreboardObjective objective, Operation<Void> original) {
         this.vanillahud$smallPings.clear();
         try {
             original.call(width, scoreboard, objective);
@@ -662,15 +671,6 @@ public abstract class PlayerTabOverlayMixin {
                 this.vanillahud$smallPings.forEach(Runnable::run);
                 LegacyDrawContext.INSTANCE.pose().popMatrix();
                 this.vanillahud$smallPings.clear();
-            }
-            if (!this.vanillahud$hats.isEmpty()) {
-                GlStateManager.enableBlend();
-                GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-                GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-                LegacyDrawContext.INSTANCE.pose().translate(-0.5F, -0.5F);
-                this.vanillahud$hats.forEach(Runnable::run);
-                LegacyDrawContext.INSTANCE.pose().translate(0.5F, 0.5F);
-                this.vanillahud$hats.clear();
             }
         }
     }

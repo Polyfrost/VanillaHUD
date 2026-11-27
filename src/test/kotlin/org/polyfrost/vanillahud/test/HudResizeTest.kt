@@ -5,12 +5,14 @@ import net.minecraft.SharedConstants
 import net.minecraft.server.Bootstrap
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.polyfrost.oneconfig.api.config.v1.ConfigManager
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.api.hud.v1.Section
 import org.polyfrost.oneconfig.internal.ui.hud.resetAllHudProperties
 import org.polyfrost.oneconfig.internal.ui.hud.resetHudPosition
 import org.polyfrost.vanillahud.hud.AirHud
@@ -22,7 +24,10 @@ import org.polyfrost.vanillahud.hud.HeldItemTooltipHud
 import org.polyfrost.vanillahud.hud.HotbarHud
 import org.polyfrost.vanillahud.hud.HungerHud
 import org.polyfrost.vanillahud.hud.StatRows
+import org.polyfrost.vanillahud.hud.TitleHud
+import org.polyfrost.vanillahud.hud.hungerShown
 import org.polyfrost.vanillahud.hud.VanillaHud
+import org.polyfrost.vanillahud.render.HudCapture
 import org.polyfrost.vanillahud.render.HudTransform
 import org.polyfrost.vanillahud.util.ForceDefaultPosition
 import java.nio.file.Files
@@ -200,11 +205,40 @@ class HudResizeTest {
         measured(huds)
         assertEquals(19f, hunger.height, 0.01f, "hunger height")
         assertEquals(bottom, hunger.y + hunger.height, 0.01f, "hunger keeps its bottom")
-        assertEquals(gap, hunger.y - air.y, 0.01f, "air keeps hanging off the top of hunger")
         // the game draws the mount's top row 10 up and the bubbles above it, and the box starts where the content does
         assertEquals(360f - 39f - 10f, hunger.vanillaOriginY(640, 360), 0.01f, "hunger content origin")
+        //? if > 1.8.9 {
+        assertEquals(gap, hunger.y - air.y, 0.01f, "air keeps hanging off the top of hunger")
         assertEquals(360f - 49f - 10f, air.vanillaOriginY(640, 360), 0.01f, "air content origin")
+        //?} else
+        //assertEquals(360f - 49f, air.vanillaOriginY(640, 360), 0.01f, "air stays on the armor row")
         assertEquals(hunger.vanillaOriginY(640, 360), hunger.y, 0.01f, "hunger box starts at its content")
+    }
+
+    //? if = 1.8.9 {
+    /*@Test
+    fun `extra heart rows lift the air bubbles with the armor on 1_8_9`() {
+        screen(640, 360)
+        val huds = cluster()
+        huds.forEach(::settled)
+        val hunger = huds[3]
+        val air = huds[4]
+
+        StatRows.healthRowsOverride = 3
+        measured(huds)
+        assertEquals(360f - 49f - 18f, air.vanillaOriginY(640, 360), 0.01f, "air content origin")
+        assertSame(hunger, air.anchorParent)
+        assertEquals(air.vanillaOriginY(640, 360), air.y, 0.01f, "air sits at its content")
+    }
+    *///?}
+
+    @Test
+    fun `hunger slot follows what the game draws on a mount`() {
+        //? if > 1.8.9 {
+        assertTrue(hungerShown(statusBarsShown = false, riding = true, ridingLiving = true, mountHeartRows = 2), "mount hearts draw in creative")
+        assertFalse(hungerShown(statusBarsShown = true, riding = true, ridingLiving = true, mountHeartRows = 0), "dead mount")
+        //?} else
+        //assertFalse(hungerShown(statusBarsShown = true, riding = true, ridingLiving = false, mountHeartRows = 0), "boat draws neither")
     }
 
     @Test
@@ -228,7 +262,7 @@ class HudResizeTest {
         val bar = fresh(ExperienceBarHud())
         val huds = HudManager.activeInstances
         assertTrue(huds.indexOf(level) < huds.indexOf(bar), "this order is the case under test")
-        VanillaHud.keepLevelAboveBar()
+        VanillaHud.keepOverlapsOrdered()
         assertTrue(huds.indexOf(level) > huds.indexOf(bar))
     }
 
@@ -284,6 +318,40 @@ class HudResizeTest {
         ForceDefaultPosition.tick()
         assertEquals(null, health.anchorParent)
         assertEquals(12f, health.x, 0.5f)
+    }
+
+    @Test
+    fun `a status bar added before its first frame lands on its own size, not a stand-in`() {
+        screen(640, 360)
+        val health = fresh(HealthHud())
+        health.setAbsolutePosition(320f - 91f, 360f - 39f)
+        health.reseedDefaultForScreen()
+        assertEquals(320f - 91f, health.x, 0.5f)
+        assertEquals(360f - 39f, health.y, 0.5f)
+    }
+
+    @Test
+    fun `a status bar added before its first frame picks its section from its own size`() {
+        screen(640, 360)
+        val hunger = fresh(HungerHud())
+        hunger.setAbsolutePosition(330f, 360f - 39f)
+        assertEquals(Section.BottomCenter, hunger.section)
+    }
+
+    @Test
+    fun `fill edges snap independently of their quad and a sub-pixel fill keeps one device pixel`() {
+        assertEquals(4f / 3f, HudCapture.snapFar(0f, 1.3f, 1.5f, 0f), 1e-4f)
+        assertEquals(4f / 3f, HudCapture.snapFar(-1f, 1.3f, 1.5f, 0f), 1e-4f)
+        assertEquals(2.5f, HudCapture.snapFar(0f, 1f, 0.4f, 0f), 1e-4f)
+        assertEquals(0f, HudCapture.snapFar(0f, 0f, 0.4f, 0f), 1e-4f)
+    }
+
+    @Test
+    fun `a size measured while the hud is made gives way to the settings loaded after it`() {
+        screen(640, 360)
+        val hud = fresh(TitleHud())
+        hud.textScale = 2f
+        assertEquals(14f, hud.height, 0.01f)
     }
 
     @Test

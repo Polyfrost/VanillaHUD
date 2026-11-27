@@ -18,9 +18,11 @@ import org.polyfrost.vanillahud.compat.GuiGraphicsExtractor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font as McFont
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.composables.NodeBox
+import org.polyfrost.compose.mc.McFontQueue
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.size
@@ -31,8 +33,13 @@ import org.polyfrost.compose.render.PolyFont
 import org.polyfrost.compose.render.RenderContext
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.ui.v1.ExperimentalOneConfigUiApi
+import org.polyfrost.compose.minecraft.mc.GuiItemRenderer
 import org.polyfrost.compose.minecraft.mc.McItemIcons
 import org.polyfrost.compose.minecraft.mc.McItemIconHandle
+import org.polyfrost.compose.minecraft.mc.McHeadStyle
+import org.polyfrost.compose.minecraft.mc.McPlayerFaces
+import org.polyfrost.compose.minecraft.mc.McSkinLayers
+import org.polyfrost.compose.minecraft.mc.McSkinLayersResult
 import org.polyfrost.compose.minecraft.platform.McWindow
 import net.fabricmc.loader.api.FabricLoader
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -41,6 +48,7 @@ import org.polyfrost.vanillahud.hud.ExperienceLevelHud
 import org.polyfrost.vanillahud.hud.HudStyle
 import org.polyfrost.vanillahud.hud.VanillaHud
 import java.util.TreeMap
+import java.util.WeakHashMap
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -111,6 +119,12 @@ object HudCapture {
                 this.chroma == chroma && this.hud === hud && this.tint == tint && this.m == m && this.text == text
     }
 
+    private data class Head(val m: Pose, val layers: McSkinLayers, val x: Float, val y: Float, val size: Float, val style: McHeadStyle, val flip: Boolean, val color: Int) {
+        fun same(m: Pose, layers: McSkinLayers, x: Float, y: Float, size: Float, style: McHeadStyle, flip: Boolean, color: Int) =
+            this.layers === layers && this.x.toRawBits() == x.toRawBits() && this.y.toRawBits() == y.toRawBits() &&
+                this.size.toRawBits() == size.toRawBits() && this.style == style && this.flip == flip && this.color == color && this.m == m
+    }
+
     private class TextKey(val src: String, val style: Int, val font: Int, val runs: List<Run0>, val texts: Array<String>)
 
     private data class ClipStart(val m: Pose, val x0: Float, val y0: Float, val x1: Float, val y1: Float)
@@ -125,7 +139,18 @@ object HudCapture {
     class Item(val stack: ItemStack, val x: Float, val y: Float, val width: Float, val height: Float) {
         var decorated = false
 
-        fun same(o: Item) = x == o.x && y == o.y && width == o.width && height == o.height && decorated == o.decorated && ItemStack.matches(stack, o.stack)
+        //? if = 1.8.9 {
+        /*private val size = stack.size
+        private val damage = stack.damage
+        private val nbt = stack.nbt
+
+        private fun sameStack(o: Item) = stack === o.stack && size == o.size && damage == o.damage && nbt === o.nbt ||
+            ItemStack.matches(stack, o.stack)
+        *///?} else {
+        private fun sameStack(o: Item) = ItemStack.matches(stack, o.stack)
+        //?}
+
+        fun same(o: Item) = x == o.x && y == o.y && width == o.width && height == o.height && decorated == o.decorated && sameStack(o)
     }
 
     /** what one of the game's HUD elements drew into a layer, which several of them can feed */
@@ -382,6 +407,20 @@ object HudCapture {
         //modelViewStale = true
     }
 
+    /** set by the game's locator bar whenever it draws, which tells a draw Gnetum skipped from one that had nothing to show */
+    @JvmField
+    var locatorDrawn = false
+
+    /** keeps what [part] of [hud] drew last time, for when the game's element that feeds it didn't run */
+    @JvmStatic
+    fun skipped(hud: VanillaHud, part: Int) {
+        layers[hud.javaClass]?.parts?.get(part)?.ran = false
+    }
+
+    /** whether [hud] is being drawn right now, which a nested draw of it must not transform again */
+    @JvmStatic
+    fun isCapturing(hud: VanillaHud) = open.any { it.layer === layers[hud.javaClass] }
+
     fun end() {
         //? if = 1.8.9
         //modelViewStale = true
@@ -494,12 +533,64 @@ object HudCapture {
         return true
     }
 
+    /** the nine-sliced sprite being drawn, whose middle the game draws by coordinates in its atlas, or tiles of it */
+    @JvmField
+    var nineSlice: TextureAtlasSprite? = null
+
     @JvmStatic
     fun texture(g: GuiGraphicsExtractor, id: Identifier, x0: Int, x1: Int, y0: Int, y1: Int, u0: Float, u1: Float, v0: Float, v1: Float, color: Int): Boolean {
         val l = active ?: return false
-        val bitmap = SpriteBitmaps.of(id) ?: return false
+        val slice = nineSlice?.takeIf { it.atlasLocation() == id }
+        val bitmap = (if (slice != null) SpriteBitmaps.of(slice) else SpriteBitmaps.of(id)) ?: return false
         val dy = HudTransform.mirrorShift(y0, y1)
-        l.recording += Quad(pose(g), bitmap, x0.toFloat(), (y0 + dy).toFloat(), x1.toFloat(), (y1 + dy).toFloat(), u0, v0, u1, v1, color)
+        if (slice == null) {
+            l.recording += Quad(pose(g), bitmap, x0.toFloat(), (y0 + dy).toFloat(), x1.toFloat(), (y1 + dy).toFloat(), u0, v0, u1, v1, color)
+            return true
+        }
+        val frame = slice.contents().height().toFloat() / bitmap.height
+        val width = slice.u1 - slice.u0
+        val height = slice.v1 - slice.v0
+        l.recording += Quad(
+            pose(g), bitmap, x0.toFloat(), (y0 + dy).toFloat(), x1.toFloat(), (y1 + dy).toFloat(),
+            (u0 - slice.u0) / width, (v0 - slice.v0) / height * frame, (u1 - slice.u0) / width, (v1 - slice.v0) / height * frame, color,
+        )
+        return true
+    }
+
+    /** the game repeats one tile of the nine-sliced sprite over the rectangle, which is recorded a tile at a time */
+    @JvmStatic
+    fun tiled(g: GuiGraphicsExtractor, tileW: Int, tileH: Int, x0: Int, y0: Int, x1: Int, y1: Int, u0: Float, u1: Float, v0: Float, v1: Float, color: Int): Boolean {
+        val l = active ?: return false
+        val sprite = nineSlice ?: return false
+        val bitmap = SpriteBitmaps.of(sprite) ?: return false
+        val frame = sprite.contents().height().toFloat() / bitmap.height
+        val spriteW = sprite.u1 - sprite.u0
+        val spriteH = sprite.v1 - sprite.v0
+        val pose = pose(g)
+        val dy = HudTransform.mirrorShift(y0, y1)
+        val left = (u0 - sprite.u0) / spriteW
+        val top = (v0 - sprite.v0) / spriteH * frame
+        val tileU = (u1 - u0) / spriteW
+        val tileV = (v1 - v0) / spriteH * frame
+        for (y in y0 until y1 step tileH) {
+            val h = minOf(tileH, y1 - y)
+            for (x in x0 until x1 step tileW) {
+                val w = minOf(tileW, x1 - x)
+                l.recording += Quad(
+                    pose, bitmap, x.toFloat(), (y + dy).toFloat(), (x + w).toFloat(), (y + h + dy).toFloat(),
+                    left, top, left + tileU * w / tileW, top + tileV * h / tileH, color,
+                )
+            }
+        }
+        return true
+    }
+
+    @JvmStatic
+    fun head(g: GuiGraphicsExtractor, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean, color: Int): Boolean {
+        val l = active ?: return false
+        val layers = headLayers(texture) ?: return false
+        val dy = HudTransform.mirrorShift(y, y + size)
+        addHead(l, pose(g), layers, x.toFloat(), (y + dy).toFloat(), size.toFloat(), style, flip, color)
         return true
     }
     //?} else {
@@ -543,7 +634,27 @@ object HudCapture {
         l.recording += Quad(iconPose(g, x, y, w, h), bitmap, x.toFloat(), y.toFloat(), (x + w).toFloat(), (y + h).toFloat(), u0, v0, u1, v1, tint)
         return true
     }
+
+    @JvmStatic
+    fun head(g: GuiGraphicsExtractor, texture: Identifier, x: Int, y: Int, size: Int, style: McHeadStyle, flip: Boolean): Boolean {
+        val l = active ?: return false
+        val layers = headLayers(texture) ?: return false
+        addHead(l, iconPose(g, x, y, size, size), layers, x.toFloat(), y.toFloat(), size.toFloat(), style, flip, tint)
+        return true
+    }
     *///?}
+
+    private val textureKeys = WeakHashMap<Identifier, String>()
+
+    private fun headLayers(texture: Identifier): McSkinLayers? {
+        val key = textureKeys.getOrPut(texture) { texture.toString() }
+        return (McPlayerFaces.layers(key) as? McSkinLayersResult.Loaded)?.layers
+    }
+
+    private fun addHead(l: Layer, m: Pose, layers: McSkinLayers, x: Float, y: Float, size: Float, style: McHeadStyle, flip: Boolean, color: Int) {
+        val old = l.previous.getOrNull(l.recording.size) as? Head
+        l.recording += if (old != null && old.same(m, layers, x, y, size, style, flip, color)) old else Head(m, layers, x, y, size, style, flip, color)
+    }
 
     private var corners: Corners? = null
 
@@ -883,14 +994,7 @@ object HudCapture {
             2 -> r.text.lowercase()
             else -> r.text
         }
-        if (!s.textBold && !s.textItalic && !s.textUnderline && r.codes.isEmpty()) return text
-        return buildString {
-            if (s.textBold) append("§l")
-            if (s.textItalic) append("§o")
-            if (s.textUnderline) append("§n")
-            append(r.codes)
-            append(text)
-        }
+        return if (s.prefix.isEmpty() && r.codes.isEmpty()) text else s.prefix + r.codes + text
     }
 
     private fun runColor(hud: VanillaHud, s: HudStyle, r: Run0, color: Int): Int {
@@ -940,14 +1044,38 @@ object HudCapture {
 
     private fun widthOf(hud: VanillaHud, s: HudStyle, text: String): Float {
         if (s.font == Font.Poppins) return poppins(hud).measureTextWidth(stripFormat(text))
+        //? if = 1.8.9 {
+        /*return McFontQueue.measureTextWidth(text, 1f)
+        *///?} else
+        return measureRaw(Minecraft.getInstance().font, text).toFloat()
+    }
+
+    private fun measureRaw(font: McFont, text: String): Int {
         val outer = rawWidth
         rawWidth = true
         try {
-            return Minecraft.getInstance().font.width(text).toFloat()
+            return font.width(text)
         } finally {
             rawWidth = outer
         }
     }
+
+    //? if = 1.8.9 {
+    /*private val rawWidths = HashMap<String, Int>()
+    private var rawWidthsFont = -1
+
+    private fun cachedRawWidth(font: McFont, text: String): Int {
+        val key = fontKey()
+        if (key != rawWidthsFont || rawWidths.size > 4096) {
+            rawWidths.clear()
+            rawWidthsFont = key
+        }
+        return rawWidths.getOrPut(text) { measureRaw(font, text) }
+    }
+
+    @JvmStatic
+    fun width(font: McFont, text: String): Int = fontWidth(cachedRawWidth(font, text), text)
+    *///?}
 
     /** the width [addRuns] lays [runs] out at, with the hud's case and bold applied to each */
     private fun widthOf(hud: VanillaHud, runs: List<Run0>): Int {
@@ -1068,17 +1196,25 @@ object HudCapture {
             when (val op = ops[i]) {
                 is Item -> if (item != null) item(op, items++)
                 is Quad -> withPose(op.m) {
+                    val t = deviceTransform()
+                    val x0 = if (t == null) op.x0 else snap(op.x0, t[0], t[2])
+                    val y0 = if (t == null) op.y0 else snap(op.y0, t[1], t[3])
+                    val x1 = if (t == null) op.x1 else snapFar(op.x0, op.x1, t[0], t[2])
+                    val y1 = if (t == null) op.y1 else snapFar(op.y0, op.y1, t[1], t[3])
                     if (op.bitmap == null) {
                         val argb = tinted(op.color, op.tint)
-                        if (argb ushr 24 != 0) renderer.rect(op.x0, op.y0, op.x1 - op.x0, op.y1 - op.y0, argb, 0f)
+                        if (argb ushr 24 != 0) renderer.rect(x0, y0, x1 - x0, y1 - y0, argb, 0f)
                     } else {
-                        val t = deviceTransform()
-                        val x0 = if (t == null) op.x0 else snap(op.x0, t[0], t[2])
-                        val y0 = if (t == null) op.y0 else snap(op.y0, t[1], t[3])
-                        val x1 = if (t == null) op.x1 else snap(op.x1, t[0], t[2])
-                        val y1 = if (t == null) op.y1 else snap(op.y1, t[1], t[3])
                         renderer.image(op.bitmap, x0, y0, x1 - x0, y1 - y0, op.u0, op.v0, op.u1, op.v1, op.color, FilterQuality.None)
                     }
+                }
+                is Head -> withPose(op.m) {
+                    val t = deviceTransform()
+                    val x0 = if (t == null) op.x else snap(op.x, t[0], t[2])
+                    val y0 = if (t == null) op.y else snap(op.y, t[1], t[3])
+                    val x1 = if (t == null) op.x + op.size else snap(op.x + op.size, t[0], t[2])
+                    val y1 = if (t == null) op.y + op.size else snap(op.y + op.size, t[1], t[3])
+                    McPlayerFaces.drawHead(this, op.layers, x0, y0, minOf(x1 - x0, y1 - y0), op.style, op.flip, op.color)
                 }
                 is Run -> withPose(op.m) { drawRun(op) }
                 is Rounded -> withPose(op.m) {
@@ -1109,6 +1245,12 @@ object HudCapture {
     }
 
     private fun snap(v: Float, scale: Float, offset: Float) = (round(v * scale + offset) - offset) / scale
+
+    internal fun snapFar(near: Float, far: Float, scale: Float, offset: Float): Float {
+        val n = snap(near, scale, offset)
+        val f = snap(far, scale, offset)
+        return if (f == n && far != near) n + 1f / scale else f
+    }
 
     private inline fun RenderContext.withPose(m: Pose, draw: RenderContext.() -> Unit) {
         save()
@@ -1170,17 +1312,19 @@ object HudCapture {
         val size = restSize(hud, op, scale)
         val x = op.x + (op.width - size) / 2f
         val y = op.y + (op.height - size) * 0.75f
-        if (op.width == size && op.height == size) icon.draw(this, x, y, size, size)
-        else {
-            // the game stretches an item that was just picked up about the point 3/4 down it
-            val px = op.x + op.width / 2f
-            val py = op.y + op.height * 0.75f
-            save()
-            translate(px, py)
-            scale(op.width / size, op.height / size)
-            translate(-px, -py)
-            icon.draw(this, x, y, size, size)
-            restore()
+        if ((renderer as? GuiItemRenderer)?.guiItem(op.stack, op.x, op.y, op.width, op.height) != true) {
+            if (op.width == size && op.height == size) icon.draw(this, x, y, size, size)
+            else {
+                // the game stretches an item that was just picked up about the point 3/4 down it
+                val px = op.x + op.width / 2f
+                val py = op.y + op.height * 0.75f
+                save()
+                translate(px, py)
+                scale(op.width / size, op.height / size)
+                translate(-px, -py)
+                icon.draw(this, x, y, size, size)
+                restore()
+            }
         }
         // vanilla draws the count and durability bar after popping the stretch
         if (op.decorated) icon.drawDecorations(this, x, y, size)

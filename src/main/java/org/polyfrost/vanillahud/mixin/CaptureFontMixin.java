@@ -24,7 +24,7 @@ public abstract class CaptureFontMixin {
         shadow = TextShadowHook.apply(shadow);
         if (text != null && HudCapture.text(LegacyDrawContext.INSTANCE, text, (int) x, (int) y, color, shadow)) {
             int width = HudCapture.getTextWidth();
-            cir.setReturnValue((int) x + (width >= 0 ? width : ((Font) (Object) this).width(text)) + (shadow ? 1 : 0));
+            cir.setReturnValue((int) x + (width >= 0 ? width : HudCapture.width((Font) (Object) this, text)) + (shadow ? 1 : 0));
         }
     }
 

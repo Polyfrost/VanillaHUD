@@ -10,7 +10,7 @@ import kotlin.math.abs
 
 // HOPEFULLY fixes old hud configs
 object HudConfigMigrator {
-    private const val SCHEMA_VERSION = 17
+    private const val SCHEMA_VERSION = 18
 
     private const val CUSTOM_SCOREBOARD_FILE = "vanillahud-customscoreboard.json"
 
@@ -147,6 +147,7 @@ object HudConfigMigrator {
         if (from in 9..13) redoLostDesignerMigration(folder)
         if (from < 15) rescaleTitlePadding(folder)
         if (from in 9..16) restoreHotbarShadow(folder)
+        if (from < 18) reseedStrandedBars(folder)
 
         writeStamp(stamp)
     }
@@ -433,6 +434,23 @@ object HudConfigMigrator {
             obj.addProperty("fullShadow", false)
             writeObject(path, obj)
         } catch (_: Throwable) {
+        }
+    }
+
+    /**
+     * OneConfig first placed the bars split out of the hotbar using a 200x48 stand-in size and saved that spot as
+     * player-moved, so nothing on disk tells it apart from a real drag; every unanchored bar follows its default once
+     */
+    internal fun reseedStrandedBars(folder: Path) {
+        val hudsDir = folder.resolve("huds")
+        for (file in SPLIT_FROM_HOTBAR.keys) {
+            val obj = readObject(hudsDir.resolve(file))
+            try {
+                if (!obj?.get("anchorTargetId")?.asString.isNullOrEmpty()) continue
+            } catch (_: Throwable) {
+                continue
+            }
+            unmarkCustomized(folder, file)
         }
     }
 

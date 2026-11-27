@@ -1,3 +1,36 @@
+## 3.5.20
+- Fixed status effect timer mods (Effect Timer Plus, Status Effect Bars) drawing at the old debuff row spot. They now follow the moved row
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.7
+
+## 3.5.19
+- Fixed health, armor, hunger, air and experience bars stuck in the wrong spot. Bars not anchored to another HUD go back to their default position once
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.7
+
+## 3.5.18
+- Tab list heads are faster to draw. Each player's head is one cached image, so an open tab list no longer redoes skin work every frame
+- "Better Hat Layer" is renamed to "Show 3D Heads" to match Chatting
+- Fixed thin lines between scoreboard rows on 1.8.9
+- Fixed newly added HUDs being placed as if they were a default-sized box
+- Fixed HUD backgrounds getting soft edges or light seams at fractional GUI scales
+- Text widths on 1.8.9 now match the font PolyCompose draws with
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.7
+
+## 3.5.17
+- Fixed the tab list being sized for more players than it shows
+- Fixed the air bubbles and mount hearts not moving with their HUDs on 1.8.9
+- Fixed the locator bar's markers flickering or disappearing with Gnetum
+
+## 3.5.16
+- Fixed the status bars shifting out of place when Noxesium scales the hotbar
+- The experience level colour now follows Polytone resource packs
+- Fixed the locator bar overlay being covered by the experience bar with Gnetum
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.5
+
+## 3.5.15
+- More performance improvements: style settings, HUD positions and font widths are cached across frames, and on 1.21.11 and newer HUD items are drawn by the game's own item renderer
+- Fixed the boss bar drawing over the tab list on 1.8.9
+- Needs OneConfig 1.9.3 and PolyCompose 3.0.5
+
 ## 3.5.14
 - Large performance improvements, most of all on 1.8.9: HUDs are only redrawn when what they show changes, and text, icons and the scoreboard do far less work each frame
 - Fixed the hotbar drawing in a different order than vanilla, which broke mods that draw on top of it
