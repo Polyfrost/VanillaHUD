@@ -146,7 +146,7 @@ public abstract class GuiEditorMixin {
             //?}
     )
     private void vanillahud$forceActionBar(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!vanillahud$editing()) {
+        if (!Huds.INSTANCE.getActionBar().getPreviewing()) {
             original.call(graphics, delta);
             return;
         }
@@ -170,7 +170,7 @@ public abstract class GuiEditorMixin {
             //?}
     )
     private void vanillahud$forceItemName(GuiGraphicsExtractor graphics, Operation<Void> original) {
-        if (!vanillahud$editing()) {
+        if (!Huds.INSTANCE.getHeldItemTooltip().getPreviewing()) {
             original.call(graphics);
             return;
         }
@@ -191,7 +191,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;canHurtPlayer()Z"))
     private boolean vanillahud$forceItemNameOffset(boolean original) {
-        return vanillahud$editing() || original;
+        return Huds.INSTANCE.getHeldItemTooltip().getPreviewing() || original;
     }
 
     @WrapMethod(
@@ -202,7 +202,7 @@ public abstract class GuiEditorMixin {
             //?}
     )
     private void vanillahud$forceTitle(GuiGraphicsExtractor graphics, DeltaTracker delta, Operation<Void> original) {
-        if (!vanillahud$editing()) {
+        if (!Huds.INSTANCE.getTitle().getPreviewing()) {
             original.call(graphics, delta);
             return;
         }
@@ -317,7 +317,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
     private boolean vanillahud$forceTabListKey(boolean original) {
-        return VanillaHud.previewing() || original;
+        return Huds.INSTANCE.getTabList().getPreviewing() || original;
     }
 
     @ModifyExpressionValue(
@@ -328,7 +328,7 @@ public abstract class GuiEditorMixin {
             //?}
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;isLocalServer()Z"))
     private boolean vanillahud$forceTabListLocal(boolean original) {
-        return !VanillaHud.previewing() && original;
+        return !Huds.INSTANCE.getTabList().getPreviewing() && original;
     }
 
     @ModifyExpressionValue(
@@ -415,8 +415,8 @@ public abstract class GuiEditorMixin {
         // a HEAD inject would run inside this wrapper, after the demo fields go in, so hasLiveData would read the demo as live.
         // starting the frame here caches previewing from the real fields first
         VanillaHud.beginFrame(LegacyDrawContext.INSTANCE);
-        boolean actionBar = vanillahud$editing();
-        boolean titles = vanillahud$editing();
+        boolean actionBar = Huds.INSTANCE.getActionBar().getPreviewing();
+        boolean titles = Huds.INSTANCE.getTitle().getPreviewing();
         String message = this.overlayMessage;
         int messageTime = this.overlayMessageCooldown;
         boolean tinted = this.overlayMessageTinted;
@@ -456,12 +456,12 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "FIELD",
             target = "Lnet/minecraft/client/options/GameOptions;itemInHandTooltips:Z", opcode = Opcodes.GETFIELD))
     private boolean vanillahud$forceItemNameEnabled(boolean original) {
-        return vanillahud$editing() || original;
+        return Huds.INSTANCE.getHeldItemTooltip().getPreviewing() || original;
     }
 
     @WrapMethod(method = "renderSelectedItemName")
     private void vanillahud$forceItemName(Window window, Operation<Void> original) {
-        if (!vanillahud$editing()) {
+        if (!Huds.INSTANCE.getHeldItemTooltip().getPreviewing()) {
             original.call(window);
             return;
         }
@@ -479,7 +479,7 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "renderSelectedItemName", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/ClientPlayerInteractionManager;hasStatusBars()Z"))
     private boolean vanillahud$forceItemNameOffset(boolean original) {
-        return vanillahud$editing() || original;
+        return Huds.INSTANCE.getHeldItemTooltip().getPreviewing() || original;
     }
 
     // the bottom cluster: the status bars and the experience bar are gated on the game mode,
@@ -586,13 +586,13 @@ public abstract class GuiEditorMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/options/KeyBinding;isPressed()Z"))
     private boolean vanillahud$forceTabListKey(boolean original) {
-        return VanillaHud.previewing() || original;
+        return Huds.INSTANCE.getTabList().getPreviewing() || original;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/Minecraft;isIntegratedServerRunning()Z"))
     private boolean vanillahud$forceTabListLocal(boolean original) {
-        return !VanillaHud.previewing() && original;
+        return !Huds.INSTANCE.getTabList().getPreviewing() && original;
     }
 
     // ordinal 1 is the sidebar lookup: 0 is the team coloured slot and 2 feeds the tab list

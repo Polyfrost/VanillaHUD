@@ -172,6 +172,7 @@ object HudCapture {
         var shownY = 0f
         var shownScale = 1f
         var hud: VanillaHud? = null
+        var wasPreviewing = false
         // replayed in key order, so a background part comes before what's drawn over it
         val parts = TreeMap<Int, Part>()
         val partList = ArrayList<Part>()
@@ -278,11 +279,11 @@ object HudCapture {
         open.clear()
         active = null
         var iconsChanged = false
-        val previewing = VanillaHud.previewing()
-        val previewChanged = gnetum && previewing != wasPreviewing
-        wasPreviewing = previewing
         for (l in layers.values) {
             val hud = l.hud
+            val previewing = hud?.previewing ?: false
+            val previewChanged = gnetum && previewing != l.wasPreviewing
+            l.wasPreviewing = previewing
             val held = !previewChanged && hud != null && gnetum && wouldDraw(hud)
             var ran = false
             val parts = l.partList
@@ -384,9 +385,7 @@ object HudCapture {
     // different passes.
     private val gnetum = FabricLoader.getInstance().isModLoaded("gnetum")
 
-    private var wasPreviewing = false
-
-    private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isEditing || hud.hasContent())
+    private fun wouldDraw(hud: VanillaHud) = hud.shouldDraw() && (HudManager.isPreviewing(hud) || hud.hasContent())
 
     /** [part] tells apart the game's HUD elements that draw into the same [hud] */
     fun begin(hud: VanillaHud, part: Int = 0) {

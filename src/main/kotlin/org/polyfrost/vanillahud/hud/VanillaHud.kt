@@ -551,12 +551,12 @@ abstract class VanillaHud(
         seed = Seed(w, h, hudW, hudH, quarterTurns, growthAnchor, ForeignTransform.revision, origin)
     }
 
-    val previewing: Boolean get() = previewing()
+    val previewing: Boolean get() = previewing() && HudManager.isPreviewing(this)
 
-    val isDrawnAsVanilla: Boolean get() = !HudManager.isEditing && VanillaHudApi.isDrawnAsVanilla(hudId)
+    val isDrawnAsVanilla: Boolean get() = !HudManager.isPreviewing(this) && VanillaHudApi.isDrawnAsVanilla(hudId)
 
     fun shouldDraw(): Boolean {
-        val editing = HudManager.isEditing
+        val editing = HudManager.isPreviewing(this)
         if (!editing && VanillaHudApi.isDrawnAsVanilla(hudId)) return true
         if (!editing && layoutStyle.hidden) return false
         if (HudManager.isDebugScreenVisible && !showInF3) return false
