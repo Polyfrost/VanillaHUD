@@ -268,13 +268,13 @@ object ForeignTransform {
     }
 
     @JvmStatic
-    fun probe(graphics: GuiGraphicsExtractor) {
+    fun probe(graphics: GuiGraphicsExtractor): Boolean {
         //? if >=1.21.8 {
-        if (HudManager.isSamplingVanilla) return
-        if (depth == 0) return
+        if (HudManager.isSamplingVanilla) return false
+        if (depth == 0) return false
         val frame = frames[depth - 1]
         val hud = frame.hud
-        if (hud == null || frame.probed || !frame.hasPlacedPose) return
+        if (hud == null || frame.probed || !frame.hasPlacedPose) return false
         frame.probed = true
         val pose = graphics.pose()
         if (!measureChange(pose, frame.placedPose)) {
@@ -282,7 +282,7 @@ object ForeignTransform {
                 hud.foreignInner = null
                 hud.foreignUpdated()
             }
-            return
+            return true
         }
         val totalScale = frame.outerScale * measuredScale
         val screenW = screenSizeSeenByInnerMod(graphics.guiWidth(), totalScale)
@@ -295,7 +295,9 @@ object ForeignTransform {
             restorePose(pose, frame.placedPose)
             realWindow = true
         }
-        //?}
+        return measuredApplied
+        //?} else
+        //return false
     }
 
     @JvmStatic
