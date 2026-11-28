@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.network.chat.FormattedText
 import net.minecraft.network.chat.Style
 import net.minecraft.util.FormattedCharSequence
+import net.minecraft.util.StringDecomposer
 import org.polyfrost.compose.minecraft.platform.HostEvents
 import java.util.Optional
 //?} else {
@@ -1054,7 +1055,10 @@ object HudCapture {
         val outer = rawWidth
         rawWidth = true
         try {
-            return font.width(text)
+            //? if > 1.8.9 {
+            return font.width(FormattedCharSequence { StringDecomposer.iterateFormatted(text, Style.EMPTY, it) })
+            //?} else
+            //return font.width(text)
         } finally {
             rawWidth = outer
         }
