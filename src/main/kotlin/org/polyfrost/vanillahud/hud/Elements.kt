@@ -1093,12 +1093,15 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 
     fun updateOpen(open: Boolean) {
+        if (!open && !isRendering()) renderedWidth = 0
         if (open == animOpen) return
         animOpen = open
         animFrom = clipFraction()
         animTo = if (open) 1f else 0f
         animStart = System.currentTimeMillis()
     }
+
+    var renderedWidth = 0
 
     fun resetOpen() {
         animOpen = false
@@ -1168,6 +1171,10 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
 
     //? if > 1.8.9 {
     private fun displayName(info: PlayerInfo): Component {
+        try {
+            tabOverlay()?.invokeGetNameForDisplay(info)?.let { return it }
+        } catch (_: Throwable) {
+        }
         info.tabListDisplayName?.let { return it }
         val name = try {
             //? if >=1.21.9 {
@@ -1277,6 +1284,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         h = mix(h, numberPing)
         h = mix(h, pingType)
         h = mix(h, showHeader)
+        h = mix(h, renderedWidth)
         return mix(h, showFooter)
     }
 
@@ -1313,7 +1321,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
         height += hfHeight
 
         // the background reaches a pixel past the text on each side but only one line above the rows
-        return (width + 2).toFloat() to (height + 1).toFloat()
+        return maxOf(width + 2, renderedWidth).toFloat() to (height + 1).toFloat()
     }
 
     override fun measuredWidth(): Float = try {
