@@ -1093,6 +1093,7 @@ class TabListHud : VanillaHud("vanillahud-tab.json", "Tab List", Category.INFO) 
     }
 
     fun updateOpen(open: Boolean) {
+        if (!open && !isRendering()) renderedWidth = 0
         if (open == animOpen) return
         animOpen = open
         animFrom = clipFraction()
